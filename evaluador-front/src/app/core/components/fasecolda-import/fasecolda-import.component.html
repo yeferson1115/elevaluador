@@ -73,24 +73,43 @@
             <th>Código</th>
             <th>Registros</th>
             <th>Última actualización</th>
-            <th style="width: 220px;">Acciones</th>
+            <th style="width: 300px;">Acciones</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let memoria of memorias">
-            <td>{{ memoria.codigo_fasecolda }}</td>
+            <td>
+              <ng-container *ngIf="editandoMemoriaCodigoOriginal === memoria.codigo_fasecolda; else codigoMemoriaNormal">
+                <input class="form-control form-control-sm" [(ngModel)]="editandoMemoriaCodigoNuevo" />
+              </ng-container>
+              <ng-template #codigoMemoriaNormal>
+                {{ memoria.codigo_fasecolda }}
+              </ng-template>
+            </td>
             <td>{{ memoria.registros }}</td>
             <td>{{ formatDate(memoria.updated_at) }}</td>
             <td>
-              <button class="btn btn-sm btn-info me-2" (click)="verRegistros(memoria.codigo_fasecolda)" title="Ver/editar registros">
+              <button class="btn btn-sm btn-info me-2" (click)="verRegistros(memoria.codigo_fasecolda)" title="Ver registros">
                 <i class="fa-regular fa-eye"></i>
               </button>
-              <button class="btn btn-sm btn-warning me-2" (click)="editarMemoria(memoria)" title="Editar código">
-                <i class="fa-regular fa-pen-to-square"></i>
-              </button>
-              <button class="btn btn-sm btn-danger" (click)="eliminarMemoria(memoria)" title="Eliminar memoria">
-                <i class="fa-regular fa-trash-can"></i>
-              </button>
+
+              <ng-container *ngIf="editandoMemoriaCodigoOriginal === memoria.codigo_fasecolda; else accionesMemoriaNormal">
+                <button class="btn btn-sm btn-success me-2" [disabled]="guardandoMemoria" (click)="guardarEdicionMemoria(memoria)">
+                  Guardar
+                </button>
+                <button class="btn btn-sm btn-secondary me-2" [disabled]="guardandoMemoria" (click)="cancelarEdicionMemoria()">
+                  Cancelar
+                </button>
+              </ng-container>
+
+              <ng-template #accionesMemoriaNormal>
+                <button class="btn btn-sm btn-warning me-2" (click)="iniciarEdicionMemoria(memoria)" title="Editar código">
+                  <i class="fa-regular fa-pen-to-square"></i>
+                </button>
+                <button class="btn btn-sm btn-danger" (click)="eliminarMemoria(memoria)" title="Eliminar memoria">
+                  <i class="fa-regular fa-trash-can"></i>
+                </button>
+              </ng-template>
             </td>
           </tr>
 
@@ -140,22 +159,52 @@
             <th>Modelo</th>
             <th>Valor</th>
             <th>Actualizado</th>
-            <th style="width: 140px;">Acciones</th>
+            <th style="width: 280px;">Acciones</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let registro of registros">
-            <td class="text-capitalize">{{ registro.tipo }}</td>
-            <td>{{ registro.modelo }}</td>
-            <td>{{ registro.valor | number:'1.0-0' }}</td>
+            <td>
+              <ng-container *ngIf="editandoRegistroId === registro.id; else tipoRegistroNormal">
+                <select class="form-select form-select-sm" [(ngModel)]="registroDraft.tipo">
+                  <option value="clasificado">Clasificado</option>
+                  <option value="corregido">Corregido</option>
+                </select>
+              </ng-container>
+              <ng-template #tipoRegistroNormal>
+                <span class="text-capitalize">{{ registro.tipo }}</span>
+              </ng-template>
+            </td>
+            <td>
+              <ng-container *ngIf="editandoRegistroId === registro.id; else modeloRegistroNormal">
+                <input class="form-control form-control-sm" type="number" [(ngModel)]="registroDraft.modelo" />
+              </ng-container>
+              <ng-template #modeloRegistroNormal>{{ registro.modelo }}</ng-template>
+            </td>
+            <td>
+              <ng-container *ngIf="editandoRegistroId === registro.id; else valorRegistroNormal">
+                <input class="form-control form-control-sm" type="number" [(ngModel)]="registroDraft.valor" />
+              </ng-container>
+              <ng-template #valorRegistroNormal>{{ registro.valor | number:'1.0-0' }}</ng-template>
+            </td>
             <td>{{ formatDate(registro.updated_at) }}</td>
             <td>
-              <button class="btn btn-sm btn-warning me-2" (click)="editarRegistro(registro)" title="Editar registro">
-                <i class="fa-regular fa-pen-to-square"></i>
-              </button>
-              <button class="btn btn-sm btn-danger" (click)="eliminarRegistro(registro)" title="Eliminar registro">
-                <i class="fa-regular fa-trash-can"></i>
-              </button>
+              <ng-container *ngIf="editandoRegistroId === registro.id; else accionesRegistroNormal">
+                <button class="btn btn-sm btn-success me-2" [disabled]="guardandoRegistro" (click)="guardarEdicionRegistro(registro)">
+                  Guardar
+                </button>
+                <button class="btn btn-sm btn-secondary" [disabled]="guardandoRegistro" (click)="cancelarEdicionRegistro()">
+                  Cancelar
+                </button>
+              </ng-container>
+              <ng-template #accionesRegistroNormal>
+                <button class="btn btn-sm btn-warning me-2" (click)="iniciarEdicionRegistro(registro)" title="Editar registro">
+                  <i class="fa-regular fa-pen-to-square"></i>
+                </button>
+                <button class="btn btn-sm btn-danger" (click)="eliminarRegistro(registro)" title="Eliminar registro">
+                  <i class="fa-regular fa-trash-can"></i>
+                </button>
+              </ng-template>
             </td>
           </tr>
 
