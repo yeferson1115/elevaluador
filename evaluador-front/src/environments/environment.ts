@@ -1,12 +1,12 @@
 // src/environments/environment.ts (desarrollo)
 export const environment = {
-  /*production: false,
+  production: false,
   apiUrl: 'http://localhost:81/api',
-  url: 'http://localhost:81/',*/
+  url: 'http://localhost:81/',
 
-  production: true,
+  /*production: true,
   apiUrl: 'https://api.elevaluador.com/api',
-  url: 'https://api.elevaluador.com/'
+  url: 'https://api.elevaluador.com/'*/
 
   
 };

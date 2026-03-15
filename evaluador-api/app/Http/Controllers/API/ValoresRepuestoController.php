@@ -95,7 +95,9 @@ class ValoresRepuestoController extends Controller
 
             // Verificar si ya existe un registro con el mismo tipo y cilindrage
             $exists = ValoresRepuesto::where('tipo', $request->tipo)
-                                     ->where('cilindrage', $request->cilindrage)
+                                     ->where('cilindraje_from', $request->cilindraje_from)
+                                     ->where('cilindraje_to', $request->cilindraje_to)
+                                     ->where('especial', $request->especial)
                                      ->exists();
 
             if ($exists) {
