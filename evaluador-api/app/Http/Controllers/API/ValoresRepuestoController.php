@@ -31,6 +31,11 @@ class ValoresRepuestoController extends Controller
                   ->where('cilindraje_to', '>=', $cilindraje);
         }
 
+        if ($request->has('especial')) {
+            $especial = filter_var($request->input('especial'), FILTER_VALIDATE_BOOLEAN);
+            $query->where('especial', $especial ? 1 : 0);
+        }
+
         // Paginación
         $perPage = $request->get('per_page', 15);
 
@@ -63,6 +68,7 @@ class ValoresRepuestoController extends Controller
                 'cilindraje_from' => 'required|string|max:10',
                 'cilindraje_to' => 'required|string|max:10',
                 'tipo' => 'required|string|max:50',
+                'especial' => 'nullable|boolean',
                 'llantas' => 'nullable|numeric|min:0',
                 'tapiceria' => 'nullable|numeric|min:0',
                 'soat' => 'nullable|numeric|min:0',
@@ -100,7 +106,10 @@ class ValoresRepuestoController extends Controller
                 ], 409);
             }
 
-            $valoresRepuesto = ValoresRepuesto::create($request->all());
+            $data = $request->all();
+            $data['especial'] = $request->boolean('especial');
+
+            $valoresRepuesto = ValoresRepuesto::create($data);
 
             return response()->json([
                 'success' => true,
@@ -167,6 +176,7 @@ class ValoresRepuestoController extends Controller
             $validator = Validator::make($request->all(), [
                 'cilindrage' => 'sometimes|required|string|max:10',
                 'tipo' => 'sometimes|required|string|max:50',
+                'especial' => 'sometimes|boolean',
                 'llantas' => 'nullable|numeric|min:0',
                 'tapiceria' => 'nullable|numeric|min:0',
                 'soat' => 'nullable|numeric|min:0',
@@ -209,7 +219,12 @@ class ValoresRepuestoController extends Controller
                 }
             }
 
-            $valoresRepuesto->update($request->all());
+            $data = $request->all();
+            if ($request->has('especial')) {
+                $data['especial'] = $request->boolean('especial');
+            }
+
+            $valoresRepuesto->update($data);
 
             return response()->json([
                 'success' => true,
@@ -268,13 +283,16 @@ public function buscarPorCilindraje(Request $request): JsonResponse
     try {
         $request->validate([
             'clase' => 'required|string',
-            'cilindraje' => 'required|integer|min:1|max:9999'
+            'cilindraje' => 'required|integer|min:1|max:9999',
+            'especial' => 'nullable|boolean'
         ]);
 
         $clase = strtoupper(trim($request->input('clase')));
         $cilindrajeBuscado = (int) $request->input('cilindraje');
+        $especial = filter_var($request->input('especial', false), FILTER_VALIDATE_BOOLEAN);
 
         $registro = ValoresRepuesto::where('tipo', $clase)
+            ->where('especial', $especial ? 1 : 0)
             ->where(function ($query) use ($cilindrajeBuscado) {
 
                 // Caso 1: Rango normal

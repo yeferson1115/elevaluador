@@ -15,6 +15,7 @@ class ValoresRepuesto extends Model
         'cilindraje_to',
         'cilindraje_from',
         'tipo',
+        'especial',
         'llantas',
         'tapiceria',
         'soat',
@@ -29,5 +30,9 @@ class ValoresRepuesto extends Model
         'tanque_combustible',
         'llave',
         'sis_electrico'
+    ];
+
+    protected $casts = [
+        'especial' => 'boolean',
     ];
 }

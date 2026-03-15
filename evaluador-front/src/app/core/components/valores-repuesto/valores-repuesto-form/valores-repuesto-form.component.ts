@@ -41,6 +41,7 @@ export class ValoresRepuestoFormComponent implements OnInit {
       cilindraje_to: ['', [Validators.required, Validators.maxLength(10)]],
       cilindraje_from: ['', [Validators.required, Validators.maxLength(10)]],
       tipo: ['', [Validators.required, Validators.maxLength(50)]],
+      especial: [false],
       llantas: [null, [Validators.min(0)]],
       tapiceria: [null, [Validators.min(0)]],
       soat: [null, [Validators.min(0)]],

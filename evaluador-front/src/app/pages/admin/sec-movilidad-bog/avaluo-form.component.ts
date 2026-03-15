@@ -28,6 +28,7 @@ export class AvaluoFormComponent implements OnInit {
   private claseAnterior: string = '';
   private cilindrajeAnterior: number = 0;
   private debounceTimer: any;
+  filtroEspecial = false;
 
   private valoresInicialesCargados = false;
   private claseOriginal: string = '';
@@ -149,6 +150,11 @@ export class AvaluoFormComponent implements OnInit {
     }
   });
 
+  this.form.get('es_repuesto_especial')?.valueChanges.subscribe((esEspecial) => {
+    this.filtroEspecial = !!esEspecial;
+    this.buscarValoresRepuestoDebounced(true);
+  });
+
    this.form.get('avaluo.codigo_fasecolda')?.valueChanges.subscribe((codigo) => {
     if (codigo && codigo.trim() !== '') {
       setTimeout(() => {
@@ -204,7 +210,7 @@ buscarValoresRepuesto(esCambioManual: boolean = false): void {
   if (clase && cilindraje && cilindraje > 0) {
     console.log(`Buscando valores (cambio manual: ${esCambioManual}):`, { clase, cilindraje });
     
-    this.valoresRepuestosService.buscarPorCilindraje(clase, cilindraje)
+    this.valoresRepuestosService.buscarPorCilindraje(clase, cilindraje, this.filtroEspecial)
       .subscribe({
         next: (response) => {
           if (response.success && response.data) {
@@ -350,6 +356,7 @@ calcularPesoMermado(pesoVacio: number | null): void {
       clase: ['', Validators.required],      
       color: ['', Validators.required],
       cilindraje: [null, Validators.required],
+      es_repuesto_especial: [false],
       modelo: [null, Validators.required],
       kilometraje: [null, Validators.required],
       caja_cambios: [{ value: ''}],
@@ -505,6 +512,7 @@ calcularPesoMermado(pesoVacio: number | null): void {
       }
 
       this.form.patchValue(resp);
+      this.filtroEspecial = !!this.form.get('es_repuesto_especial')?.value;
 
       const avaluoForm = this.form.get('avaluo');
       if (resp.avaluo) {
@@ -601,7 +609,7 @@ private buscarValoresRepuestoParaCamposVacios(): void {
   if (clase && cilindraje && cilindraje > 0) {
     console.log('Búsqueda inicial para campos vacíos:', { clase, cilindraje });
     
-    this.valoresRepuestosService.buscarPorCilindraje(clase, cilindraje)
+    this.valoresRepuestosService.buscarPorCilindraje(clase, cilindraje, this.filtroEspecial)
       .subscribe({
         next: (response) => {
           if (response.success && response.data) {
