@@ -192,4 +192,9 @@ export class ValoresRepuestoListComponent implements OnInit {
       maximumFractionDigits: 0
     }).format(numValue);
   }
+
+  formatEspecial(value: boolean | number | null | undefined): string {
+    const esEspecial = value === true || value === 1;
+    return esEspecial ? 'Sí' : 'No';
+  }
 }
