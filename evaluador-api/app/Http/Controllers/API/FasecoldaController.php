@@ -10,6 +10,145 @@ use App\Imports\FasecoldaImport;
 
 class FasecoldaController extends Controller
 {
+
+    public function index(Request $request)
+    {
+        $query = FasecoldaValor::query()->select('codigo_fasecolda')->distinct();
+
+        if ($request->filled('codigo')) {
+            $codigo = $request->get('codigo');
+            $query->where('codigo_fasecolda', 'like', "%{$codigo}%");
+        }
+
+        $codigos = $query->orderBy('codigo_fasecolda')
+            ->paginate((int) $request->get('per_page', 10));
+
+        $codigos->getCollection()->transform(function ($item) {
+            $codigo = $item->codigo_fasecolda;
+            $registros = FasecoldaValor::where('codigo_fasecolda', $codigo)->count();
+            $ultimaActualizacion = FasecoldaValor::where('codigo_fasecolda', $codigo)->max('updated_at');
+
+            return [
+                'codigo_fasecolda' => $codigo,
+                'registros' => $registros,
+                'updated_at' => $ultimaActualizacion,
+            ];
+        });
+
+        return response()->json($codigos);
+    }
+
+    public function destroy($codigo)
+    {
+        $eliminados = FasecoldaValor::where('codigo_fasecolda', $codigo)->delete();
+
+        if ($eliminados === 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se encontró la memoria indicada'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Memoria eliminada correctamente'
+        ]);
+    }
+
+    public function update(Request $request, $codigo)
+    {
+        $request->validate([
+            'codigo_fasecolda' => 'required|string|max:50'
+        ]);
+
+        $nuevoCodigo = $request->codigo_fasecolda;
+
+        if ($nuevoCodigo !== $codigo && FasecoldaValor::where('codigo_fasecolda', $nuevoCodigo)->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ya existe una memoria con ese código'
+            ], 422);
+        }
+
+        $actualizados = FasecoldaValor::where('codigo_fasecolda', $codigo)
+            ->update(['codigo_fasecolda' => $nuevoCodigo]);
+
+        if ($actualizados === 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se encontró la memoria indicada'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Código de memoria actualizado correctamente'
+        ]);
+    }
+
+
+    public function getRegistros($codigo)
+    {
+        $registros = FasecoldaValor::where('codigo_fasecolda', $codigo)
+            ->orderBy('tipo')
+            ->orderBy('modelo')
+            ->get(['id', 'codigo_fasecolda', 'tipo', 'modelo', 'valor', 'updated_at']);
+
+        return response()->json([
+            'success' => true,
+            'data' => $registros
+        ]);
+    }
+
+    public function updateRegistro(Request $request, $id)
+    {
+        $request->validate([
+            'tipo' => 'required|in:clasificado,corregido',
+            'modelo' => 'required|integer',
+            'valor' => 'required|numeric',
+        ]);
+
+        $registro = FasecoldaValor::find($id);
+
+        if (!$registro) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se encontró el registro indicado'
+            ], 404);
+        }
+
+        $registro->update([
+            'tipo' => $request->tipo,
+            'modelo' => $request->modelo,
+            'valor' => $request->valor,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Registro actualizado correctamente',
+            'data' => $registro->fresh()
+        ]);
+    }
+
+    public function destroyRegistro($id)
+    {
+        $registro = FasecoldaValor::find($id);
+
+        if (!$registro) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se encontró el registro indicado'
+            ], 404);
+        }
+
+        $registro->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Registro eliminado correctamente'
+        ]);
+    }
+
     public function import(Request $request)
     {
         $request->validate([
@@ -45,6 +184,8 @@ class FasecoldaController extends Controller
             ->map(function($items) {
                 return $items->map(function($item) {
                     return [
+                        'id' => $item->id,
+                        'tipo' => $item->tipo,
                         'modelo' => $item->modelo,
                         'valor' => $item->valor
                     ];
