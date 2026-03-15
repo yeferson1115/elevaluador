@@ -3,6 +3,7 @@ export interface ValoresRepuesto {
     cilindraje_to: string;
     cilindraje_from: string;
     tipo: string;
+    especial?: boolean | number;
     llantas: number | string | null;
     tapiceria: number | string | null;
     soat: number | string | null;

@@ -83,11 +83,12 @@ export class ValoresRepuestosService {
       );
   }
 
-  buscarPorCilindraje(clase: string, cilindraje: number): Observable<any> {
+  buscarPorCilindraje(clase: string, cilindraje: number, especial: boolean = false): Observable<any> {
     return this.http.get(`${this.apiUrl}/buscar`, {
       params: {
         clase,
-        cilindraje: cilindraje.toString()
+        cilindraje: cilindraje.toString(),
+        especial: especial ? '1' : '0'
       }
     });
   }
