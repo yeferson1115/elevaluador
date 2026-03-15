@@ -6,6 +6,7 @@ import { CommonModule } from '@angular/common';
 // Servicios
 import { AvaluoService } from '../../../core/services/avaluo.service';
 import { AlertService } from '../../../core/services/alert.service';
+import { FasecoldaService } from '../../../core/services/fasecolda.service';
 
 @Component({
   selector: 'app-avaluo-form',
@@ -27,7 +28,8 @@ export class AvaluoFormComponent implements OnInit {
     private route: ActivatedRoute,
     private service: AvaluoService,
     private alert: AlertService,
-    private router: Router
+    private router: Router,
+    private fasecoldaService: FasecoldaService
   ) {}
 
   // =====================================================
@@ -78,6 +80,17 @@ this.form.valueChanges.subscribe(() => {
         this.calcularIndiceReparabilidad();
       }, 100);
     });
+  });
+
+  this.form.get('avaluo.codigo_fasecolda')?.valueChanges.subscribe((codigo) => {
+    if (codigo && String(codigo).trim().length > 0) {
+      this.cargarValoresFasecolda();
+      this.consultarValorFasecoldaPorModelo();
+    }
+  });
+
+  this.form.get('modelo')?.valueChanges.subscribe(() => {
+    this.consultarValorFasecoldaPorModelo();
   });
     // También forzamos un cálculo inicial
     this.calcularFormulas();
@@ -150,6 +163,7 @@ this.form.valueChanges.subscribe(() => {
         observaciones:[''],
         ingreso_id: [{ value: '', disabled: true }],
         fecha_inspeccion: [''],
+        codigo_fasecolda: [''],
         vida_util_probable: [''],
         vida_usada_dias: [{ value: '', disabled: true }],
         vida_usada_meses: [{ value: '', disabled: true }],
@@ -562,6 +576,74 @@ addLimitacion() {
 
 removeLimitacion(i: number) {
   this.limitaciones.removeAt(i);
+}
+
+
+cargarValoresFasecolda(): void {
+  const codigoFasecolda = this.form.get('avaluo.codigo_fasecolda')?.value;
+
+  if (!codigoFasecolda) {
+    return;
+  }
+
+  this.fasecoldaService.getValores(codigoFasecolda).subscribe({
+    next: (response) => {
+      if (response.success && response.data) {
+        this.aplicarValoresFasecolda(response.data);
+      }
+    },
+    error: () => {
+      this.alert.error('No fue posible cargar valores de Fasecolda');
+    }
+  });
+}
+
+private aplicarValoresFasecolda(data: any): void {
+  const clasificadosArray = this.clasificados;
+  const corregidosArray = this.corregidos;
+
+  clasificadosArray.clear();
+  corregidosArray.clear();
+
+  if (data.clasificado && Array.isArray(data.clasificado)) {
+    data.clasificado.forEach((item: any) => {
+      clasificadosArray.push(this.fb.group({
+        modelo: [item.modelo || ''],
+        valor: [item.valor || '']
+      }));
+    });
+  }
+
+  if (data.corregido && Array.isArray(data.corregido)) {
+    data.corregido.forEach((item: any) => {
+      corregidosArray.push(this.fb.group({
+        modelo: [item.modelo || ''],
+        valor: [item.valor || '']
+      }));
+    });
+  }
+}
+
+consultarValorFasecoldaPorModelo(): void {
+  const codigoFasecolda = this.form.get('avaluo.codigo_fasecolda')?.value;
+  const modelo = this.form.get('modelo')?.value;
+
+  if (!codigoFasecolda || !modelo) {
+    return;
+  }
+
+  this.fasecoldaService.buscarPorModelo(codigoFasecolda, Number(modelo)).subscribe({
+    next: (response) => {
+      if (response.success && response.data) {
+        const valorSugerido = response.data.corregido?.valor || response.data.clasificado?.valor;
+        const controlValorReposicion = this.form.get('avaluo.valor_reposicion');
+
+        if (valorSugerido && controlValorReposicion && !controlValorReposicion.value) {
+          controlValorReposicion.setValue(valorSugerido);
+        }
+      }
+    }
+  });
 }
 
 
