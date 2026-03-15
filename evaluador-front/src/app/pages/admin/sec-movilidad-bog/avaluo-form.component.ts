@@ -462,7 +462,7 @@ calcularPesoMermado(pesoVacio: number | null): void {
         llanta_trasera_izquierda: [''],
         llanta_trasera_derecha: [''],
         llanta_repuesto: [''],
-        latoneria_estado: [''], 
+        latoneria_estado: ['Regular'],
         latoneria_valor: [''],
         pintura_estado: [''],
         tapiceria_estado: [''], 
