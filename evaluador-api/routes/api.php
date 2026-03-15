@@ -74,6 +74,9 @@ Route::middleware(['auth:api'])->group(function () {
         Route::get('/', [FasecoldaController::class, 'index']);
         Route::put('/{codigo}', [FasecoldaController::class, 'update']);
         Route::delete('/{codigo}', [FasecoldaController::class, 'destroy']);
+        Route::get('/{codigo}/registros', [FasecoldaController::class, 'getRegistros']);
+        Route::put('/registro/{id}', [FasecoldaController::class, 'updateRegistro']);
+        Route::delete('/registro/{id}', [FasecoldaController::class, 'destroyRegistro']);
         Route::get('/{codigo}', [FasecoldaController::class, 'getValores']);
         Route::get('/{codigo}/modelo/{modelo}', [FasecoldaController::class, 'buscarPorModelo']);
     });

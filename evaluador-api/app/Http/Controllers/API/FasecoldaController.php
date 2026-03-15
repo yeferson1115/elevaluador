@@ -86,6 +86,69 @@ class FasecoldaController extends Controller
         ]);
     }
 
+
+    public function getRegistros($codigo)
+    {
+        $registros = FasecoldaValor::where('codigo_fasecolda', $codigo)
+            ->orderBy('tipo')
+            ->orderBy('modelo')
+            ->get(['id', 'codigo_fasecolda', 'tipo', 'modelo', 'valor', 'updated_at']);
+
+        return response()->json([
+            'success' => true,
+            'data' => $registros
+        ]);
+    }
+
+    public function updateRegistro(Request $request, $id)
+    {
+        $request->validate([
+            'tipo' => 'required|in:clasificado,corregido',
+            'modelo' => 'required|integer',
+            'valor' => 'required|numeric',
+        ]);
+
+        $registro = FasecoldaValor::find($id);
+
+        if (!$registro) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se encontró el registro indicado'
+            ], 404);
+        }
+
+        $registro->update([
+            'tipo' => $request->tipo,
+            'modelo' => $request->modelo,
+            'valor' => $request->valor,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Registro actualizado correctamente',
+            'data' => $registro->fresh()
+        ]);
+    }
+
+    public function destroyRegistro($id)
+    {
+        $registro = FasecoldaValor::find($id);
+
+        if (!$registro) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se encontró el registro indicado'
+            ], 404);
+        }
+
+        $registro->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Registro eliminado correctamente'
+        ]);
+    }
+
     public function import(Request $request)
     {
         $request->validate([
@@ -121,6 +184,8 @@ class FasecoldaController extends Controller
             ->map(function($items) {
                 return $items->map(function($item) {
                     return [
+                        'id' => $item->id,
+                        'tipo' => $item->tipo,
                         'modelo' => $item->modelo,
                         'valor' => $item->valor
                     ];

@@ -1,8 +1,7 @@
-// components/fasecolda-import/fasecolda-import.component.ts
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { FasecoldaService, FasecoldaMemoria } from '../../../core/services/fasecolda.service';
+import { FasecoldaService, FasecoldaMemoria, FasecoldaRegistro } from '../../../core/services/fasecolda.service';
 import { AlertService } from '../../../core/services/alert.service';
 
 @Component({
@@ -23,6 +22,10 @@ export class FasecoldaImportComponent {
   pageSize = 10;
   totalItems = 0;
   totalPages = 0;
+
+  codigoSeleccionado = '';
+  registros: FasecoldaRegistro[] = [];
+  loadingRegistros = false;
 
   constructor(
     private fb: FormBuilder,
@@ -96,6 +99,91 @@ export class FasecoldaImportComponent {
     });
   }
 
+  verRegistros(codigo: string): void {
+    this.codigoSeleccionado = codigo;
+    this.cargarRegistros();
+  }
+
+  cargarRegistros(): void {
+    if (!this.codigoSeleccionado) {
+      return;
+    }
+
+    this.loadingRegistros = true;
+    this.fasecoldaService.getRegistros(this.codigoSeleccionado).subscribe({
+      next: (response) => {
+        this.registros = response.data || [];
+        this.loadingRegistros = false;
+      },
+      error: () => {
+        this.loadingRegistros = false;
+        this.registros = [];
+        this.alert.error('No fue posible cargar los registros de la memoria');
+      }
+    });
+  }
+
+  editarRegistro(registro: FasecoldaRegistro): void {
+    const tipo = window.prompt('Tipo (clasificado/corregido)', registro.tipo)?.trim().toLowerCase();
+    if (!tipo) {
+      return;
+    }
+
+    if (tipo !== 'clasificado' && tipo !== 'corregido') {
+      this.alert.error('El tipo debe ser clasificado o corregido');
+      return;
+    }
+
+    const modeloValor = window.prompt('Modelo', String(registro.modelo))?.trim();
+    const valorValor = window.prompt('Valor', String(registro.valor))?.trim();
+
+    if (!modeloValor || !valorValor) {
+      return;
+    }
+
+    const modelo = Number(modeloValor);
+    const valor = Number(valorValor);
+
+    if (Number.isNaN(modelo) || Number.isNaN(valor)) {
+      this.alert.error('Modelo y valor deben ser numéricos');
+      return;
+    }
+
+    this.fasecoldaService.actualizarRegistro(registro.id, { tipo, modelo, valor }).subscribe({
+      next: () => {
+        this.alert.success('Registro actualizado correctamente');
+        this.cargarRegistros();
+      },
+      error: (error) => {
+        this.alert.error(error?.error?.message || 'No fue posible actualizar el registro');
+      }
+    });
+  }
+
+  eliminarRegistro(registro: FasecoldaRegistro): void {
+    this.alert.confirm({
+      title: '¿Eliminar registro?',
+      text: `Se eliminará ${registro.tipo} - modelo ${registro.modelo} del código ${registro.codigo_fasecolda}`,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      this.fasecoldaService.eliminarRegistro(registro.id).subscribe({
+        next: () => {
+          this.alert.success('Registro eliminado correctamente');
+          this.cargarRegistros();
+          this.cargarMemorias();
+        },
+        error: (error) => {
+          this.alert.error(error?.error?.message || 'No fue posible eliminar el registro');
+        }
+      });
+    });
+  }
+
   editarMemoria(memoria: FasecoldaMemoria): void {
     this.alert.confirm({
       title: 'Editar código de memoria',
@@ -117,6 +205,10 @@ export class FasecoldaImportComponent {
       this.fasecoldaService.actualizarCodigo(memoria.codigo_fasecolda, nuevoCodigo).subscribe({
         next: () => {
           this.alert.success('Código actualizado correctamente');
+          if (this.codigoSeleccionado === memoria.codigo_fasecolda) {
+            this.codigoSeleccionado = nuevoCodigo;
+            this.cargarRegistros();
+          }
           this.cargarMemorias();
         },
         error: (error) => {
@@ -142,6 +234,10 @@ export class FasecoldaImportComponent {
           this.alert.success('Memoria eliminada correctamente');
           if (this.currentPage > 1 && this.memorias.length === 1) {
             this.currentPage -= 1;
+          }
+          if (this.codigoSeleccionado === memoria.codigo_fasecolda) {
+            this.codigoSeleccionado = '';
+            this.registros = [];
           }
           this.cargarMemorias();
         },

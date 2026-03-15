@@ -17,11 +17,20 @@ export interface FasecoldaMemoriaResponse {
   total: number;
 }
 
+export interface FasecoldaRegistro {
+  id: number;
+  codigo_fasecolda: string;
+  tipo: string;
+  modelo: number;
+  valor: number;
+  updated_at: string | null;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class FasecoldaService {
-  private apiUrl = environment.apiUrl+'/fasecolda';
+  private apiUrl = environment.apiUrl + '/fasecolda';
 
   constructor(private http: HttpClient) {}
 
@@ -37,7 +46,6 @@ export class FasecoldaService {
     return this.http.get(`${this.apiUrl}/${codigo}/modelo/${modelo}`);
   }
 
-
   getMemorias(params?: { page?: number; per_page?: number; codigo?: string }): Observable<FasecoldaMemoriaResponse> {
     return this.http.get<FasecoldaMemoriaResponse>(`${this.apiUrl}`, { params: params as any });
   }
@@ -50,5 +58,17 @@ export class FasecoldaService {
 
   eliminarMemoria(codigo: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${codigo}`);
+  }
+
+  getRegistros(codigo: string): Observable<{ success: boolean; data: FasecoldaRegistro[] }> {
+    return this.http.get<{ success: boolean; data: FasecoldaRegistro[] }>(`${this.apiUrl}/${codigo}/registros`);
+  }
+
+  actualizarRegistro(id: number, payload: { tipo: string; modelo: number; valor: number }): Observable<any> {
+    return this.http.put(`${this.apiUrl}/registro/${id}`, payload);
+  }
+
+  eliminarRegistro(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/registro/${id}`);
   }
 }
