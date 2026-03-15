@@ -2412,11 +2412,75 @@
 
           
           </div>
-        </div>
+
+        
 
       </div>
       <hr>
       <div class="card-body row" formGroupName="inspeccion_revision_visual" >
+
+      <div class="card-body row g-3" [hidden]="!['Motocicleta', 'Motocileta'].includes(form.get('inspeccion.tipo_vehiculo')?.value)">
+        <div class="col-md-6">
+          <div class="card-header fw-semibold title-section mt-3 mb-1">Delantero</div>
+          <app-inspeccion-select label="Unidad Farola" formControlName="unidad_farola_moto" selectorType="damaged"></app-inspeccion-select>
+          <app-inspeccion-select label="Visera" formControlName="visera" selectorType="damaged"></app-inspeccion-select>
+          <app-inspeccion-select label="Direccionales" formControlName="direccionales_moto" selectorType="damaged"></app-inspeccion-select>
+          <app-inspeccion-select label="Manillar" formControlName="manillar" selectorType="damaged"></app-inspeccion-select>
+          <app-inspeccion-select label="Espejo izq" formControlName="espejo_izq_moto" selectorType="damaged"></app-inspeccion-select>
+          <app-inspeccion-select label="Espejo der" formControlName="espejo_der_moto" selectorType="damaged"></app-inspeccion-select>
+          <app-inspeccion-select label="Carenaje delantero" formControlName="carenaje_delantero" selectorType="damaged"></app-inspeccion-select>
+          <app-inspeccion-select label="Horquilla" formControlName="horquilla" selectorType="damaged"></app-inspeccion-select>
+          <app-inspeccion-select label="Guardafango frontal" formControlName="guardafango_frontal" selectorType="damaged"></app-inspeccion-select>
+
+          <div class="card-header fw-semibold title-section mt-3 mb-1">Suspensión</div>
+          <app-inspeccion-select label="Barra telescopica izq" formControlName="barra_telescopica_izq" selectorType="damaged"></app-inspeccion-select>
+          <app-inspeccion-select label="Barra telescopica der" formControlName="barra_telescopica_der" selectorType="Funcionamiento"></app-inspeccion-select>
+          <app-inspeccion-select label="Amortiguador trasero" formControlName="amortiguador_trasero_moto" selectorType="Funcionamiento"></app-inspeccion-select>
+
+          <div class="card-header fw-semibold title-section mt-3 mb-1">Frenos</div>
+          <app-inspeccion-select label="Disco / Campana delantera" formControlName="disco_campana_delantera" selectorType="Mecanica"></app-inspeccion-select>
+          <app-inspeccion-select label="Disco / Campana trasera" formControlName="disco_campana_trasera" selectorType="Mecanica"></app-inspeccion-select>
+        </div>
+
+        <div class="col-md-6">
+          <div class="card-header fw-semibold title-section mt-3 mb-1">Exterior</div>
+          <app-inspeccion-select label="Tanque de combustible" formControlName="tanque_combustible" selectorType="damaged"></app-inspeccion-select>
+          <app-inspeccion-select label="Sillin" formControlName="sillon" selectorType="damaged"></app-inspeccion-select>
+          <app-inspeccion-select label="Chasis" formControlName="chasis" selectorType="damaged"></app-inspeccion-select>
+          <app-inspeccion-select label="Estribo" formControlName="estribo_moto" selectorType="damaged"></app-inspeccion-select>
+          <app-inspeccion-select label="Tapa lateral izq" formControlName="tapa_lateral_izq" selectorType="damaged"></app-inspeccion-select>
+          <app-inspeccion-select label="Tapa lateral der" formControlName="tapa_lateral_der" selectorType="damaged"></app-inspeccion-select>
+          <app-inspeccion-select label="Tapa trasera izq" formControlName="tapa_trasera_izq" selectorType="damaged"></app-inspeccion-select>
+          <app-inspeccion-select label="Tapa trasera der" formControlName="tapa_trasera_der" selectorType="damaged"></app-inspeccion-select>
+          <app-inspeccion-select label="Guardafango trasero" formControlName="guardafango_trasero" selectorType="damaged"></app-inspeccion-select>
+          <app-inspeccion-select label="Stop" formControlName="stop_moto" selectorType="damaged"></app-inspeccion-select>
+          <app-inspeccion-select label="Pata" formControlName="pata" selectorType="damaged"></app-inspeccion-select>
+          <app-inspeccion-select label="Caballete" formControlName="caballete" selectorType="damaged"></app-inspeccion-select>
+          <app-inspeccion-select label="Mango calapie" formControlName="mango_calapie" selectorType="damaged"></app-inspeccion-select>
+          <app-inspeccion-select label="Maleta" formControlName="maleta" selectorType="damaged"></app-inspeccion-select>
+          <app-inspeccion-select label="Cofre trasero" formControlName="cofre_trasero" selectorType="damaged"></app-inspeccion-select>
+
+          <div class="card-header fw-semibold title-section mt-3 mb-1">Mecánica</div>
+          <app-inspeccion-select label="Motor" formControlName="motor_moto" selectorType="Mecanica"></app-inspeccion-select>
+          <app-inspeccion-select label="Kit de arrastre" formControlName="kit_arrastre" selectorType="Mecanica"></app-inspeccion-select>
+          <app-inspeccion-select label="Sistema de escape" formControlName="sistema_escape" selectorType="damaged"></app-inspeccion-select>
+          <app-inspeccion-select label="Bateria" formControlName="bateria_moto" selectorType="Funcionamiento"></app-inspeccion-select>
+          <app-inspeccion-select label="Mango acelerador" formControlName="mango_acelerador" selectorType="Funcionamiento"></app-inspeccion-select>
+          <app-inspeccion-select label="Manigueta freno" formControlName="manigueta_freno" selectorType="Funcionamiento"></app-inspeccion-select>
+          <app-inspeccion-select label="Manigueta embrague" formControlName="manigueta_embrague" selectorType="Funcionamiento"></app-inspeccion-select>
+          <app-inspeccion-select label="Deposito liquido hidraulico" formControlName="deposito_liquido_hidraulico" selectorType="Estado"></app-inspeccion-select>
+          <app-inspeccion-select label="Tablero de instrumentos" formControlName="tablero_instrumentos" selectorType="Mecanica"></app-inspeccion-select>
+          <app-inspeccion-select label="Pedal freno" formControlName="pedal_freno" selectorType="Mecanica"></app-inspeccion-select>
+          <app-inspeccion-select label="Pedal cambios" formControlName="pedal_cambios" selectorType="Mecanica"></app-inspeccion-select>
+
+          <div class="card-header fw-semibold title-section mt-3 mb-1">Fugas y llantas</div>
+          <app-inspeccion-select label="Aceite motor" formControlName="aceite_motor_fugas" selectorType="fugas"></app-inspeccion-select>
+          <app-inspeccion-select label="Combustible" formControlName="combustible_fugas" selectorType="fugas"></app-inspeccion-select>
+          <app-inspeccion-select label="Llanta delantera" formControlName="llanta_delantera_moto" selectorType="llantas"></app-inspeccion-select>
+          <app-inspeccion-select label="Llanta trasera" formControlName="llanta_trasera_moto" selectorType="llantas"></app-inspeccion-select>
+        </div>
+      </div>
+
         <div class="col-md-6">
             <div class="row">
               <div class="col-md-12">
