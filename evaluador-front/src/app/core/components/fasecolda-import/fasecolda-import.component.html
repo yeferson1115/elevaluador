@@ -1,5 +1,5 @@
 <!-- components/fasecolda-import/fasecolda-import.component.html -->
-<div class="card">
+<div class="card mb-4">
   <div class="card-header">
     <h5>Importar Valores Fasecolda</h5>
   </div>
@@ -9,13 +9,13 @@
         <div class="col-md-6">
           <div class="mb-3">
             <label class="form-label">Código Fasecolda *</label>
-            <input 
-              type="text" 
-              class="form-control" 
+            <input
+              type="text"
+              class="form-control"
               formControlName="codigo_fasecolda"
               placeholder="Ej: COD-001"
             >
-            <div *ngIf="importForm.get('codigo_fasecolda')?.invalid && importForm.get('codigo_fasecolda')?.touched" 
+            <div *ngIf="importForm.get('codigo_fasecolda')?.invalid && importForm.get('codigo_fasecolda')?.touched"
                  class="text-danger">
               Código requerido
             </div>
@@ -24,33 +24,29 @@
         <div class="col-md-6">
           <div class="mb-3">
             <label class="form-label">Archivo Excel *</label>
-            <input 
-              type="file" 
-              class="form-control" 
+            <input
+              type="file"
+              class="form-control"
               id="fileInput"
               accept=".xlsx,.xls"
               (change)="onFileSelected($event)"
             >
-            <div *ngIf="!selectedFile && importForm.get('archivo_excel')?.touched" 
-                 class="text-danger">
-              Archivo requerido
-            </div>
             <small class="text-muted">
-              El archivo debe tener el formato: 
-              Columnas A-B: Clasificados (MODELO | VALOR), 
+              El archivo debe tener el formato:
+              Columnas A-B: Clasificados (MODELO | VALOR),
               Columnas C-D: Corregidos (MODELO | VALOR)
             </small>
           </div>
         </div>
       </div>
-      
+
       <div class="d-flex justify-content-between">
         <button type="button" class="btn btn-secondary" >
           Descargar Template
         </button>
-        
-        <button 
-          type="submit" 
+
+        <button
+          type="submit"
           class="btn btn-primary"
           [disabled]="loading || !selectedFile"
         >
@@ -59,39 +55,68 @@
         </button>
       </div>
     </form>
-    
-    <div class="mt-4">
-      <h6>Estructura del archivo requerida:</h6>
-      <table class="table table-bordered">
-        <thead>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Memorias cargadas</h5>
+    <button class="btn btn-outline-primary btn-sm" (click)="cargarMemorias()" [disabled]="loadingMemorias">
+      <i class="bi bi-arrow-clockwise"></i> Actualizar
+    </button>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-striped table-hover align-middle">
+        <thead class="table-dark">
           <tr>
-            <th>A: Modelo (Clasificado)</th>
-            <th>B: Valor (Clasificado)</th>
-            <th>C: Modelo (Corregido)</th>
-            <th>D: Valor (Corregido)</th>
+            <th>Código</th>
+            <th>Registros</th>
+            <th>Última actualización</th>
+            <th style="width: 140px;">Acciones</th>
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>2005</td>
-            <td>2,300,000</td>
-            <td>2005</td>
-            <td>2,300,000</td>
+          <tr *ngFor="let memoria of memorias">
+            <td>{{ memoria.codigo_fasecolda }}</td>
+            <td>{{ memoria.registros }}</td>
+            <td>{{ formatDate(memoria.updated_at) }}</td>
+            <td>
+              <button class="btn btn-sm btn-warning me-2" (click)="editarMemoria(memoria)" title="Editar código">
+                <i class="fa-regular fa-pen-to-square"></i>
+              </button>
+              <button class="btn btn-sm btn-danger" (click)="eliminarMemoria(memoria)" title="Eliminar memoria">
+                <i class="fa-regular fa-trash-can"></i>
+              </button>
+            </td>
           </tr>
-          <tr>
-            <td>2006</td>
-            <td>2,500,000</td>
-            <td>2006</td>
-            <td>2,500,000</td>
+
+          <tr *ngIf="!loadingMemorias && memorias.length === 0">
+            <td colspan="4" class="text-center py-4">No hay memorias cargadas</td>
           </tr>
-          <tr>
-            <td>2007</td>
-            <td>2,700,000</td>
-            <td>2007</td>
-            <td>2,700,000</td>
+
+          <tr *ngIf="loadingMemorias">
+            <td colspan="4" class="text-center py-4">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+              </div>
+            </td>
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center" *ngIf="totalPages > 1">
+      <span>Total memorias: {{ totalItems }}</span>
+      <ul class="pagination mb-0">
+        <li class="page-item" [class.disabled]="currentPage === 1">
+          <a class="page-link" href="javascript:void(0)" (click)="onPageChange(currentPage - 1)">Anterior</a>
+        </li>
+        <li class="page-item disabled"><span class="page-link">Página {{ currentPage }} de {{ totalPages }}</span></li>
+        <li class="page-item" [class.disabled]="currentPage === totalPages">
+          <a class="page-link" href="javascript:void(0)" (click)="onPageChange(currentPage + 1)">Siguiente</a>
+        </li>
+      </ul>
     </div>
   </div>
 </div>
