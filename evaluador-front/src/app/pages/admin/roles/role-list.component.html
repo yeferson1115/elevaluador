@@ -1,0 +1,72 @@
+<div class="card-header">
+  <h4 class="card-title">Roles</h4>
+    <!-- Botón para crear -->
+  <a class="btn btn-primary mb-3" *ngIf="hasPermission(Permissions.CREATE_ROLES)" [routerLink]="['/admin/roles/create']"><i class="fa-solid fa-plus"></i> Crear Rol</a>
+</div>
+<div class="table-responsive">
+     <!-- Buscador -->
+    <div class="mb-1 d-flex justify-content-end">
+      <input
+        type="text"
+        class="form-control"
+        style="max-width: 300px;"
+        placeholder="Buscar por nombre..."
+        [(ngModel)]="search"
+        (input)="loadRoles()"
+      />
+    </div>
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th (click)="sortBy('name')" style="cursor:pointer;">
+            Nombre
+            <i [class]="sortColumn === 'name' ? (sortDirection === 'asc' ? 'fa fa-arrow-up' : 'fa fa-arrow-down') : ''"></i>
+          </th>
+          <th>Permisos</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let role of roles">
+          <td>{{ role.name }}</td>
+        <td>
+            <span *ngIf="role.permissions && role.permissions.trim() !== ''" class="badge bg-info me-1 wrap-text">
+              {{ role.permissions }}
+            </span>
+          </td>
+          <td>
+            <a class="btn btn-warning btn-sm me-2" *ngIf="hasPermission(Permissions.EDIT_ROLES)" [routerLink]="['/admin/roles', role.id, 'edit']">Editar</a>
+            <button class="btn btn-danger btn-sm" *ngIf="hasPermission(Permissions.DELETE_ROLES)" (click)="delete(role.id)">Eliminar</button>
+          </td>
+        </tr>
+      </tbody>
+    </table> 
+    <!-- Paginación -->
+    <nav *ngIf="totalPages > 1" class="mt-1">
+      <ul class="pagination justify-content-end">
+        <li class="page-item" [class.disabled]="page === 1">
+          <a class="page-link" (click)="changePage(page - 1)">Anterior</a>
+        </li>
+        <li
+          class="page-item"
+          *ngFor="let p of [].constructor(totalPages); let i = index"
+          [class.active]="page === i + 1"
+        >
+          <a class="page-link" (click)="changePage(i + 1)">{{ i + 1 }}</a>
+        </li>
+        <li class="page-item" [class.disabled]="page === totalPages">
+          <a class="page-link" (click)="changePage(page + 1)">Siguiente</a>
+        </li>
+      </ul>
+    </nav>                         
+</div>
+                        
+                
+
+
+
+
+
+<!-- Tabla -->
+
+

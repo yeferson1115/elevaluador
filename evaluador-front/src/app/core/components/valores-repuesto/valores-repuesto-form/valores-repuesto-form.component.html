@@ -1,0 +1,339 @@
+<div class="container-fluid py-4">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="mb-0">{{ isEditMode ? 'Editar' : 'Nuevo' }} Valor de Repuesto</h3>
+    <button class="btn btn-outline-secondary" (click)="cancel()">
+      <i class="bi bi-arrow-left me-2"></i>
+      Volver
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <!-- Información Básica -->
+        <h5 class="mb-3">Información Básica</h5>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-bold">Tipo <span class="text-danger">*</span></label>
+            <input 
+              type="text" 
+              class="form-control" 
+              [class.is-invalid]="isFieldInvalid('tipo')"
+              formControlName="tipo"
+              placeholder="Ej: MOTO, AUTO"
+              list="tipoOptions"
+            >
+            <datalist id="tipoOptions">
+              <option *ngFor="let tipo of tipos" [value]="tipo"></option>
+            </datalist>
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('tipo')">
+              {{ getErrorMessage('tipo') }}
+            </div>
+          </div>
+        
+        </div>
+
+        <div class="row">
+          
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-bold">Cilindraje (desde) <span class="text-danger">*</span></label>
+            <input 
+              type="text" 
+              class="form-control" 
+              [class.is-invalid]="isFieldInvalid('cilindraje_to')"
+              formControlName="cilindraje_to"
+              placeholder="Ej: 125"
+            >
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('cilindraje_to')">
+              {{ getErrorMessage('cilindraje_to') }}
+            </div>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-bold">Cilindraje (hasta)<span class="text-danger">*</span></label>
+            <input 
+              type="text" 
+              class="form-control" 
+              [class.is-invalid]="isFieldInvalid('cilindraje_from')"
+              formControlName="cilindraje_from"
+              placeholder="Ej: 125"
+            >
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('cilindraje_from')">
+              {{ getErrorMessage('cilindraje_from') }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Valores -->
+        <h5 class="mb-3 mt-4">Valores</h5>
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Llantas</label>
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              <input 
+                type="number" 
+                class="form-control" 
+                [class.is-invalid]="isFieldInvalid('llantas')"
+                formControlName="llantas"
+                placeholder="0"
+                min="0"
+              >
+            </div>
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('llantas')">
+              {{ getErrorMessage('llantas') }}
+            </div>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Tapicería</label>
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              <input 
+                type="number" 
+                class="form-control" 
+                [class.is-invalid]="isFieldInvalid('tapiceria')"
+                formControlName="tapiceria"
+                placeholder="0"
+                min="0"
+              >
+            </div>
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('tapiceria')">
+              {{ getErrorMessage('tapiceria') }}
+            </div>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">SOAT</label>
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              <input 
+                type="number" 
+                class="form-control" 
+                [class.is-invalid]="isFieldInvalid('soat')"
+                formControlName="soat"
+                placeholder="0"
+                min="0"
+              >
+            </div>
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('soat')">
+              {{ getErrorMessage('soat') }}
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label class="form-label">RTM</label>
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              <input 
+                type="number" 
+                class="form-control" 
+                [class.is-invalid]="isFieldInvalid('rtm')"
+                formControlName="rtm"
+                placeholder="0"
+                min="0"
+              >
+            </div>
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('rtm')">
+              {{ getErrorMessage('rtm') }}
+            </div>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Transmisión</label>
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              <input 
+                type="number" 
+                class="form-control" 
+                [class.is-invalid]="isFieldInvalid('kit_arrastre')"
+                formControlName="kit_arrastre"
+                placeholder="0"
+                min="0"
+              >
+            </div>
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('kit_arrastre')">
+              {{ getErrorMessage('kit_arrastre') }}
+            </div>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Motor Mantenimiento</label>
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              <input 
+                type="number" 
+                class="form-control" 
+                [class.is-invalid]="isFieldInvalid('motor_mantenimiento')"
+                formControlName="motor_mantenimiento"
+                placeholder="0"
+                min="0"
+              >
+            </div>
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('motor_mantenimiento')">
+              {{ getErrorMessage('motor_mantenimiento') }}
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Pintura</label>
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              <input 
+                type="number" 
+                class="form-control" 
+                [class.is-invalid]="isFieldInvalid('pintura')"
+                formControlName="pintura"
+                placeholder="0"
+                min="0"
+              >
+            </div>
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('pintura')">
+              {{ getErrorMessage('pintura') }}
+            </div>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Latonería</label>
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              <input 
+                type="number" 
+                class="form-control" 
+                [class.is-invalid]="isFieldInvalid('latoneria')"
+                formControlName="latoneria"
+                placeholder="0"
+                min="0"
+              >
+            </div>
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('latoneria')">
+              {{ getErrorMessage('latoneria') }}
+            </div>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Chasis</label>
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              <input 
+                type="number" 
+                class="form-control" 
+                [class.is-invalid]="isFieldInvalid('chasis')"
+                formControlName="chasis"
+                placeholder="0"
+                min="0"
+              >
+            </div>
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('chasis')">
+              {{ getErrorMessage('chasis') }}
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Frenos</label>
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              <input 
+                type="number" 
+                class="form-control" 
+                [class.is-invalid]="isFieldInvalid('frenos')"
+                formControlName="frenos"
+                placeholder="0"
+                min="0"
+              >
+            </div>
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('frenos')">
+              {{ getErrorMessage('frenos') }}
+            </div>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Batería</label>
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              <input 
+                type="number" 
+                class="form-control" 
+                [class.is-invalid]="isFieldInvalid('bateria')"
+                formControlName="bateria"
+                placeholder="0"
+                min="0"
+              >
+            </div>
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('bateria')">
+              {{ getErrorMessage('bateria') }}
+            </div>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Tanque Combustible</label>
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              <input 
+                type="number" 
+                class="form-control" 
+                [class.is-invalid]="isFieldInvalid('tanque_combustible')"
+                formControlName="tanque_combustible"
+                placeholder="0"
+                min="0"
+              >
+            </div>
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('tanque_combustible')">
+              {{ getErrorMessage('tanque_combustible') }}
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Llave</label>
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              <input 
+                type="number" 
+                class="form-control" 
+                [class.is-invalid]="isFieldInvalid('llave')"
+                formControlName="llave"
+                placeholder="0"
+                min="0"
+              >
+            </div>
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('llave')">
+              {{ getErrorMessage('llave') }}
+            </div>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Sistema Eléctrico</label>
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              <input 
+                type="number" 
+                class="form-control" 
+                [class.is-invalid]="isFieldInvalid('sis_electrico')"
+                formControlName="sis_electrico"
+                placeholder="0"
+                min="0"
+              >
+            </div>
+            <div class="invalid-feedback" *ngIf="isFieldInvalid('sis_electrico')">
+              {{ getErrorMessage('sis_electrico') }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="row mt-4">
+          <div class="col-12 d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-secondary" (click)="cancel()">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary" [disabled]="loading">
+              <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+              <i class="bi" [class.bi-save]="isEditMode" [class.bi-plus-circle]="!isEditMode"></i>
+              {{ isEditMode ? 'Actualizar' : 'Guardar' }}
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,912 @@
+
+<h2 class="mb-3">{{ editMode ? 'Editar Avaluo' : 'Nuevo Avaluo' }}</h2>
+
+<form [formGroup]="form" (ngSubmit)="guardar()" class="needs-validation" novalidate>
+  <!-- DATOS GENERALES -->
+  <div class="card mb-4">
+    <div class="card-header fw-semibold title-section mb-1">Datos generales</div>
+    <div class="card-body">
+      <div class="row g-3 ">      
+        <input type="hidden" class="form-control" formControlName="tiposervicio" value="Sec Bogota">
+        <div class="col-md-4">
+          <label class="form-label">Placa</label>
+          <input type="text" class="form-control" formControlName="placa" placeholder="ABC123">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Fecha solicitud</label>
+          <input type="date" class="form-control" formControlName="fecha_solicitud">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Fecha de inspección</label>
+          <input type="date" class="form-control" formControlName="fecha_inspeccion">
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- INFORMACIÓN DEL BIEN -->
+  <div class="card mb-4">
+    <div class="card-header fw-semibold title-section">Información del Bien</div>
+    <div class="card-body">
+      <div class="row g-3">
+        
+        <div class="col-md-3">
+          <label class="form-label">Fecha Matrícula</label>
+          <input type="date" class="form-control" formControlName="fecha_matricula" />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Marca</label>
+          <input type="text" class="form-control" formControlName="marca">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Línea</label>
+          <input type="text" class="form-control" formControlName="linea">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Clase</label>          
+          <select class="form-select" formControlName="clase">
+              <option value="">Seleccione ubicación</option>
+              <option *ngFor="let clas of clases" [value]="clas">
+                {{ clas }}
+              </option>
+            </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Tipo carrocería</label>
+          <input type="text" class="form-control" formControlName="tipo_carroceria">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Color</label>
+          <input type="text" class="form-control" formControlName="color">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Cilindraje</label>
+          <input type="number" class="form-control" formControlName="cilindraje" min="0" step="1">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Modelo</label>
+          <input type="number" class="form-control" formControlName="modelo" min="1900" step="1">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Kilometraje</label>
+          <input type="number" class="form-control" formControlName="kilometraje" min="0" step="1">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Caja de cambios</label>
+          <select class="form-select" formControlName="caja_cambios">
+            <option>Seleccion</option>
+            <option>Manual</option>
+            <option>Automática</option>
+            <option>CVT</option>
+            <option>Otra</option>
+          </select>
+        </div>   
+        
+        <div class="col-md-3">
+          <label class="form-label">Cantidad de Ejes</label>
+          <input type="number" class="form-control" formControlName="cantidad_ejes" min="0" step="1">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Peso Vacio</label>
+          <input type="number" class="form-control" formControlName="peso_bruto" min="0" step="1">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Peso Mermado</label>
+          <input type="number" class="form-control" formControlName="peso_mermado" min="0" step="1">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">No. de Pasajeros</label>
+          <input type="number" class="form-control" formControlName="numero_pasajeros" min="0" step="1">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Estado Registro Runt</label>
+          <input type="text" class="form-control" formControlName="estado_registro_runt" >
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Capacidad Ton.</label>
+          <input type="text" class="form-control" formControlName="capacidad_ton" >
+        </div>
+
+        <!-- Identificación -->
+        <div class="col-md-4">
+          <label class="form-label">Número de chasis</label>
+          <input type="text" class="form-control" formControlName="numero_chasis">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Número de serie</label>
+          <input type="text" class="form-control" formControlName="numero_serie">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Número de motor</label>
+          <input type="text" class="form-control" formControlName="numero_motor">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Número VIN</label>
+          <input type="text" class="form-control" formControlName="numeroVin">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Tipo de Servicio</label>
+          <select class="form-select" formControlName="tipo_servicio_vehiculo" >   
+            <option>Seleccione…</option>         
+            <option>Particular</option>
+            <option>Publico</option>
+            <option>Oficial</option>             
+          </select>
+        </div>
+       
+       
+        
+      </div>
+    </div>
+  </div>
+  <!-- ===================== AVALÚO (EDITABLE) ===================== -->
+  <div class="card mb-4" formGroupName="avaluo">
+    <div class="card-header fw-semibold title-section">
+      
+    </div>
+    <div class="card-body row g-3 mt-1">
+    
+       <!-- Reemplazar este bloque (busca "Ubicación" en el formulario): -->
+      <div class="col-md-6">
+        <div class="row align-items-center">
+          <label class="col-4 col-form-label">Ubicación</label>
+          <div class="col-8">
+            <!-- CAMBIO AQUÍ: De input a select -->
+            <select class="form-select" formControlName="ubicacion">
+              <option value="">Seleccione ubicación</option>
+              <option *ngFor="let ubicacion of ubicaciones" [value]="ubicacion">
+                {{ ubicacion }}
+              </option>
+            </select>
+          </div>          
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="row align-items-center">
+          <label class="col-4 col-form-label">Evaluador</label>
+          <div class="col-8">
+            <!-- CAMBIO AQUÍ: De input a select -->
+            <select class="form-select" formControlName="evaluador">
+              <option value="">Seleccione ubicación</option>
+              <option *ngFor="let evaluador of evaluadores" [value]="evaluador">
+                {{ evaluador }}
+              </option>
+            </select>
+          </div>          
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="row align-items-center">
+          <label class="col-4 col-form-label">Código Fasecolda</label>
+          <div class="col-8">
+            <!-- CAMBIO AQUÍ: De input a select -->
+            <input type="text" class="form-control" formControlName="codigo_fasecolda" />
+             <small class="text-muted">
+        Al ingresar el código, se cargarán automáticamente los valores de clasificados y corregidos
+      </small>
+          </div>          
+        </div>
+      </div>
+
+      <div class="col-md-6">
+         <div class="row align-items-center">
+            <label class="col-4 col-form-label">Metodo</label>
+            <div class="col-8">
+              <select class="form-select" formControlName="tipo" >
+                <option value="">Seleccione</option>
+                <option value="comercial">Comercial</option>
+                <option value="jans">Jans</option>
+              </select>
+
+            </div>          
+         </div>
+
+         
+
+         
+          
+        </div>
+
+       
+
+
+     
+
+    
+      <div *ngIf="form.get('avaluo.tipo')?.value === 'comercial'" class="row">
+
+        <!-- Clasificados -->
+          <div class="col-md-12 mt-3">
+            <h5>Clasificados</h5>
+            <button class="btn btn-primary btn-sm mb-2" type="button" (click)="addClasificado()">Agregar</button>
+            <div formArrayName="clasificados">
+              <div *ngFor="let clas of clasificados.controls; let i = index" [formGroupName]="i" class="row mb-2">
+                <div class="col-md-5">
+                  <input type="text" class="form-control" placeholder="Modelo" formControlName="modelo">
+                </div>
+                <div class="col-md-5">
+                  <input type="number" class="form-control" placeholder="Valor" formControlName="valor">
+                </div>
+                <div class="col-md-2">
+                  <button class="btn btn-danger btn-sm" type="button" (click)="removeClasificado(i)">X</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Corregidos -->
+          <div class="col-md-12 mt-3">
+            <h5>Corregidos</h5>
+            <button class="btn btn-primary btn-sm mb-2" type="button" (click)="addCorregido()">Agregar</button>
+            <div formArrayName="corregidos">
+              <div *ngFor="let corr of corregidos.controls; let i = index" [formGroupName]="i" class="row mb-2">
+                <div class="col-md-5">
+                  <input type="text" class="form-control" placeholder="Modelo" formControlName="modelo">
+                </div>
+                <div class="col-md-5">
+                  <input type="number" class="form-control" placeholder="Valor" formControlName="valor">
+                </div>
+                <div class="col-md-2">
+                  <button class="btn btn-danger btn-sm" type="button" (click)="removeCorregido(i)">X</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+      </div>
+
+      <div *ngIf="form.get('avaluo.tipo')?.value === 'jans'" class="row mt-2">
+
+
+        <div class="col-md-6 mb-1">
+          <div class="row align-items-center">
+            <label class="col-4 col-form-label">Vida Útil (años)</label>
+            <div class="col-8">
+              <input type="number" class="form-control" formControlName="vida_util_anos" />
+            </div>        
+          </div>        
+        </div>
+
+        <div class="col-md-6 mb-1">
+          <div class="row align-items-center">
+            <label class="col-4 col-form-label">Vida Útil Probable(Meses)</label>
+            <div class="col-8">
+              <input type="number" class="form-control" formControlName="vida_util_probable" />
+            </div>        
+          </div>        
+        </div>
+
+        <div class="col-md-6 mb-1">
+          <div class="row align-items-center">
+            <label class="col-4 col-form-label">Vida Usada (meses)</label>
+            <div class="col-8">
+              <input type="number" class="form-control" formControlName="vida_usada_meses" />
+            </div>          
+          </div>        
+        </div>
+
+        <div class="col-md-6 mb-1">
+          <div class="row align-items-center">
+            <label class="col-4 col-form-label">Antigüedad</label>
+            <div class="col-8">
+              <input type="number" class="form-control" formControlName="antiguedad" />
+            </div>          
+          </div>        
+        </div>
+        
+        <div class="col-md-6 mb-1 ">
+          <div class="row align-items-center">
+            <label class="col-4 col-form-label">Vida Útil</label>
+            <div class="col-8">
+              <input type="number" class="form-control" formControlName="vida_util" />
+            </div>        
+          </div>        
+        </div>
+
+        <div class="col-md-6 mb-1">
+          <div class="row align-items-center">
+            <label class="col-4 col-form-label">Vida Usada (días)</label>
+            <div class="col-8">
+              <input type="number" class="form-control" formControlName="vida_usada_dias" readonly  />
+            </div>
+            
+          </div>        
+        </div>
+
+        <div class="col-md-6 mb-1">
+          <div class="row align-items-center">
+            <label class="col-4 col-form-label">Vida Usada (meses)</label>
+            <div class="col-8">
+              <input type="number" class="form-control" formControlName="vida_usada_meses" />
+            </div>          
+          </div>        
+        </div>
+
+        <div class="col-md-6 mb-1">
+          <div class="row align-items-center">
+            <label class="col-4 col-form-label">Vida Usada (años)</label>
+            <div class="col-8">
+              <input type="number" class="form-control" formControlName="vida_usada_anos" />
+            </div>        
+          </div>        
+        </div> 
+        
+        <div class="col-md-6 mb-1">
+          <div class="row align-items-center">
+            <label class="col-4 col-form-label">Vida Útil Remate (Meses)</label>
+            <div class="col-8">
+              <input type="number" class="form-control" formControlName="vida_util_remate" readonly style="background-color: #d7211e;color: #fff;"/>
+            </div>        
+          </div>        
+        </div>   
+        
+        <div class="col-md-6 mb-1">
+          <div class="row align-items-center">
+            <label class="col-4 col-form-label">Valor Reposición</label>
+            <div class="col-8">
+              <input type="number" class="form-control" formControlName="valor_reposicion" />
+            </div>        
+          </div>        
+        </div>
+        <div class="col-md-6 mb-1">
+          <div class="row align-items-center">
+            <label class="col-4 col-form-label">Porcentaje Reposición</label>
+            <div class="col-8">
+              <select class="form-select" formControlName="porc_reposicion">
+                <option *ngFor="let i of [].constructor(100); let index = index" [value]="index + 1">
+                  {{ index + 1 }}
+                </option>
+              </select>
+            </div>        
+          </div>        
+        </div>
+
+        <div class="col-md-6 mb-1">
+          <div class="row align-items-center">
+            <label class="col-4 col-form-label">Valor Residual</label>
+            <div class="col-8">
+              <input type="number" class="form-control" formControlName="valor_residual" />
+            </div>          
+          </div>        
+        </div>
+
+        <div class="col-md-6 mb-1">
+          <div class="row align-items-center">
+            <label class="col-4 col-form-label">Estado Conservación</label>
+            <div class="col-8">
+              <select class="form-control" formControlName="estado_conservacion" >
+                <option>Seleccione</option>
+                <option>0.00000</option>
+                <option>0.00032</option>
+                <option>0.02520</option>
+                <option>0.08090</option>
+                <option>0.18100</option>
+                <option>0.33200</option>
+                <option>0.52600</option>
+                <option>0.75200</option>
+                <option>1.00000</option>
+              </select>
+            </div>        
+          </div>        
+        </div>
+
+        <div class="col-md-6 mb-1">
+          <div class="row align-items-center">
+            <label class="col-4 col-form-label">X</label>
+            <div class="col-8">
+              <select class="form-control" formControlName="x" >
+                <option>Seleccione</option>
+                <option *ngFor="let val of valores" [value]="val">{{ val }}</option>
+              </select> 
+            </div>        
+          </div>            
+        </div>
+        <div class="col-md-6 mb-1">
+          <div class="row align-items-center">
+            <label class="col-4 col-form-label">K</label>
+            <div class="col-8">
+              <input type="number" class="form-control" formControlName="k" readonly />
+            </div>          
+          </div>        
+        </div>
+        <div class="col-md-6 mb-1">
+          <div class="row align-items-center">
+            <label class="col-4 col-form-label">Valor resonable</label>
+            <div class="col-8">
+              <input type="number" class="form-control" formControlName="valor_resonable" style="background-color: #d7211e;color: #fff;"/>
+            </div>          
+          </div>        
+        </div>
+
+       
+
+      </div>
+
+       <div class="col-md-6 mb-1" >
+          <div class="row align-items-center">
+            <label class="col-4 col-form-label">Chatarra</label>
+            <div class="col-8">
+              <select  class="form-select" formControlName="chatarra" >
+                <option value="">Seleccione</option>
+                <option value="Si">Si</option>
+                <option value="No">No</option>
+              </select>
+            </div>          
+          </div>        
+        </div>
+
+      
+
+      <div class="card-header fw-semibold title-section">
+        Consideraciones Finales del Avalúo ({{ isEdit ? 'Edición' : 'Nuevo' }})
+      </div>
+
+    
+
+      <div class="col-md-6">
+        <div class="row align-items-center">
+          <label class="col-4 col-form-label">Valor Razonable</label>
+          <div class="col-8">
+            <input type="number" class="form-control" formControlName="valor_razonable" />
+          </div>        
+        </div>        
+      </div>
+      <div class="col-md-6">
+        <div class="row align-items-center">
+          <label class="col-4 col-form-label">Valor Carrocería</label>
+          <div class="col-8">
+            <input type="number" class="form-control" formControlName="valor_carroceria" />
+          </div>          
+        </div>        
+      </div>
+
+      <div class="col-md-6">
+        <div class="row align-items-center">
+          <label class="col-4 col-form-label">Valor Accesorios</label>
+          <div class="col-8">
+            <input type="number" class="form-control" formControlName="valor_accesorios" />
+          </div>
+        
+        </div>
+        
+      </div>
+      <div class="col-md-6">
+        <div class="row align-items-center">
+          <label class="col-4 col-form-label">Valor Reparaciones</label>
+          <div class="col-8">
+            <input type="number" class="form-control" formControlName="valor_reparaciones" />
+          </div>        
+        </div>        
+      </div>
+     
+
+      
+      <div class="col-md-6">
+        <div class="row align-items-center">
+          <label class="col-4 col-form-label">Overhaul Motor</label>
+          <div class="col-8">
+            <input type="number" class="form-control" formControlName="valor_overhaul_motor" />
+          </div>
+        
+        </div>        
+      </div>
+      <div class="col-md-6">
+        <div class="row align-items-center">
+          <label class="col-4 col-form-label">Factor Demérito</label>
+          <div class="col-8">
+            <input type="number" class="form-control" formControlName="factor_demerito" />
+          </div>
+        
+        </div>        
+      </div>
+      
+
+      <div class="col-md-6">
+        <div class="row align-items-center">
+          <label class="col-4 col-form-label">Índice Resp. Mínimo</label>
+          <div class="col-8">
+            <input type="number" class="form-control" formControlName="indice_responsabilidad_minimo" />
+          </div>
+        
+        </div>
+        
+      </div>
+      <div class="col-md-6">
+        <div class="row align-items-center">
+          <label class="col-4 col-form-label">Avalúo Total</label>
+          <div class="col-8">
+            <input type="number" class="form-control" formControlName="avaluo_total" />
+          </div>
+        
+        </div>
+        
+      </div>
+     
+    
+
+
+      <div class="col-md-6" >
+        <div class="row align-items-center">
+          <label class="col-4 col-form-label">Valor Tecnomecanica</label>
+          <div class="col-8">
+            <input class="form-control" formControlName="valor_RTM" />
+          </div>        
+        </div> 
+      </div>
+
+      <div class="col-md-6" >
+        <div class="row align-items-center">
+          <label class="col-4 col-form-label">Valor SOAT</label>
+          <div class="col-8">
+            <input class="form-control" formControlName="valor_SOAT" />
+          </div>        
+        </div> 
+      </div>
+
+      <div class="col-md-6" >
+        <div class="row align-items-center">
+          <label class="col-4 col-form-label">Valor Faltantes</label>
+          <div class="col-8">
+            <input class="form-control" formControlName="valor_faltantes" />
+          </div>        
+        </div> 
+      </div>
+<div class="col-md-6 mb-3">
+        <div class="row align-items-center">
+          <label class="col-4 col-form-label">Índice Reparabilidad</label>
+          <div class="col-8">
+            <input type="number" 
+                  class="form-control" 
+                  formControlName="indice_reparabilidad" 
+                  readonly 
+                  style="background-color: #f8f9fa;" />            
+          </div>
+        </div>
+      </div>
+      
+
+      <hr *ngIf="form.get('avaluo.chatarra')?.value === 'Si' ">
+      <div class="card mt-3" *ngIf="form.get('avaluo.chatarra')?.value === 'Si' ">
+        <div class="card-header title-section text-white mb-1">
+          <h6 class="mb-0 text-white">Chatarra</h6>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+
+            <div class="col-md-6">
+              <div class="row align-items-center">
+                <label class="col-4 col-form-label">Valor Chatarra Kg</label>
+                <div class="col-8">
+                  <input type="number" class="form-control" formControlName="valor_chatarra_kg" />
+                </div>              
+              </div>              
+            </div>
+
+            <div class="col-md-6">
+              <div class="row align-items-center">
+                <label class="col-4 col-form-label">Peso Chatarra Kg</label>
+                <div class="col-8">
+                  <input type="number" class="form-control" formControlName="peso_chatarra_kg" />
+                </div>              
+              </div>              
+            </div>
+
+            <div class="col-md-6">
+              <div class="row align-items-center">
+                <label class="col-4 col-form-label">Valor Total Chatarra</label>
+                <div class="col-8">
+                  <input type="number" class="form-control" formControlName="valor_total_chatarra" readonly />
+                </div>              
+              </div>              
+            </div>
+
+          </div>
+
+          
+        </div>
+      </div> 
+
+      
+
+      <hr>
+
+      <div class="card mt-3">
+  <div class="card-header title-section text-white mb-1">
+    <h6 class="mb-0 text-white">Limitaciones o Posibles Fuentes de Error</h6>
+  </div>
+  <div class="card-body">
+    <div formArrayName="limitaciones">
+      <div *ngFor="let item of limitaciones.controls; let i = index" [formGroupName]="i" class="mb-2">
+        <div class="input-group">
+          <input type="text" class="form-control" formControlName="texto" placeholder="Describa una limitación o posible fuente de error">
+          <button type="button" class="btn btn-danger" (click)="removeLimitacion(i)">
+            <i class="bi bi-trash"></i> Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <button type="button" class="btn btn-primary mt-2" (click)="addLimitacion()">
+      <i class="bi bi-plus-circle"></i> Agregar Limitación
+    </button>
+  </div>
+</div>
+
+
+
+<!-- Estado Automotor (solo visible si formato es "Sec. Movilidad Bogotá") -->
+<div class="card mt-3">
+  <div class="card-header title-section text-white mb-1">
+    <h6 class="mb-0 text-white">Estado Automotor</h6>
+  </div>
+  <div class="card-body">
+    <div class="row g-3">
+
+      <!-- Latonería -->
+      <div class="col-md-6">
+        <label class="form-label">Latonería</label>
+        <select class="form-select" formControlName="latoneria_estado">
+          <option value="">Seleccione...</option>
+          <option>Bueno</option>
+          <option>Regular</option>
+          <option>Malo</option>
+          <option>Desfavorable</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Valor Latonería</label>
+        <input type="number" class="form-control" formControlName="latoneria_valor" />
+      </div>
+
+      <!-- Pintura -->
+      <div class="col-md-6">
+        <label class="form-label">Pintura</label>
+        <select class="form-select" formControlName="pintura_estado">
+          <option value="">Seleccione...</option>
+          <option>Bueno</option>
+          <option>Regular</option>
+          <option>Malo</option>
+          <option>Desfavorable</option>
+        </select>
+      </div>
+      <div class="col-md-6">        
+          <label class="col-form-label">Valor Pintura</label>          
+          <input type="number" class="form-control" formControlName="valor_pintura" />                  
+      </div>
+
+      <!-- Tapicería -->
+      <div class="col-md-6">
+        <label class="form-label">Tapicería</label>
+        <select class="form-select" formControlName="tapiceria_estado">
+          <option value="">Seleccione...</option>
+          <option>Bueno</option>
+          <option>Regular</option>
+          <option>Malo</option>
+          <option>Desfavorable</option>
+          <option>No Presenta</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Valor Tapicería</label>
+        <input type="number" class="form-control" formControlName="tapiceria_valor" />
+      </div>
+
+      <!-- Motor -->
+      <div class="col-md-6">
+        <label class="form-label">Motor</label>
+        <select class="form-select" formControlName="motor_estado">
+          <option value="">Seleccione...</option>
+          <option>Operativo</option>
+          <option>Inoperativo</option>
+          <option>No Presenta</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Valor Motor</label>
+        <input type="number" class="form-control" formControlName="motor_valor" />
+      </div>
+
+      <!-- Chasis -->
+      <div class="col-md-6">
+        <label class="form-label">Chasis</label>
+        <select class="form-select" formControlName="chasis_estado">
+          <option value="">Seleccione...</option>
+          <option>Bueno</option>
+          <option>Regular</option>
+          <option>Malo</option>
+          <option>Desfavorable</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Valor Chasis</label>
+        <input type="number" class="form-control" formControlName="chasis_valor" />
+      </div>
+
+      <!-- Transmisión -->
+      <div class="col-md-6">
+        <label class="form-label">Transmisión</label>
+        <select class="form-select" formControlName="transmision_estado">
+          <option value="">Seleccione...</option>
+          <option>Bueno</option>
+          <option>Regular</option>
+          <option>Malo</option>
+          <option>Desfavorable</option>
+          <option>No Presenta</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Valor Transmisión</label>
+        <input type="number" class="form-control" formControlName="transmision_valor" />
+      </div>
+
+      <!-- Sistema Freno -->
+      <div class="col-md-6">
+        <label class="form-label">Sistema Freno</label>
+        <select class="form-select" formControlName="frenos_estado">
+          <option value="">Seleccione...</option>
+          <option>Bueno</option>
+          <option>Regular</option>
+          <option>Malo</option>
+          <option>Desfavorable</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Valor Freno</label>
+        <input type="number" class="form-control" formControlName="frenos_valor" />
+      </div>
+
+      <!-- Refrigeración -->
+      <div class="col-md-6">
+        <label class="form-label">Refrigeración</label>
+        <select class="form-select" formControlName="refrigeracion_estado">
+          <option value="">Seleccione...</option>
+          <option>Bueno</option>
+          <option>Regular</option>
+          <option>Malo</option>
+          <option>Desfavorable</option>
+          <option>N/A</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Valor Refrigeración</label>
+        <input type="number" class="form-control" formControlName="refrigeracion_valor" />
+      </div>
+
+      <!-- Sistema Eléctrico -->
+      <div class="col-md-6">
+        <label class="form-label">Sistema Eléctrico</label>
+        <select class="form-select" formControlName="electrico_estado">
+          <option value="">Seleccione...</option>
+          <option>Bueno</option>
+          <option>Regular</option>
+          <option>Malo</option>
+          <option>Desfavorable</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Valor Eléctrico</label>
+        <input type="number" class="form-control" formControlName="electrico_valor" />
+      </div>
+
+      <!-- Tanque Combustible -->
+      <div class="col-md-6">
+        <label class="form-label">Tanque Combustible</label>
+        <select class="form-select" formControlName="tanque_estado">
+          <option value="">Seleccione...</option>
+          <option>Bueno</option>
+          <option>Regular</option>
+          <option>Malo</option>          
+          <option>No Presenta</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Valor Tanque</label>
+        <input type="number" class="form-control" formControlName="tanque_valor" />
+      </div>
+
+      <!-- Batería -->
+      <div class="col-md-6">
+        <label class="form-label">Batería</label>
+        <select class="form-select" formControlName="bateria_estado">
+          <option value="">Seleccione...</option>
+          <option>Presenta</option>
+          <option>No Presenta</option>
+          <option>No Sirve</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Valor Batería</label>
+        <input type="number" class="form-control" formControlName="bateria_valor" />
+      </div>
+
+      <!-- Llantas -->
+      <div class="col-md-6">
+        <label class="form-label">Llantas</label>
+        <select class="form-select" formControlName="llantas_estado">
+          <option value="">Seleccione...</option>
+          <option>Buenas</option>
+          <option>Malas</option>
+          <option>No Presenta</option>
+        </select>
+      </div>
+       <div class="col-md-6">        
+          <label class="col-form-label">Valor Llantas</label>          
+          <input type="number" class="form-control" formControlName="valor_llantas" />
+      </div>
+
+      <!-- Llave -->
+      <div class="col-md-6">
+        <label class="form-label">Llave</label>
+        <select class="form-select" formControlName="llave_estado">
+          <option value="">Seleccione...</option>
+          <option>Presenta</option>
+          <option>No Presenta</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Valor Llave</label>
+        <input type="number" class="form-control" formControlName="llave_valor" />
+      </div>
+
+      <!-- Vidrios -->
+      <div class="col-md-6">
+        <label class="form-label">Vidrios</label>
+        <select class="form-select" formControlName="vidrios_estado">
+          <option value="">Seleccione...</option>
+          <option>Buenos</option>
+          <option>Fisurado</option>
+          <option>Mal Estado</option>
+          <option>No Aplica</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Valor Vidrios</label>
+        <input type="number" class="form-control" formControlName="vidrios_valor" />
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<div class="card mt-3">
+  <div class="card-header title-section text-white mb-1">
+    <h6 class="mb-0 text-white mb-1">Diagnostico</h6>
+  </div>
+  <div class="card-body">
+    <div class="row g-3">
+      
+
+
+      <div class="col-md-6">
+        <label class="form-label">Diagnostico</label>        
+        <select class="form-select" formControlName="observaciones">
+          <option value="">Seleccione...</option>
+          <option>CHATARRA</option>
+          <option>USO</option>
+          <option>INSERVIBLE</option>
+          <option>EN PROCESO</option>
+        </select>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+
+    </div>
+  </div>
+
+  <!-- ===================== ACCIONES ===================== -->
+  <div class="d-flex gap-2">
+    <button class="btn btn-primary" (click)="guardar()" type="button">
+      {{ isEdit ? 'Actualizar Avalúo' : 'Crear Avalúo' }}
+    </button>
+   
+  </div>
+
+</form>
+
+

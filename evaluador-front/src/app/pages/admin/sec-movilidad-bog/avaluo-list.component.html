@@ -1,0 +1,183 @@
+<div class="card-header d-flex justify-content-between align-items-center">
+  <h4 class="card-title mb-0">Avaluos Secretaria de Movilidad de Bogotá</h4>
+  
+
+
+  <div class="d-flex flex-column align-items-end mb-3">
+    <div class="d-flex gap-2">
+      <button class="btn btn-success " *hasPermission="Permissions.CREATE_INGRESO" (click)="nuevo()">
+        <i class="fa-solid fa-plus"></i> Nuevo Avaluo
+      </button>
+      <button class="btn btn-info " (click)="fileInput.click()">
+        <i class="fa-solid fa-file-import"></i> Importar Ingresos
+      </button>
+       <!-- BOTÓN DE EXPORTAR EXCEL -->
+      <button class="btn btn-secondary" (click)="exportarExcel()" [disabled]="loading">
+        <i class="fa-solid fa-file-excel"></i> 
+        {{ loading ? 'Exportando...' : 'Exportar a Excel' }}
+      </button>
+       <button class="btn btn-warning" (click)="exportarCertificadosZip()" [disabled]="loading">
+        <i class="fa-solid fa-file-zipper"></i> 
+        {{ loading ? 'Exportando...' : 'Exportar Certificados (ZIP)' }}
+      </button>
+    </div>
+    <a class="btn btn-link p-0 mt-1 text-decoration-none text-secondary" 
+      href="assets/plantillamovilidadbog.xlsx" 
+      download
+    >
+      <i class="fa-solid fa-download"></i> Descargar Plantilla
+    </a>
+
+    
+    <input 
+      type="file" 
+      #fileInput 
+      style="display: none;" 
+      (change)="onFileSelected($event)"
+      accept=".xlsx,.xls,.csv"
+    />
+  </div>
+
+
+
+<div class="mb-2 d-flex justify-content-end gap-2">
+  <input
+    type="text"
+    class="form-control"
+    style="max-width: 300px;"
+    placeholder="Buscar por placa o solicitante"
+    [(ngModel)]="filtro"
+    (keydown.enter)="onBuscar()" 
+    #searchInput
+  />
+  <button class="btn btn-outline-primary" (click)="onBuscar()">
+    Buscar
+  </button>
+</div>
+
+<div *ngIf="loading" class="text-center my-3">
+  <div class="spinner-border text-primary" role="status"></div>
+</div>
+
+<div *ngIf="error" class="alert alert-danger">
+  {{ error }}
+</div>
+
+<div class="table-responsive" *ngIf="avaluos.length">
+  <table class="table table-striped table-bordered">
+    <thead class="table-light">
+      <tr>
+        <th>Acciones</th>
+        <th>Tipo</th>
+        <th>Placa</th>        
+        <th>Ubicación</th>
+        <th>Fecha solicitud</th>
+        <th>Marca</th>
+        <th>Línea</th>
+        <th>Modelo</th>
+        <th>Avaluador</th>
+        <th>pdf</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let a of avaluos">
+        <td class="text-nowrap">
+          <button class="btn btn-primary btn-sm me-1" *hasPermission="Permissions.EDIT_INGRESO" (click)="editar(a.id)">Editar</button>
+          <button class="btn btn-danger btn-sm me-1" *hasPermission="Permissions.DELETE_INGRESO" (click)="eliminar(a.id)">Eliminar</button>
+          <button class="btn btn-warning btn-sm" (click)="irAImagenes(a.id)">
+            <i class="fa-solid fa-camera"></i> Imágenes
+          </button>
+        </td>
+        <td>{{ a.datosGenerales?.tiposervicio }}</td>
+        <td>{{ a.datosGenerales?.placa }}</td>       
+        <td>{{ a.datosGenerales?.ubicacionActivo }}</td>
+        <td>{{ a.datosGenerales?.fechaSolicitud | date:'yyyy-MM-dd' }}</td>
+        <td>{{ a.informacionBien?.marca }}</td>
+        <td>{{ a.informacionBien?.linea }}</td>
+        <td>{{ a.informacionBien?.modelo }}</td>
+        <td>{{ a.avaluo.evaluador }}</td>
+        <td>
+  <ng-container *ngIf="a.avaluo?.id && a.avaluo.file!=null">
+    <!-- Botón para ver -->
+    <button 
+      class="btn btn-sm btn-outline-primary me-2" style="margin-bottom: 3px;"
+      (click)="verPdf(a.avaluo.id, 'view')"
+      title="Ver PDF"
+      [disabled]="loading"
+    >
+      <i class="fa-solid fa-eye"></i> Ver
+    </button>
+    
+    <!-- Botón para descargar -->
+    <button 
+      class="btn btn-sm btn-outline-secondary"
+      (click)="verPdf(a.avaluo.id, 'download')"
+      title="Descargar PDF"
+      [disabled]="loading"
+    >
+      <i class="fa-solid fa-download"></i> Descargar
+    </button>
+  </ng-container>
+  <ng-container *ngIf="!a.avaluo?.id">
+    N/A
+  </ng-container>
+</td>
+        
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<ng-template #vacio>
+  <div class="alert alert-info d-flex justify-content-between align-items-center">
+    <span>No hay registros aún.</span>
+    <button class="btn btn-success btn-sm" (click)="nuevo()">Crear primero</button>
+  </div>
+</ng-template>
+
+<nav *ngIf="lastPage > 1" class="mt-3">
+  <ul class="pagination justify-content-center flex-wrap">
+    <!-- Botón Anterior -->
+    <li class="page-item" [class.disabled]="currentPage === 1">
+      <a class="page-link" (click)="irPagina(currentPage - 1)" aria-label="Anterior">
+        <span aria-hidden="true">&laquo;</span>
+      </a>
+    </li>
+
+    <!-- Primera página -->
+    <li class="page-item" [class.active]="currentPage === 1">
+      <a class="page-link" (click)="irPagina(1)">1</a>
+    </li>
+
+    <!-- Puntos suspensivos si hay muchas páginas antes -->
+    <li *ngIf="currentPage > 4" class="page-item disabled">
+      <span class="page-link">...</span>
+    </li>
+
+    <!-- Páginas cercanas a la actual -->
+    <ng-container *ngFor="let page of getPaginas()">
+      <li *ngIf="page > 1 && page < lastPage" 
+          class="page-item" 
+          [class.active]="page === currentPage">
+        <a class="page-link" (click)="irPagina(page)">{{ page }}</a>
+      </li>
+    </ng-container>
+
+    <!-- Puntos suspensivos si hay muchas páginas después -->
+    <li *ngIf="currentPage < lastPage - 3" class="page-item disabled">
+      <span class="page-link">...</span>
+    </li>
+
+    <!-- Última página (si no es la primera) -->
+    <li *ngIf="lastPage > 1" class="page-item" [class.active]="currentPage === lastPage">
+      <a class="page-link" (click)="irPagina(lastPage)">{{ lastPage }}</a>
+    </li>
+
+    <!-- Botón Siguiente -->
+    <li class="page-item" [class.disabled]="currentPage === lastPage">
+      <a class="page-link" (click)="irPagina(currentPage + 1)" aria-label="Siguiente">
+        <span aria-hidden="true">&raquo;</span>
+      </a>
+    </li>
+  </ul>
+</nav>

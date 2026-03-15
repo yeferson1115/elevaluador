@@ -1,0 +1,97 @@
+<!-- components/fasecolda-import/fasecolda-import.component.html -->
+<div class="card">
+  <div class="card-header">
+    <h5>Importar Valores Fasecolda</h5>
+  </div>
+  <div class="card-body">
+    <form [formGroup]="importForm" (ngSubmit)="importar()">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="form-label">Código Fasecolda *</label>
+            <input 
+              type="text" 
+              class="form-control" 
+              formControlName="codigo_fasecolda"
+              placeholder="Ej: COD-001"
+            >
+            <div *ngIf="importForm.get('codigo_fasecolda')?.invalid && importForm.get('codigo_fasecolda')?.touched" 
+                 class="text-danger">
+              Código requerido
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="form-label">Archivo Excel *</label>
+            <input 
+              type="file" 
+              class="form-control" 
+              id="fileInput"
+              accept=".xlsx,.xls"
+              (change)="onFileSelected($event)"
+            >
+            <div *ngIf="!selectedFile && importForm.get('archivo_excel')?.touched" 
+                 class="text-danger">
+              Archivo requerido
+            </div>
+            <small class="text-muted">
+              El archivo debe tener el formato: 
+              Columnas A-B: Clasificados (MODELO | VALOR), 
+              Columnas C-D: Corregidos (MODELO | VALOR)
+            </small>
+          </div>
+        </div>
+      </div>
+      
+      <div class="d-flex justify-content-between">
+        <button type="button" class="btn btn-secondary" >
+          Descargar Template
+        </button>
+        
+        <button 
+          type="submit" 
+          class="btn btn-primary"
+          [disabled]="loading || !selectedFile"
+        >
+          <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+          {{ loading ? 'Importando...' : 'Importar' }}
+        </button>
+      </div>
+    </form>
+    
+    <div class="mt-4">
+      <h6>Estructura del archivo requerida:</h6>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>A: Modelo (Clasificado)</th>
+            <th>B: Valor (Clasificado)</th>
+            <th>C: Modelo (Corregido)</th>
+            <th>D: Valor (Corregido)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>2005</td>
+            <td>2,300,000</td>
+            <td>2005</td>
+            <td>2,300,000</td>
+          </tr>
+          <tr>
+            <td>2006</td>
+            <td>2,500,000</td>
+            <td>2006</td>
+            <td>2,500,000</td>
+          </tr>
+          <tr>
+            <td>2007</td>
+            <td>2,700,000</td>
+            <td>2007</td>
+            <td>2,700,000</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

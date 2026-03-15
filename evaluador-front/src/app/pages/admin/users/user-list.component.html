@@ -1,0 +1,121 @@
+<div class="card-header">
+  <h4 class="card-title">Roles</h4>
+    <!-- Botón para crear -->
+     <button class="btn btn-primary" *ngIf="hasPermission(Permissions.CREATE_USERS)" (click)="openNewUserForm()">
+      <i class="fa-solid fa-plus"></i> Agregar Usuario
+    </button>  
+</div>
+<div class="table-responsive">
+     <!-- Buscador -->
+    <div class="mb-1 d-flex justify-content-end">     
+       <input
+            type="text"
+            class="form-control"
+            style="max-width: 300px;"
+            placeholder="Buscar por nombre o email"
+            [(ngModel)]="search"
+            (ngModelChange)="loadUsers()"
+        />
+    </div>
+   <table class="table table-bordered table-striped mt-2">
+        <thead>
+            <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Documento</th>
+            <th>Teléfono</th>
+            <th>Role</th>
+            <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let user of users()">
+            <td>{{ user.id }}</td>
+            <td>{{ user.name }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.document || '-' }}</td>
+            <td>{{ user.phone || '-' }}</td>
+            <td>
+                <ng-container *ngIf="user.roles?.length; else sinRoles">
+                <span *ngFor="let role of user.roles" class="badge bg-primary me-1">
+                    {{ role.name }}
+                </span>
+                </ng-container>
+                <ng-template #sinRoles>
+                <span class="text-muted">Sin roles</span>
+                </ng-template>
+            </td>
+            <td>
+                <button class="btn btn-sm btn-info me-1 mb-1" *ngIf="hasPermission(Permissions.EDIT_USERS)" (click)="editUser(user)">Editar</button>
+                <button class="btn btn-sm btn-danger mb-1" *ngIf="hasPermission(Permissions.DELETE_USERS)" (click)="deleteUser(user.id)">Eliminar</button>
+            </td>
+            </tr>
+        </tbody>
+    </table>
+    <!-- Paginación -->
+     <nav *ngIf="totalPages() > 1" class="mt-1">
+        <ul class="pagination justify-content-end">
+        <li class="page-item" [class.disabled]="page() === 1">
+            <a class="page-link" (click)="changePage(page() - 1)">Anterior</a>
+        </li>
+        <li
+            class="page-item"
+            *ngFor="let p of totalPagesArray()"
+            [class.active]="page() === p"
+        >
+            <a class="page-link" (click)="changePage(p)">{{ p }}</a>
+        </li>
+        <li class="page-item" [class.disabled]="page() === totalPages()">
+            <a class="page-link" (click)="changePage(page() + 1)">Siguiente</a>
+        </li>
+        </ul>
+    </nav>                       
+</div>
+                        
+                
+
+
+
+
+
+<!-- Tabla -->
+
+
+
+
+
+   
+
+  <!-- Modal -->
+  <div
+    class="modal fade"
+    id="userModal"
+    tabindex="-1"
+    aria-labelledby="userModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="userModalLabel">
+            {{ editingUser() && editingUser()!.id === 0 ? 'Nuevo Usuario' : 'Editar Usuario' }}
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Cerrar"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <app-user-form
+            [user]="editingUser()"
+            (saved)="onUserSaved()"
+            (cancel)="cancelEdit()"
+          ></app-user-form>
+        </div>
+      </div>
+    </div>
+
+

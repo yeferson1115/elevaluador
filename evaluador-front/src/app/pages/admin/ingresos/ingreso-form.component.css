@@ -1,0 +1,22 @@
+.title-section{
+    background: #d21e1d;
+    color: #fff;
+}
+
+.propietario-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.propietario-table td {
+  padding: 6px;
+  border: 1px solid #ccc;
+}
+
+.label-cell {
+  background: linear-gradient(to right, #b40000, #e00000);
+  color: #fff;
+  font-weight: bold;
+  width: 25%;
+  white-space: nowrap;
+}

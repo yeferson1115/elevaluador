@@ -1,0 +1,92 @@
+export interface Avaluo {
+  id?: number | null;
+  tipo: string | null;
+  formato: string | null;
+  ubicacion: string | null;
+  ingreso_id: number | null;
+  fecha_inspeccion: Date | null;
+  vida_util_probable: number | null;
+  vida_usada_dias: number | null;
+  vida_usada_meses: number | null;
+  vida_usada_anos: number | null;
+  vida_util_remate: number | null;
+  vida_util_anos: number | null;
+  antiguedad: number | null;
+  vida_util: number | null;
+  valor_reposicion: number | null;
+  valor_residual: number | null;
+  porc_reposicion: string | null;
+  estado_conservacion: string | null;
+  x: number | null;
+  k: number | null;
+  valor_resonable: number | null;
+  capacidad_transportadora: number | null;
+  valor_razonable: number | null;
+  valor_carroceria: number | null;
+  valor_reparaciones: number | null;
+  valor_llantas: number | null;
+  valor_pintura: number | null;
+  valor_overhaul_motor: number | null;
+  factor_demerito: number | null;
+  valor_accesorios: number | null;
+  indice_responsabilidad_minimo: number | null;
+  avaluo_total: number | null;
+  no_factura: string | null;
+  declaracion_importacion: string | null;
+  fecha_importacion: string | null;
+  registro_maquinaria: string | null;
+  gps: string | null;
+  clasificados: ItemValor[];
+  corregidos: ItemValor[];
+  file:string|null;  
+  limitaciones: limitaciones[];
+  llanta_delantera_izquierda: string|null;
+  llanta_delantera_derecha: string|null;
+  llanta_trasera_izquierda: string|null;
+  llanta_trasera_derecha: string|null;
+  llanta_repuesto: string|null;
+  observaciones:string|null;
+  latoneria_estado: string|null; 
+  latoneria_valor: string|null;
+  pintura_estado: string|null;
+  tapiceria_estado: string|null; 
+  tapiceria_valor: string|null;
+  motor_estado: string|null; 
+  motor_valor: string|null;
+  chasis_estado: string|null; 
+  chasis_valor: string|null;
+  transmision_estado: string|null; 
+  transmision_valor: string|null;
+  frenos_estado: string|null; 
+  frenos_valor: string|null;
+  refrigeracion_estado: string|null; 
+  refrigeracion_valor: string|null;
+  electrico_estado: string|null; 
+  electrico_valor: string|null;
+  tanque_estado: string|null; 
+  tanque_valor: string|null;
+  bateria_estado: string|null; 
+  bateria_valor: string|null;
+  llantas_estado: string|null; 
+  llantas_valor: string|null;
+  llave_estado: string|null;
+  llave_valor:string|null;
+  vidrios_estado: string|null; 
+  vidrios_valor: string|null;
+  chatarra: string|null;
+  valor_chatarra_kg:string|null;
+  peso_chatarra_kg:string|null;
+  valor_RTM:string|null;
+  valor_SOAT:string|null;
+  valor_faltantes:string|null;
+  codigo_fasecolda:string|null;
+}
+
+export interface limitaciones {
+  texto: string | null;
+}
+
+export interface ItemValor {
+  modelo: string | null;
+  valor: number | null;
+}

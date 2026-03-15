@@ -1,0 +1,80 @@
+/* You can add global styles to this file, and also import other style files */
+.wrap-text {
+  white-space: pre-wrap;   /* respeta saltos de línea y ajusta texto largo */
+  word-wrap: break-word;   /* rompe palabras largas si es necesario */
+  max-width: 500px;        /* opcional: define el ancho máximo */
+  line-height: 1.7;
+}
+
+.main-menu .navbar-header .navbar-brand .brand-logo img {
+    max-width: 107px !important;
+}
+.main-menu .navbar-header .navbar-brand {
+ 
+    margin-top: 0;
+    
+}
+
+.card-admin{
+  border: solid 2px #e7e7e7;
+  background: #f9f9f9;
+  border-radius: 15px;
+}
+.bg-secondary-gray {
+    background-color: #efefef !important;
+}
+.mrl-10{
+    margin-left: 10px;
+    margin-right: 10px;
+}
+.f20-700{
+    font-size: 20px;
+    font-weight: 700;
+}
+.color-blue-admin{
+  color: #60a5fa;
+}
+.color-yellow-admin{
+  color:#facc15;
+}
+.color-green-admin{
+  color:#4ade80;
+}
+.color-red-admin{
+  color: #f87171;
+}
+
+
+.opcion-correcta {
+  background-color: #28a745 !important; /* verde */
+  color: white !important;
+  padding: 6px 12px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-bottom: 5px;
+}
+
+.opcion-incorrecta {
+  background-color: #dc3545 !important; /* rojo */
+  color: white !important;
+  padding: 6px 12px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-bottom: 5px;
+}
+
+@media (max-width: 767.98px) {
+    html  .content {
+       margin-left: 0px;
+    }
+    .main-menu{
+      margin-left: -20px;
+    }
+}
+
+
+
+
+
+
+

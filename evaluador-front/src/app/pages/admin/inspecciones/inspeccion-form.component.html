@@ -1,0 +1,2627 @@
+<div class="container my-4" [formGroup]="form">
+  <h3 class="mb-3">
+    {{ isEdit ? 'Editar Inspección' : 'Nuevo Inspección' }}
+  </h3>
+
+  <!-- ===================== IDENTIFICACIÓN / ESTADO ===================== -->
+  <div class="card mb-4">
+    <div class="card-header fw-semibold title-section">Ingreso</div>
+    <div class="card-body row g-3">
+      <div class="col-md-2">
+        <label class="form-label">ID</label>
+        <input class="form-control" formControlName="id" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Tipo de Servicio</label>
+        <input class="form-control" formControlName="tiposervicio" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Estado</label>
+        <input class="form-control" formControlName="estado" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Código Interno / Móvil</label>
+        <input class="form-control" formControlName="codigo_interno_movil" />
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Creado</label>
+        <input class="form-control" formControlName="created_at" />
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Actualizado</label>
+        <input class="form-control" formControlName="updated_at" />
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== SOLICITANTE ===================== -->
+  <div class="card mb-4">
+    <div class="card-header fw-semibold title-section">Datos del Solicitante</div>
+    <div class="card-body row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Solicitante</label>
+        <input class="form-control" formControlName="solicitante" />
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Documento</label>
+        <input class="form-control" formControlName="documento_solicitante" />
+      </div>
+      <div class="col-md-8">
+        <label class="form-label">Dirección</label>
+        <input class="form-control" formControlName="direccion_solicitante" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Teléfono</label>
+        <input class="form-control" formControlName="telefono_solicitante" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Fecha Solicitud</label>
+        <input type="date" class="form-control" formControlName="fecha_solicitud" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Fecha Inspección</label>
+        <input type="date" class="form-control" formControlName="fecha_inspeccion" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Fecha Informe</label>
+        <input type="date" class="form-control" formControlName="fecha_informe" />
+      </div>
+      <div class="col-12">
+        <label class="form-label">Objeto del Avalúo</label>
+        <input class="form-control" formControlName="objeto_avaluo" />
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== VEHÍCULO ===================== -->
+  <div class="card mb-4">
+    <div class="card-header fw-semibold title-section">Datos del Vehículo</div>
+    <div class="card-body row g-3">
+      <div class="col-md-3">
+        <label class="form-label">Placa</label>
+        <input class="form-control" formControlName="placa" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Ubicación del Activo</label>
+        <input class="form-control" formControlName="ubicacion_activo" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Tipo Propiedad</label>
+        <input class="form-control" formControlName="tipo_propiedad" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Fecha Matrícula</label>
+        <input type="date" class="form-control" formControlName="fecha_matricula" />
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label">Móvil</label>
+        <input class="form-control" formControlName="movil" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Marca</label>
+        <input class="form-control" formControlName="marca" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Línea</label>
+        <input class="form-control" formControlName="linea" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Clase</label>
+        <input class="form-control" formControlName="clase" />
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label">Carrocería</label>
+        <input class="form-control" formControlName="tipo_carroceria" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Categoría</label>
+        <input class="form-control" formControlName="categoria" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Color</label>
+        <input class="form-control" formControlName="color" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Cilindraje</label>
+        <input type="number" class="form-control" formControlName="cilindraje" />
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label">Modelo</label>
+        <input type="number" class="form-control" formControlName="modelo" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Kilometraje</label>
+        <input type="number" class="form-control" formControlName="kilometraje" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Caja de Cambios</label>
+        <input class="form-control" formControlName="caja_cambios" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Tracción</label>
+        <input class="form-control" formControlName="tipo_traccion" />
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label">Pasajeros</label>
+        <input type="number" class="form-control" formControlName="numero_pasajeros" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Capacidad de Carga</label>
+        <input type="number" class="form-control" formControlName="capacidad_carga" />
+      </div>
+
+      
+    </div>
+  </div>
+
+  <!-- ===================== IDENTIFICACIÓN VEHICULAR ===================== -->
+  <div class="card mb-4">
+    <div class="card-header fw-semibold title-section">Identificación Vehicular</div>
+    <div class="card-body row g-3">
+      <div class="col-md-4">
+        <label class="form-label">Número de Chasis</label>
+        <input class="form-control" formControlName="numero_chasis" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Número de Serie</label>
+        <input class="form-control" formControlName="numero_serie" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Número de Motor</label>
+        <input class="form-control" formControlName="numero_motor" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Nacionalidad</label>
+        <input class="form-control" formControlName="nacionalidad" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Propietario</label>
+        <input class="form-control" formControlName="propietario" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Empresa Afiliación</label>
+        <input class="form-control" formControlName="empresa_afiliacion" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Ciudad Registro</label>
+        <input class="form-control" formControlName="ciudad_registro" />
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== SOAT ===================== -->
+  <div class="card mb-4">
+    <div class="card-header fw-semibold title-section">SOAT</div>
+    <div class="card-body row g-3">
+      <div class="col-md-4">
+        <label class="form-label">Número SOAT</label>
+        <input class="form-control" formControlName="soat" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Expedición</label>
+        <input type="date" class="form-control" formControlName="fecha_expedicion_soat" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Inicio Vigencia</label>
+        <input type="date" class="form-control" formControlName="fecha_inicio_vigencia_soat" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Vencimiento</label>
+        <input type="date" class="form-control" formControlName="fecha_vencimiento_soat" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Entidad que Expide</label>
+        <input class="form-control" formControlName="entidad_expide_soat" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Estado SOAT</label>
+        <input class="form-control" formControlName="estado_soat" />
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== RTM ===================== -->
+  <div class="card mb-4">
+    <div class="card-header fw-semibold title-section">Revisión Técnico Mecánica (RTM)</div>
+    <div class="card-body row g-3">
+      <div class="col-md-3">
+        <label class="form-label">Fecha RTM</label>
+        <input type="date" class="form-control" formControlName="rtm" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Vencimiento RTM</label>
+        <input type="date" class="form-control" formControlName="fecha_vencimiento_rtm" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Centro de Revisión</label>
+        <input class="form-control" formControlName="centro_revision_rtm" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Estado RTM</label>
+        <input class="form-control" formControlName="estado_rtm" />
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== LICENCIA ===================== -->
+  <div class="card mb-4">
+    <div class="card-header fw-semibold title-section">Licencia</div>
+    <div class="card-body row g-3">
+      <div class="col-md-4">
+        <label class="form-label">No. Licencia</label>
+        <input class="form-control" formControlName="no_licencia" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Fecha Expedición</label>
+        <input type="date" class="form-control" formControlName="fecha_expedicion_licencia" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Organismo de Tránsito</label>
+        <input class="form-control" formControlName="organismo_transito" />
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== Inspeccion (EDITABLE) ===================== -->
+  <div formGroupName="inspeccion">  
+    <div class="card mb-4" >
+      <div class="card-header fw-semibold title-section mb-5">
+        Información del bien ({{ isEdit ? 'Edición' : 'Nuevo' }})
+      </div>
+      <div class="card-body row g-3" >
+        <div class="col-md-6">
+          <div class="card mb-4">
+            <div class="card-body row g-3">
+
+              <div class="col-md-12">
+                <div class="d-flex align-items-center">
+                  <label class="form-label me-2 mb-0" style="width: 150px;">Tipo de Vehiculo</label>
+                  <select class="form-select " formControlName="tipo_vehiculo" >
+                    <option value="">Selecciones</option>
+                    <option value="Liviano">Liviano</option>
+                    <option value="Motocileta">Motocicleta</option>
+                    <option value="Pesados">Pesados</option>
+                    <option value="Maquinaria">Maquinaria</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="col-md-12">
+                <div class="d-flex align-items-center">
+                  <label class="form-label me-2 mb-0" style="width: 150px;">Aseguradora</label>
+                  <select class="form-select" formControlName="aseguradora">
+                    <option value="">Seleccione</option>
+                    <option value="Allianz Colombia">Allianz Colombia</option>
+                    <option value="Aseguradora Solidaria de Colombia Ltda.">Aseguradora Solidaria de Colombia Ltda.</option>
+                    <option value="Seguros Bolívar S.A.">Seguros Bolívar S.A.</option>
+                    <option value="Seguros Mundial">Seguros Mundial</option>
+                    <option value="HDI Seguros Colombia S.A.">HDI Seguros Colombia S.A.</option>
+                    <option value="La Previsora S.A. Compañía de Seguros">La Previsora S.A. Compañía de Seguros</option>
+                    <option value="Mapfre Seguros Generales de Colombia S.A.">Mapfre Seguros Generales de Colombia S.A.</option>
+                    <option value="Quálitas Compañía de Seguros Colombia S.A.">Quálitas Compañía de Seguros Colombia S.A.</option>
+                    <option value="SBS Seguros Colombia S.A.">SBS Seguros Colombia S.A.</option>
+                    <option value="Seguros Alfa">Seguros Alfa</option>
+                    <option value="Seguros del Estado S.A.">Seguros del Estado S.A.</option>
+                    <option value="Seguros Generales Suramericana S.A.">Seguros Generales Suramericana S.A.</option>
+                    <option value="Zurich Colombia Seguros S.A.">Zurich Colombia Seguros S.A.</option>
+                    <option value="AXA Colpatria Seguros S.A.">AXA Colpatria Seguros S.A.</option>
+                    <option value="CHUBB Seguros Colombia S.A.">CHUBB Seguros Colombia S.A.</option>
+                    <option value="Cliente particular">Cliente particular</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="col-md-12">
+                <div class="d-flex align-items-center">
+                  <label class="form-label me-2 mb-0" style="width: 150px;">Combustible</label>
+                  <select class="form-select" formControlName="combustible">
+                    <option value="">Seleccione</option>
+                    <option value="Gasolina">Gasolina</option>
+                    <option value="Gas">Gas</option>
+                    <option value="Diesel">Diesel</option>
+                    <option value="Híbrido MHEV">Híbrido MHEV</option>
+                    <option value="Híbrido HEV">Híbrido HEV</option>
+                    <option value="Híbrido PHEV">Híbrido PHEV</option>
+                    <option value="Híbrido">Híbrido</option>
+                    <option value="Eléctrico">Eléctrico</option>
+                  </select>
+                </div>
+              </div>
+
+               <div class="col-md-12">
+                <div class="d-flex align-items-center">
+                  <label class="form-label me-2 mb-0" style="width: 150px;">Tipo de Servicio</label>
+                  <input type="text" class="form-control " formControlName="servicio" />
+                </div>
+              </div>
+
+              <div class="col-md-12">
+                <div class="d-flex align-items-center">
+                  <label class="form-label me-2 mb-0" style="width: 150px;">Color</label>
+                  <input type="text" class="form-control " formControlName="color" />
+                </div>
+              </div>
+
+            </div>
+          </div>
+          
+
+        </div>
+        <div class="col-md-6">
+          
+          <div class="card mb-4">
+            <div class="card-body row g-3">
+              
+              <div class="col-md-12">
+                <div class="d-flex align-items-center">
+                  <label class="form-label me-2 mb-0" style="width: 150px;">Intermediaria</label>
+                  <input type="text" class="form-control " formControlName="intermediaria" />
+                </div>
+              </div>
+
+              <div class="col-md-12">
+                <div class="d-flex align-items-center">
+                  <label class="form-label me-2 mb-0" style="width: 150px;">Tipo de Pintura</label>
+                  <select class="form-select" formControlName="tipo_pintura">
+                    <option value="">Seleccione</option>
+                    <option value="Monocapa">Monocapa</option>
+                    <option value="Bicapa sólido">Bicapa sólido</option>
+                    <option value="Bicapa metalizado">Bicapa metalizado</option>
+                    <option value="Bicapa perlado">Bicapa perlado</option>
+                    <option value="Tricapa">Tricapa</option>
+                  </select>
+                </div>
+              </div>
+              
+
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="card-body row g-3" >
+        <div class="col-md-6">
+          <div class="card mb-4">
+            <div class="card-body row g-3">
+
+              <div class="col-md-12">
+                <div class="d-flex align-items-center">
+                  <label class="form-label me-2 mb-0" style="width: 150px;">Centro de Inspección</label>
+                  <input type="text" class="form-control " formControlName="centro_inspeccion" />
+                </div>
+              </div>
+
+              <div class="col-md-12">
+                <div class="d-flex align-items-center">
+                  <label class="form-label me-2 mb-0" style="width: 150px;">Turno</label>
+                  <input type="text" class="form-control " formControlName="turno" />
+                </div>
+              </div>
+
+              <div class="col-md-12">
+                <div class="d-flex align-items-center">
+                  <label class="form-label me-2 mb-0" style="width: 150px;">Valor Evaluador</label>
+                  <input type="text" class="form-control " formControlName="valor_evaluador" />
+                </div>
+              </div>
+
+               <div class="col-md-12">
+                <div class="d-flex align-items-center">
+                  <label class="form-label me-2 mb-0" style="width: 150px;">Cod. Fasecolda</label>
+                  <input type="text" class="form-control " formControlName="cod_fasecolda" />
+                </div>
+              </div>
+
+              <div class="col-md-12">
+                <div class="d-flex align-items-center">
+                  <label class="form-label me-2 mb-0" style="width: 150px;">Novedades Inspección</label>
+                  <textarea  class="form-control " formControlName="novedades_inspeccion" ></textarea>
+                </div>
+              </div>
+
+            </div>
+          </div>
+          
+
+        </div>
+        <div class="col-md-6">
+          
+          <div class="card mb-4">
+            <div class="card-body row g-3">
+              
+              <div class="col-md-12">
+                <div class="d-flex align-items-center">
+                  <label class="form-label me-2 mb-0" style="width: 150px;">Valor en el Mercado</label>
+                  <input type="text" class="form-control " formControlName="valor_mercado" />
+                </div>
+              </div>
+
+              <div class="col-md-12">
+                <div class="d-flex align-items-center">
+                  <label class="form-label me-2 mb-0" style="width: 150px;">Valor Accesorios</label>
+                  <input type="text" class="form-control " formControlName="valor_accesorios" />
+                </div>
+              </div>
+
+              <div class="col-md-12">
+                <div class="d-flex align-items-center">
+                  <label class="form-label me-2 mb-0" style="width: 150px;">Valor Fasecolda</label>
+                  <input type="text" class="form-control " formControlName="valor_fasecolda" />
+                </div>
+              </div>
+
+              <div class="col-md-12">
+                <div class="d-flex align-items-center">
+                  <label class="form-label me-2 mb-0" style="width: 150px;">Intermediario</label>
+                  <input type="text" class="form-control " formControlName="intermediario" />
+                </div>
+              </div>
+
+              
+
+              <div class="col-md-12">
+                <div class="d-flex align-items-center">
+                  <label class="form-label me-2 mb-0" style="width: 150px;">Resultado</label>
+                  <select class="form-select" formControlName="resultado">
+                    <option value="">Seleccione</option>
+                    <option value="Favorable">Favorable</option>
+                    <option value="Desfavorable">Desfavorable</option>
+                    <option value="Asegurable">Asegurable</option>
+                    <option value="No Asegurable">No Asegurable</option>
+                  </select>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <div class="card mb-4" >
+      <div class="card-header fw-semibold title-section mb-5">
+        Revisión Punto a punto ({{ isEdit ? 'Edición' : 'Nuevo' }})
+      </div>
+      <div class="card-body row g-3">
+        <div class="row">
+
+            <div class="col-md-6">
+              <div class="card mb-4" formGroupName="inspeccion_mecanica">
+                <div class="card-header fw-semibold title-section mt-3 mb-3">Mecánica</div>
+                  <div class="card-body row g-3"> 
+
+                      <!-- Funcionamiento A/A -->
+                      <div class="col-md-12">
+                        <div class="d-flex align-items-center">
+                          <label class="form-label me-2 mb-0" style="width: 150px;">Funcionamiento A/A</label>
+                          <select class="form-select" formControlName="funcionamiento_a_a">
+                            <option>Seleccione</option>
+                            <option>Funciona</option>
+                            <option>No funciona</option>
+                            <option>No verificable</option>
+                            <option>N/A</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <!-- Nivel de Aceite Dirección Hidraulica -->
+                      <div class="col-md-12">
+                        <div class="d-flex align-items-center">
+                          <label class="form-label me-2 mb-0" style="width: 150px;">Nivel de Aceite Dirección Hidraulica</label>
+                          <select class="form-select" formControlName="nivel_aceite_direccion_hidraulica">
+                            <option>Seleccione</option>
+                            <option>Normal</option>
+                            <option>Medio</option>
+                            <option>Bajo</option>
+                            <option>No verificable</option>
+                            <option>N/A</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <!-- Nivel Aceite Motor -->
+                      <div class="col-md-12">
+                        <div class="d-flex align-items-center">
+                          <label class="form-label me-2 mb-0" style="width: 150px;">Nivel Aceite Motor</label>
+                          <select class="form-select" formControlName="nivel_aceite_motor">
+                            <option>Seleccione</option>
+                            <option>Normal</option>
+                            <option>Medio</option>
+                            <option>Bajo</option>
+                            <option>No verificable</option>
+                            <option>N/A</option>
+                          </select>
+                        </div>
+                      </div>
+                      <!-- Nivel Agua Limpiavidrios -->
+                      <div class="col-md-12">
+                        <div class="d-flex align-items-center">
+                          <label class="form-label me-2 mb-0" style="width: 150px;">Nivel Agua Limpiavidrios</label>
+                          <select class="form-select" formControlName="nivel_agua_limpiavidrios">
+                            <option>Seleccione</option>
+                            <option>Normal</option>
+                            <option>Medio</option>
+                            <option>Bajo</option>
+                            <option>No verificable</option>
+                            <option>N/A</option>
+                          </select>
+                        </div>
+                      </div>
+                      <!-- Nivel Liquido Frenos -->
+                      <div class="col-md-12">
+                        <div class="d-flex align-items-center">
+                          <label class="form-label me-2 mb-0" style="width: 150px;">Nivel Liquido Frenos</label>
+                          <select class="form-select" formControlName="nivel_liquido_frenos">
+                            <option>Seleccione</option>
+                            <option>Normal</option>
+                            <option>Medio</option>
+                            <option>Bajo</option>
+                            <option>No verificable</option>
+                            <option>N/A</option>
+                          </select>
+                        </div>
+                      </div>
+                      <!-- Nivel Liquido Embrague -->
+                      <div class="col-md-12">
+                        <div class="d-flex align-items-center">
+                          <label class="form-label me-2 mb-0" style="width: 150px;">Nivel Liquido Embrague</label>
+                          <select class="form-select" formControlName="nivel_liquido_embrague">
+                            <option>Seleccione</option>
+                            <option>Normal</option>
+                            <option>Medio</option>
+                            <option>Bajo</option>
+                            <option>No verificable</option>
+                            <option>N/A</option>
+                          </select>
+                        </div>
+                      </div>
+                      <!-- Nivel Refrigerante Motor -->
+                      <div class="col-md-12">
+                        <div class="d-flex align-items-center">
+                          <label class="form-label me-2 mb-0" style="width: 150px;">Nivel Refrigerante Motor</label>
+                          <select class="form-select" formControlName="nivel_refrigerante_motor">
+                            <option>Seleccione</option>
+                            <option>Normal</option>
+                            <option>Medio</option>
+                            <option>Bajo</option>
+                            <option>No verificable</option>
+                            <option>N/A</option>
+                          </select>
+                        </div>
+                      </div>
+                      <!-- Soportes Caja de Velocidades -->
+                      <div class="col-md-12">
+                        <div class="d-flex align-items-center">
+                          <label class="form-label me-2 mb-0" style="width: 150px;">Soportes Caja de Velocidades</label>
+                          <select class="form-select" formControlName="soportes_caja_velocidades">
+                            <option>Seleccione</option>
+                            <option>Excelente</option>
+                            <option>Bueno</option>
+                            <option>Regular</option>
+                            <option>Malo</option>
+                            <option>Deficiente</option>
+                            <option>No verificable</option>
+                            <option>N/A</option>
+                          </select>
+                        </div>
+                      </div>
+                      <!-- Viscosidad Aceite Motor -->
+                      <div class="col-md-12">
+                        <div class="d-flex align-items-center">
+                          <label class="form-label me-2 mb-0" style="width: 150px;">Viscosidad Aceite Motor</label>
+                          <select class="form-select" formControlName="viscosidad_aceite_motor">
+                            <option>Seleccione</option>
+                            <option>Normal</option>
+                            <option>Medio</option>
+                            <option>Bajo</option>
+                            <option>No verificable</option>
+                            <option>N/A</option>
+                          </select>
+                        </div>
+                      </div>
+                      <!-- Estado Cables Instalación de Alta-->
+                      <div class="col-md-12">
+                        <div class="d-flex align-items-center">
+                          <label class="form-label me-2 mb-0" style="width: 150px;">Estado Cables Instalación de Alta</label>
+                          <select class="form-select" formControlName="estado_cables_instalacion_alta">
+                            <option>Seleccione</option>
+                            <option>Excelente</option>
+                            <option>Bueno</option>
+                            <option>Regular</option>
+                            <option>Malo</option>
+                            <option>Deficiente</option>
+                            <option>No verificable</option>
+                            <option>N/A</option>
+                          </select>
+                        </div>
+                      </div>
+                      <!-- Estado Carcasa Caja de Velocidades-->
+                      <div class="col-md-12">
+                        <div class="d-flex align-items-center">
+                          <label class="form-label me-2 mb-0" style="width: 150px;">Estado Carcasa Caja de Velocidades</label>
+                          <select class="form-select" formControlName="estado_carcasa_caja_velocidades">
+                            <option>Seleccione</option>
+                            <option>Excelente</option>
+                            <option>Bueno</option>
+                            <option>Regular</option>
+                            <option>Malo</option>
+                            <option>Deficiente</option>
+                            <option>No verificable</option>
+                            <option>N/A</option>
+                          </select>
+                        </div>
+                      </div>
+                      <!-- Estado Correas-->
+                      <div class="col-md-12">
+                        <div class="d-flex align-items-center">
+                          <label class="form-label me-2 mb-0" style="width: 150px;">Estado Correas</label>
+                          <select class="form-select" formControlName="estado_correas">
+                            <option>Seleccione</option>
+                            <option>Excelente</option>
+                            <option>Bueno</option>
+                            <option>Regular</option>
+                            <option>Malo</option>
+                            <option>Deficiente</option>
+                            <option>No verificable</option>
+                            <option>N/A</option>
+                          </select>
+                        </div>
+                      </div>
+                      <!-- Estado Externo Bateria-->
+                      <div class="col-md-12">
+                        <div class="d-flex align-items-center">
+                          <label class="form-label me-2 mb-0" style="width: 150px;">Estado Externo Bateria</label>
+                          <select class="form-select" formControlName="estado_externo_bateria">
+                            <option>Seleccione</option>
+                            <option>Excelente</option>
+                            <option>Bueno</option>
+                            <option>Regular</option>
+                            <option>Malo</option>
+                            <option>Deficiente</option>
+                            <option>No verificable</option>
+                            <option>N/A</option>
+                          </select>
+                        </div>
+                      </div>
+                      <!-- Estado Filtro Aire-->
+                      <div class="col-md-12">
+                        <div class="d-flex align-items-center">
+                          <label class="form-label me-2 mb-0" style="width: 150px;">Estado Filtro Aire</label>
+                          <select class="form-select" formControlName="estado_filtro_aire">
+                            <option>Seleccione</option>
+                            <option>Excelente</option>
+                            <option>Bueno</option>
+                            <option>Regular</option>
+                            <option>Malo</option>
+                            <option>Deficiente</option>
+                            <option>No verificable</option>
+                            <option>N/A</option>
+                          </select>
+                        </div>
+                      </div>
+                      <!-- Estado Mangueras Radiador-->
+                      <div class="col-md-12">
+                        <div class="d-flex align-items-center">
+                          <label class="form-label me-2 mb-0" style="width: 150px;">Estado Mangueras Radiador</label>
+                          <select class="form-select" formControlName="estado_manqgueras_radiador">
+                            <option>Seleccione</option>
+                            <option>Excelente</option>
+                            <option>Bueno</option>
+                            <option>Regular</option>
+                            <option>Malo</option>
+                            <option>Deficiente</option>
+                            <option>No verificable</option>
+                            <option>N/A</option>
+                          </select>
+                        </div>
+                      </div>
+                      <!-- Estado Radiador-->
+                      <div class="col-md-12">
+                        <div class="d-flex align-items-center">
+                          <label class="form-label me-2 mb-0" style="width: 150px;">Estado Radiador</label>
+                          <select class="form-select" formControlName="estado_radiador">
+                            <option>Seleccione</option>
+                            <option>Excelente</option>
+                            <option>Bueno</option>
+                            <option>Regular</option>
+                            <option>Malo</option>
+                            <option>Deficiente</option>
+                            <option>No verificable</option>
+                            <option>N/A</option>
+                          </select>
+                        </div>
+                      </div>
+                      <!-- Estado Radiador A/A-->
+                      <div class="col-md-12">
+                        <div class="d-flex align-items-center">
+                          <label class="form-label me-2 mb-0" style="width: 150px;">Estado Radiador A/A</label>
+                          <select class="form-select" formControlName="estado_radiador_a_a">
+                            <option>Seleccione</option>
+                            <option>Excelente</option>
+                            <option>Bueno</option>
+                            <option>Regular</option>
+                            <option>Malo</option>
+                            <option>Deficiente</option>
+                            <option>No verificable</option>
+                            <option>N/A</option>
+                          </select>
+                        </div>
+                      </div>
+                      <!-- Estado Soporte Motor-->
+                      <div class="col-md-12">
+                        <div class="d-flex align-items-center">
+                          <label class="form-label me-2 mb-0" style="width: 150px;">Estado Soporte Motor</label>
+                          <select class="form-select" formControlName="estado_soporte_motor">
+                            <option>Seleccione</option>
+                            <option>Excelente</option>
+                            <option>Bueno</option>
+                            <option>Regular</option>
+                            <option>Malo</option>
+                            <option>Deficiente</option>
+                            <option>No verificable</option>
+                            <option>N/A</option>
+                          </select>
+                        </div>
+                      </div>
+                      <!-- Tensión Correas-->
+                      <div class="col-md-12">
+                        <div class="d-flex align-items-center">
+                          <label class="form-label me-2 mb-0" style="width: 150px;">Tensión Correas</label>
+                          <select class="form-select" formControlName="tension_correas">
+                            <option>Seleccione</option>
+                            <option>Excelente</option>
+                            <option>Bueno</option>
+                            <option>Regular</option>
+                            <option>Malo</option>
+                            <option>Deficiente</option>
+                            <option>No verificable</option>
+                            <option>N/A</option>
+                          </select>
+                        </div>
+                      </div>
+
+              </div>
+            </div>
+          </div>
+
+
+          <div class="col-md-6">
+            <div class="card mb-4" formGroupName="inspeccion_tapiceria">
+              <div class="card-header fw-semibold title-section mt-3 mb-3">Tapiceria</div>
+              <div class="card-body row g-3">
+
+                  <!-- Estado Timon-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Estado Timon</label>
+                        <select class="form-select" formControlName="estado_timon">
+                          <option>Seleccione</option>
+                          <option>Excelente</option>
+                          <option>Bueno</option>
+                          <option>Regular</option>
+                          <option>Malo</option>
+                          <option>Deficiente</option>
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Estado Tapizados Puertas-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Estado Tapizados Puertas</label>
+                        <select class="form-select" formControlName="estados_tapizados_puerta">
+                          <option>Seleccione</option>
+                          <option>Excelente</option>
+                          <option>Bueno</option>
+                          <option>Regular</option>
+                          <option>Malo</option>
+                          <option>Deficiente</option>
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Estado Tapizados Asientos-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Estado Tapizados Asientos</label>
+                        <select class="form-select" formControlName="estados_tapizado_asientos">
+                          <option>Seleccione</option>
+                          <option>Excelente</option>
+                          <option>Bueno</option>
+                          <option>Regular</option>
+                          <option>Malo</option>
+                          <option>Deficiente</option>
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Estado Tapiceria Techo-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Estado Tapiceria Techo</label>
+                        <select class="form-select" formControlName="estado_tapiceria_techo">
+                          <option>Seleccione</option>
+                          <option>Excelente</option>
+                          <option>Bueno</option>
+                          <option>Regular</option>
+                          <option>Malo</option>
+                          <option>Deficiente</option>
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+              </div>
+            </div>
+
+            <div class="card mb-4" formGroupName="inspeccion_funcionamiento">
+              <div class="card-header fw-semibold title-section mt-3 mb-3">Funcionamiento</div>
+              <div class="card-body row g-3">
+
+                  <!-- Asientos delanterios-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Asientos delanteros</label>
+                        <select class="form-select" formControlName="asientos_delantero">
+                          <option>Seleccione</option>
+                          <option>Funciona</option>
+                          <option>No Funciona</option>                        
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Bocina-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Bocina</label>
+                        <select class="form-select" formControlName="bocina">
+                          <option>Seleccione</option>
+                          <option>Funciona</option>
+                          <option>No Funciona</option>                        
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Calefacción-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Calefacción</label>
+                        <select class="form-select" formControlName="calefaccion">
+                          <option>Seleccione</option>
+                          <option>Funciona</option>
+                          <option>No Funciona</option>                        
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Desempañador vidrio-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Desempañador vidrio</label>
+                        <select class="form-select" formControlName="desempanador">
+                          <option>Seleccione</option>
+                          <option>Funciona</option>
+                          <option>No Funciona</option>                        
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Encendedor-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Encendedor</label>
+                        <select class="form-select" formControlName="ecendedor">
+                          <option>Seleccione</option>
+                          <option>Funciona</option>
+                          <option>No Funciona</option>                        
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Espejos eléctricos-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Espejos eléctricos</label>
+                        <select class="form-select" formControlName="espejos_electricos">
+                          <option>Seleccione</option>
+                          <option>Funciona</option>
+                          <option>No Funciona</option>                        
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Limpiabrisas delantero-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Limpiabrisas delantero</label>
+                        <select class="form-select" formControlName="limpiabrisas_del">
+                          <option>Seleccione</option>
+                          <option>Funciona</option>
+                          <option>No Funciona</option>                        
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Limpiabrisas trasero-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Limpiabrisas trasero</label>
+                        <select class="form-select" formControlName="limpiabrisas_tra">
+                          <option>Seleccione</option>
+                          <option>Funciona</option>
+                          <option>No Funciona</option>                        
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Luz interior-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Luz interior</label>
+                        <select class="form-select" formControlName="luz_interior">
+                          <option>Seleccione</option>
+                          <option>Funciona</option>
+                          <option>No Funciona</option>                        
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+
+                    <!-- Radio-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Radio</label>
+                        <select class="form-select" formControlName="radio">
+                          <option>Seleccione</option>
+                          <option>Funciona</option>
+                          <option>No Funciona</option>                        
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Ecendido Arranque-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Ecendido Arranque</label>
+                        <select class="form-select" formControlName="encendido_arranque">
+                          <option>Seleccione</option>
+                          <option>Funciona</option>
+                          <option>No Funciona</option>                        
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Tacómetro-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Tacómetro</label>
+                        <select class="form-select" formControlName="tacometro">
+                          <option>Seleccione</option>
+                          <option>Funciona</option>
+                          <option>No Funciona</option>                        
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Techo corredizo-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Techo corredizo</label>
+                        <select class="form-select" formControlName="techo_corredizo">
+                          <option>Seleccione</option>
+                          <option>Funciona</option>
+                          <option>No Funciona</option>                        
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Velocimetro-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Velocimetro</label>
+                        <select class="form-select" formControlName="velocimetro">
+                          <option>Seleccione</option>
+                          <option>Funciona</option>
+                          <option>No Funciona</option>                        
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+        <div class="row mt-1">
+          <div class="col-md-6">
+
+            <div class="card mb-4" formGroupName="inspeccion_luces">
+              <div class="card-header fw-semibold title-section mt-3 mb-3">Luces</div>
+              <div class="card-body row g-3">
+
+                  <!-- Direccionales-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Direccionales</label>
+                        <select class="form-select" formControlName="direccionales">
+                          <option>Seleccione</option>
+                          <option>Funciona</option>
+                          <option>No Funciona</option>                        
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Luces Altas-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Luces Altas</label>
+                        <select class="form-select" formControlName="luces_altas">
+                          <option>Seleccione</option>
+                          <option>Funciona</option>
+                          <option>No Funciona</option>                        
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Luces Bajas-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Luces Bajas</label>
+                        <select class="form-select" formControlName="luces_bajas">
+                          <option>Seleccione</option>
+                          <option>Funciona</option>
+                          <option>No Funciona</option>                        
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Luces exploradoras-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Luces exploradoras</label>
+                        <select class="form-select" formControlName="luces_exploradoras">
+                          <option>Seleccione</option>
+                          <option>Funciona</option>
+                          <option>No Funciona</option>                        
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Luces frenos-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Luces frenos</label>
+                        <select class="form-select" formControlName="luces_frenos">
+                          <option>Seleccione</option>
+                          <option>Funciona</option>
+                          <option>No Funciona</option>                        
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Luces medias-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Luces medias</label>
+                        <select class="form-select" formControlName="lueces_medias">
+                          <option>Seleccione</option>
+                          <option>Funciona</option>
+                          <option>No Funciona</option>                        
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Luces parqueo-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Luces parqueo</label>
+                        <select class="form-select" formControlName="luces_parqueo">
+                          <option>Seleccione</option>
+                          <option>Funciona</option>
+                          <option>No Funciona</option>                        
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Luces Placa-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Luces Placa</label>
+                        <select class="form-select" formControlName="luces_placa">
+                          <option>Seleccione</option>
+                          <option>Funciona</option>
+                          <option>No Funciona</option>                        
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Luces de reversa-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Luces de reversa</label>
+                        <select class="form-select" formControlName="luces_reversa">
+                          <option>Seleccione</option>
+                          <option>Funciona</option>
+                          <option>No Funciona</option>                        
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+              </div>
+            </div>
+
+            <div class="card mb-4" formGroupName="inspeccion_exterior">
+              <div class="card-header fw-semibold title-section mt-3 mb-3">Exterior</div>
+              <div class="card-body row g-3">
+
+                  <!-- Vidrios-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Vidrios</label>
+                        <select class="form-select" formControlName="vidrios">
+                          <option>Seleccione</option>
+                          <option>Excelente</option>
+                          <option>Bueno</option>     
+                          <option>Regular</option>  
+                          <option>Malo</option>   
+                          <option>Deficiente</option>                 
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Tapiceria y Accesorios-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Tapiceria y Accesorios</label>
+                        <select class="form-select" formControlName="tapiceria_accesorios">
+                          <option>Seleccione</option>
+                          <option>Excelente</option>
+                          <option>Bueno</option>     
+                          <option>Regular</option>  
+                          <option>Malo</option>   
+                          <option>Deficiente</option>                 
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Fugas Fluidos-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Fugas Fluidos</label>
+                        <select class="form-select" formControlName="fugas_fluidos">
+                          <option>Seleccione</option>
+                          <option>Sin Fuga</option>
+                          <option>Humedad</option>   
+                          <option>Fuga sin goteo</option>
+                          <option>Fuga con Goteo</option> 
+                          <option>Fuga continua</option>                          
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Ajuste Cierre Capó-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Ajuste Cierre Capó</label>
+                        <select class="form-select" formControlName="ajuste_cierre_capo">
+                          <option>Seleccione</option>
+                          <option>Excelente</option>
+                          <option>Bueno</option>     
+                          <option>Regular</option>  
+                          <option>Malo</option>   
+                          <option>Deficiente</option>                 
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Ajuste cierre pta delantera izq-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Ajuste cierre pta delantera izq</label>
+                        <select class="form-select" formControlName="ajuste_cierre_puestas_delantera_izq">
+                          <option>Seleccione</option>
+                          <option>Excelente</option>
+                          <option>Bueno</option>     
+                          <option>Regular</option>  
+                          <option>Malo</option>   
+                          <option>Deficiente</option>                 
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Ajuste cierre pta delantera der-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Ajuste cierre pta delantera der</label>
+                        <select class="form-select" formControlName="ajuste_cierre_puestas_delantera_der">
+                          <option>Seleccione</option>
+                          <option>Excelente</option>
+                          <option>Bueno</option>     
+                          <option>Regular</option>  
+                          <option>Malo</option>   
+                          <option>Deficiente</option>                 
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Ajuste cierre pta trasera izq-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Ajuste cierre pta trasera izq</label>
+                        <select class="form-select" formControlName="ajuste_cierre_puertas_trasera_izq">
+                          <option>Seleccione</option>
+                          <option>Excelente</option>
+                          <option>Bueno</option>     
+                          <option>Regular</option>  
+                          <option>Malo</option>   
+                          <option>Deficiente</option>                 
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Ajuste cierre pta trasera der-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Ajuste cierre pta trasera der</label>
+                        <select class="form-select" formControlName="ajuste_cierre_puertas_trasera_der">
+                          <option>Seleccione</option>
+                          <option>Excelente</option>
+                          <option>Bueno</option>     
+                          <option>Regular</option>  
+                          <option>Malo</option>   
+                          <option>Deficiente</option>                 
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Ajuste cierre tapa baul/Compuerta-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Ajuste cierre tapa baul/Compuerta</label>
+                        <select class="form-select" formControlName="ajuste_cierre_tapa_baul_compuerta">
+                          <option>Seleccione</option>
+                          <option>Excelente</option>
+                          <option>Bueno</option>     
+                          <option>Regular</option>  
+                          <option>Malo</option>   
+                          <option>Deficiente</option>                 
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                  
+
+              </div>
+            </div>
+
+          </div>
+          <div class="col-md-6">
+
+            <div class="card mb-4" formGroupName="inspeccion_parte_baja">
+              <div class="card-header fw-semibold title-section mt-3 mb-3">Parte Baja</div>
+              <div class="card-body row g-3">
+
+                  <!--  Cárter-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;"> Cárter</label>
+                        <select class="form-select" formControlName="carter">
+                          <option>Seleccione</option>
+                          <option>Excelente</option>
+                          <option>Bueno</option>     
+                          <option>Regular</option>  
+                          <option>Malo</option>   
+                          <option>Deficiente</option>                 
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Cauchos suspensión-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Cauchos suspensión</label>
+                        <select class="form-select" formControlName="cauchos_suspension">
+                          <option>Seleccione</option>
+                          <option>Excelente</option>
+                          <option>Bueno</option>     
+                          <option>Regular</option>  
+                          <option>Malo</option>   
+                          <option>Deficiente</option>                 
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Guardapolvos caja dirección-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Guardapolvos caja dirección</label>
+                        <select class="form-select" formControlName="guardapolvos_caja_direccion">
+                          <option>Seleccione</option>
+                          <option>Excelente</option>
+                          <option>Bueno</option>     
+                          <option>Regular</option>  
+                          <option>Malo</option>   
+                          <option>Deficiente</option>                 
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Guardapolvos ejes-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Guardapolvos ejes</label>
+                        <select class="form-select" formControlName="guardapolvos_eje">
+                          <option>Seleccione</option>
+                          <option>Excelente</option>
+                          <option>Bueno</option>     
+                          <option>Regular</option>  
+                          <option>Malo</option>   
+                          <option>Deficiente</option>                 
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Protectores inferiores-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Protectores inferiores</label>
+                        <select class="form-select" formControlName="protectores_inferiores">
+                          <option>Seleccione</option>
+                          <option>Excelente</option>
+                          <option>Bueno</option>     
+                          <option>Regular</option>  
+                          <option>Malo</option>   
+                          <option>Deficiente</option>                 
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Estado catalizador-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Estado catalizador</label>
+                        <select class="form-select" formControlName="estado_catalizador">
+                          <option>Seleccione</option>
+                          <option>Excelente</option>
+                          <option>Bueno</option>     
+                          <option>Regular</option>  
+                          <option>Malo</option>   
+                          <option>Deficiente</option>                 
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Estado sistema de escape-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Estado sistema de escape</label>
+                        <select class="form-select" formControlName="estado_silenciador_escape">
+                          <option>Seleccione</option>
+                          <option>Excelente</option>
+                          <option>Bueno</option>     
+                          <option>Regular</option>  
+                          <option>Malo</option>   
+                          <option>Deficiente</option>                 
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Estado Tijeras-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Estado Tijeras</label>
+                        <select class="form-select" formControlName="estado_tijeras">
+                          <option>Seleccione</option>
+                          <option>Excelente</option>
+                          <option>Bueno</option>     
+                          <option>Regular</option>  
+                          <option>Malo</option>   
+                          <option>Deficiente</option>                 
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Estado tuberias frenos-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Estado tuberias frenos</label>
+                        <select class="form-select" formControlName="estado_tuberias_frenos">
+                          <option>Seleccione</option>
+                          <option>Excelente</option>
+                          <option>Bueno</option>     
+                          <option>Regular</option>  
+                          <option>Malo</option>   
+                          <option>Deficiente</option>                 
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Estado Tubo de Exhosto-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Estado Tubo de Exhosto</label>
+                        <select class="form-select" formControlName="estado_tubo_exhosto">
+                          <option>Seleccione</option>
+                          <option>Excelente</option>
+                          <option>Bueno</option>     
+                          <option>Regular</option>  
+                          <option>Malo</option>   
+                          <option>Deficiente</option>                 
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Fuga Aceite caja de velocidades-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Fuga Aceite caja de velocidades</label>
+                        <select class="form-select" formControlName="fuga_aceite_caja_velocidades">
+                          <option>Seleccione</option>
+                          <option>Sin Fuga</option>
+                          <option>Humedad</option>     
+                          <option>Fuga sin goteo</option>  
+                          <option>Fuga con goteo</option>   
+                          <option>Fuga continua</option>                 
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Fuga Direccion hidráulica-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Fuga Direccion hidráulica</label>
+                        <select class="form-select" formControlName="fuga_direccion_hidraulica">
+                          <option>Seleccione</option>
+                          <option>Sin Fuga</option>
+                          <option>Humedad</option>     
+                          <option>Fuga sin goteo</option>  
+                          <option>Fuga con goteo</option>   
+                          <option>Fuga continua</option>                 
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Fuga Aceite Motor-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Fuga Aceite Motor</label>
+                        <select class="form-select" formControlName="fuga_aceite_motor">
+                          <option>Seleccione</option>
+                          <option>Sin Fuga</option>
+                          <option>Humedad</option>     
+                          <option>Fuga sin goteo</option>  
+                          <option>Fuga con goteo</option>   
+                          <option>Fuga continua</option>                 
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Fuga Amortiguadores-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Fuga Amortiguadores</label>
+                        <select class="form-select" formControlName="fuga_amortiguadores">
+                          <option>Seleccione</option>
+                          <option>Sin Fuga</option>
+                          <option>Humedad</option>     
+                          <option>Fuga sin goteo</option>  
+                          <option>Fuga con goteo</option>   
+                          <option>Fuga continua</option>                 
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Fuga liquido embrague-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Fuga liquido embrague</label>
+                        <select class="form-select" formControlName="fuga_liquido_embrague">
+                          <option>Seleccione</option>
+                          <option>Sin Fuga</option>
+                          <option>Humedad</option>     
+                          <option>Fuga sin goteo</option>  
+                          <option>Fuga con goteo</option>   
+                          <option>Fuga continua</option>                 
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+
+                    <!-- Fuga liquido de frenos-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Fuga liquido de frenos</label>
+                        <select class="form-select" formControlName="fuga_liquido_frenos">
+                          <option>Seleccione</option>
+                          <option>Sin Fuga</option>
+                          <option>Humedad</option>     
+                          <option>Fuga sin goteo</option>  
+                          <option>Fuga con goteo</option>   
+                          <option>Fuga continua</option>                 
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Fuga combustible tanque-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Fuga combustible tanque</label>
+                        <select class="form-select" formControlName="fuga_combustible_tanque">
+                          <option>Seleccione</option>
+                          <option>Sin Fuga</option>
+                          <option>Humedad</option>     
+                          <option>Fuga sin goteo</option>  
+                          <option>Fuga con goteo</option>   
+                          <option>Fuga continua</option>                 
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                  
+
+              </div>
+            </div>
+
+            <div class="card mb-4" formGroupName="inspeccion_indicadores">
+              <div class="card-header fw-semibold title-section mt-3 mb-3">Indicadores</div>
+              <div class="card-body row g-3">
+
+                  <!--  Testigo ABS-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;"> Testigo ABS</label>
+                        <select class="form-select" formControlName="testigo_abs">
+                          <option value="">Seleccione</option>
+                          <option value="Funciona">Funciona</option>
+                          <option value="No funciona">No funciona</option>               
+                          <option value="No verificable">No verificable</option>
+                          <option value="N/A">N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Testigo Aceite-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Testigo Aceite</label>
+                        <select class="form-select" formControlName="testigo_aceite">
+                          <option>Seleccione</option>
+                          <option>Funciona</option>
+                          <option>No funciona</option>               
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Testigo Airbag-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Testigo Airbag</label>
+                        <select class="form-select" formControlName="testigo_airbag">
+                          <option>Seleccione</option>
+                          <option>Funciona</option>
+                          <option>No funciona</option>               
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Testigo Check Engine-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Testigo Check Engine</label>
+                        <select class="form-select" formControlName="testigo_check_engine">
+                          <option>Seleccione</option>
+                          <option>Funciona</option>
+                          <option>No funciona</option>               
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Testigo Frenos-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Testigo Frenos</label>
+                        <select class="form-select" formControlName="testigo_frenos">
+                          <option>Seleccione</option>
+                          <option>Funciona</option>
+                          <option>No funciona</option>               
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Testigo combustible-->
+                    <div class="col-md-12">
+                      <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0" style="width: 150px;">Testigo combustible</label>
+                        <select class="form-select" formControlName="testigo_combustible">
+                          <option>Seleccione</option>
+                          <option>Funciona</option>
+                          <option>No funciona</option>               
+                          <option>No verificable</option>
+                          <option>N/A</option>
+                        </select>
+                      </div>
+                    </div>
+
+              
+
+              </div>
+            </div>
+
+            
+
+          </div>
+        </div>    
+
+      </div>
+    </div>
+
+    <div class="card mb-4">
+      <div class="card-header fw-semibold title-section" style="background-color: #d50000; color: white; text-align: center;">
+        Accesorios
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-bordered mb-0" style="border-collapse: collapse;">
+          <thead class="table-dark">
+            <tr>
+              <th>Descripción</th>
+              <th>Marca - Referencia</th>
+              <th>Cant</th>
+              <th>Valor</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody formArrayName="accesorios">
+            <tr *ngFor="let accesorio of accesorios.controls; let i = index" [formGroupName]="i">
+              <td><input type="text" class="form-control form-control-sm" formControlName="decripcion" /></td>
+              <td><input type="text" class="form-control form-control-sm" formControlName="marca_ref" /></td>
+              <td><input type="number" class="form-control form-control-sm" formControlName="cantidad" /></td>
+              <td><input type="number" class="form-control form-control-sm" formControlName="valor" /></td>
+              <td>
+                <button type="button" class="btn btn-danger btn-sm" (click)="eliminarAccesorio(i)">Eliminar</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="p-2">
+          <button type="button" class="btn btn-primary btn-sm" (click)="agregarAccesorio()">Agregar Accesorio</button>
+        </div>
+      </div>
+    </div>
+
+
+    <div class=" card mb-4 revision-visual">
+      <div class="card-header fw-semibold title-section" style="background-color: #d50000; color: white; text-align: center;">
+        Revisión Visual
+      </div>
+      <div class="car-container">
+        <img src="assets/images/autos.png" alt="Carro" class="car-image">
+
+        <div class="zones">
+          <div *ngFor="let zona of revisionVisualArray; let i = index" [formGroup]="zona" class="zona">
+            <label>{{ zona.get('zona')?.value | titlecase }}</label>
+            <select formControlName="estado" class="form-select">
+              <option value="">Seleccione</option>
+              <option value="Bueno">Bueno</option>
+              <option value="Aceptable">Aceptable</option>
+              <option value="Malo">Malo</option>
+            </select>
+          </div>
+        </div>
+        
+      </div>
+      <hr>
+      
+      <div class="card mb-4 " formGroupName="inspeccion_revision_visual_punto_liviano" >
+        
+        <div class="card-body row g-3" [hidden]="form.get('inspeccion.tipo_vehiculo')?.value !== 'Liviano'">
+          <div class="col-md-6">
+            <div class="card-header fw-semibold title-section mt-3 mb-1">Delantero</div>
+            <app-inspeccion-select 
+              label="Paragolpes delantero" 
+              formControlName="paragolpes_delantero">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Soporte paragolpes Der." 
+              formControlName="soporte_paragolpes_der">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Soporte paragolpes Izq." 
+              formControlName="soporte_paragolpes_izq">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Rejilla paragolpes" 
+              formControlName="rejilla_paragolpes">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Capó" 
+              formControlName="capo">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Bisagra capó" 
+              formControlName="bisagra_capo">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Persiana" 
+              formControlName="persiana">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Unidad Farola Der." 
+              formControlName="unidad_farola_der">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Unidad Farola Izq." 
+              formControlName="unidad_farola_izq">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Luz posición Der." 
+              formControlName="luz_posicion_der">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Luz posición Izq." 
+              formControlName="luz_posicion_izq">
+            </app-inspeccion-select>            
+
+            <app-inspeccion-select 
+              label="Exploradora Der." 
+              formControlName="exploradora_der">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Exploradora Izq." 
+              formControlName="exploradora_izq">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Cocuyo Derecho" 
+              formControlName="cocuyo_der">
+            </app-inspeccion-select> 
+
+            <app-inspeccion-select 
+              label="Cocuyo Izquierdo" 
+              formControlName="cocuyo_izq">
+            </app-inspeccion-select> 
+
+          </div>
+          <div class="col-md-6">
+            <div class="card-header fw-semibold title-section mt-3 mb-3">Conjunto trasero</div>
+
+            <app-inspeccion-select 
+              label="Paragolpes trasero" 
+              formControlName="paragolpes_trasero">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Soporte paragolpes" 
+              formControlName="soporte_paragolpes_tras">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Tapa baúl / Compuerta" 
+              formControlName="tapa_baul_compuerta">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Panel trasero" 
+              formControlName="panel_trasero">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Piso baúl" 
+              formControlName="piso_baul">
+            </app-inspeccion-select>
+
+           
+
+            <app-inspeccion-select 
+              label="Stop Der." 
+              formControlName="stop_der">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Stop Izq." 
+              formControlName="stop_izq">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Stop compuerta Der." 
+              formControlName="stop_compuerta_der">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Stop compuerta Izq." 
+              formControlName="stop_compuerta_izq">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Tercer stop" 
+              formControlName="tercer_stop">
+            </app-inspeccion-select>
+
+          </div>
+
+          <div class="col-md-6">
+            <div class="card-header fw-semibold title-section mt-3 mb-3">Tapiceria</div>
+
+            <app-inspeccion-select 
+              label="Tapizado capota" 
+              formControlName="tapizado_capota">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Alfombra piso" 
+              formControlName="alfombra_piso">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Tapizado puerta delantera Der." 
+              formControlName="tapizado_puerta_delantera_der">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Tapizado puerta delantera Izq." 
+              formControlName="tapizado_puerta_delantera_izq">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Tapizado puerta trasera Der." 
+              formControlName="tapizado_puerta_trasera_der">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Tapizado puerta trasera Izq." 
+              formControlName="tapizado_puerta_trasera_izq">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Tapizado paral parabrisas Der." 
+              formControlName="tapizado_paral_parabrisas_der">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Tapizado paral parabrisas Izq" 
+              formControlName="tapizado_paral_parabrisas_izq">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Tapizado paral central Der." 
+              formControlName="tapizado_paral_central_der">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Tapizado paral central Izq" 
+              formControlName="tapizado_paral_central_izq">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Tapizado baúl Der." 
+              formControlName="tapizado_baul_der">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Tapizado baúl Izq." 
+              formControlName="tapizado_baul_izq">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Abullonado millaré" 
+              formControlName="abullonado_millare">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Consola central" 
+              formControlName="consola_central">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Mecanismo elevavidrios principal" 
+              formControlName="mecanismo_elevavidrios_principal">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Elevavidrios puerta delantera Der." 
+              formControlName="elevavidrios_puerta_delantera_der">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Elevavidrios puerta delantera Izq." 
+              formControlName="elevavidrios_puerta_delantera_izq">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Elevavidrios puerta trasera Der." 
+              formControlName="elevavidrios_puerta_trasera_der">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Elevavidrios puerta trasera Izq." 
+              formControlName="elevavidrios_puerta_trasera_izq">
+            </app-inspeccion-select>
+
+          </div>
+          
+          
+          <div class="col-md-6">
+            <div class="card-header fw-semibold title-section mt-3 mb-3">Mecánica </div>
+
+            <app-inspeccion-select 
+              label="Motor" 
+              formControlName="motor">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Caja de velocidades" 
+              formControlName="caja_de_velocidades">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Tracción doble" 
+              formControlName="traccion_doble">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Modulo ECM/ ECU/PCM" 
+              formControlName="modulo_ECM_ECU_PCM">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Bomba inyección" 
+              formControlName="bomba_inyección">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Turbo" 
+              formControlName="turbo">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Alternador" 
+              formControlName="alternador">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Caja dirección" 
+              formControlName="caja_direccion_mec">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Batería" 
+              formControlName="bateria">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Sistema exhosto" 
+              formControlName="sistema_exhosto">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Catalizador" 
+              formControlName="catalizador">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Embrague termico" 
+              formControlName="embrague_termico">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Eje delantero" 
+              formControlName="eje_delantero">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Instalacion eléctrica motor" 
+              formControlName="instalacion_electrica_motor">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Radiador" 
+              formControlName="radiador">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Condensador" 
+              formControlName="condensador">
+            </app-inspeccion-select>
+            
+
+          </div>
+          <div class="col-md-6">
+            <div class="card-header fw-semibold title-section mt-3 mb-3">Suspensión </div>
+
+            <app-inspeccion-select 
+              label="Tijera" 
+              formControlName="tijera">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Portamangueta" 
+              formControlName="portamangueta">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Amortiguador delantero Der." 
+              formControlName="amortiguador_delantero_der">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Amortiguador delantero Izq." 
+              formControlName="amortiguador_delantero_izq">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Muelle delantero Der." 
+              formControlName="muelle_delantero_der">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Muelle delantero Izq." 
+              formControlName="muelle_delantero_izq">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Muelle trasero Der." 
+              formControlName="muelle_trasero_der">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Muelle trasero Izq." 
+              formControlName="muelle_trasero_izq">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Amortiguador trasero Der." 
+              formControlName="amortiguador_trasero_der">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Amortiguador trasero Izq." 
+              formControlName="amortiguador_trasero_izq">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Puente delantero" 
+              formControlName="puente_delantero">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Cuna motor" 
+              formControlName="cuna_motor">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Puente trasero" 
+              formControlName="puente_trasero">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Suspensión multilink trasera" 
+              formControlName="suspension_multilink_trasera">
+            </app-inspeccion-select>
+
+          </div>
+          <div class="col-md-6">
+            <div class="card-header fw-semibold title-section mt-3 mb-3">Inferior </div>
+
+            <app-inspeccion-select 
+              label="Punta chasis delantera Der." 
+              formControlName="punta_chasis_delantera_der">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Punta chasis delantera Izq." 
+              formControlName="punta_chasis_delantera_izq">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Punta chasis trasera Der." 
+              formControlName="punta_chasis_trasera_der">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Punta chasis trasera Izq." 
+              formControlName="punta_chasis_trasera_izq">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Viga chasis" 
+              formControlName="viga_chasis">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Traviesa chasis" 
+              formControlName="traviesa_chasis">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Piso habitaculo" 
+              formControlName="piso_habitaculo">
+            </app-inspeccion-select>
+
+            <div class="card-header fw-semibold title-section mt-3 mb-3">Superior </div>
+
+            <app-inspeccion-select 
+              label="Capota" 
+              formControlName="capota">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Antena capota" 
+              formControlName="antena_capota">
+            </app-inspeccion-select>
+
+          </div>
+          <div class="col-md-6">
+            <div class="card-header fw-semibold title-section mt-3 mb-3">Vidrios </div>
+
+            <app-inspeccion-select 
+              label="Panoramico delantero" 
+              formControlName="panoramico_delantero">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Panoramico trasero" 
+              formControlName="panoramico_trasero">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Vidrio puerta delantera Der." 
+              formControlName="vidrio_puerta_delantera_der">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Vidrio puerta delantera Izq." 
+              formControlName="vidrio_puerta_delantera_izq">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Vidrio puerta trasera Der." 
+              formControlName="vidrio_puerta_trasera_der">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Vidrio puerta trasera Izq" 
+              formControlName="vidrio_puerta_trasera_izq">
+            </app-inspeccion-select>
+
+          </div>
+         
+          <div class="col-md-6">
+            <div class="card-header fw-semibold title-section mt-3 mb-3">Lateral </div>
+
+            <app-inspeccion-select 
+              label="Guardafango delantero Der." 
+              formControlName="guardafango_der">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Guardafango delantero Izq." 
+              formControlName="guardafango_izq">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Cocuyo guardafango Der." 
+              formControlName="cocuyo_guardafango_der">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Cocuyo guardafango Izq." 
+              formControlName="cocuyo_guardafango_izq">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Puerta delantera Der." 
+              formControlName="puerta_delantera_der">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Puerta delantera Izq." 
+              formControlName="puerta_delantera_izq">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Puerta trasera Der." 
+              formControlName="puerta_trasera_der">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Puerta trasera Izq." 
+              formControlName="puerta_trasera_izq">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Costado / Costado platón Der." 
+              formControlName="costado_der">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Costado / Costado platón Izq." 
+              formControlName="costado_izq">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Paral puerta Der." 
+              formControlName="paral_puerta_der">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Paral puerta Izq." 
+              formControlName="paral_puerta_izq">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Paral parabrisas Der." 
+              formControlName="paral_parabrisas_der">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Paral parabrisas Izq." 
+              formControlName="paral_parabrisas_izq">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Estribo Der." 
+              formControlName="estribo_der">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Estribo Izq." 
+              formControlName="estribo_izq">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Paral central Der." 
+              formControlName="paral_central_der">
+            </app-inspeccion-select>
+
+            <app-inspeccion-select 
+              label="Paral central Izq." 
+              formControlName="paral_central_izq">
+            </app-inspeccion-select>
+
+          
+          </div>
+        </div>
+
+      </div>
+      <hr>
+      <div class="card-body row" formGroupName="inspeccion_revision_visual" >
+        <div class="col-md-6">
+            <div class="row">
+              <div class="col-md-12">
+                <div class="d-flex align-items-center">
+                  <label class="form-label me-2 mb-0" style="width: 150px;">Desviación del vehiculo por KM</label>
+                  <select formControlName="desviacion_km" class="form-select">
+                    <option value="">Seleccione</option>
+                    <option value="Bueno 90% - 100%">Bueno 90% - 100%</option>
+                    <option value="Aceptable 60% - 89%">Aceptable 60% - 89%</option>
+                    <option value="Malo 0% - 59%">Malo 0% - 59%</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="col-md-12">
+                <div class="d-flex align-items-center">
+                  <label class="form-label me-2 mb-0" style="width: 150px;">Ruedas Traseras</label>
+                  <select formControlName="ruedas_traseras" class="form-select">
+                    <option value="">Seleccione</option>
+                    <option value="Bueno 90% - 100%">Bueno 90% - 100%</option>
+                    <option value="Aceptable 60% - 89%">Aceptable 60% - 89%</option>
+                    <option value="Malo 0% - 59%">Malo 0% - 59%</option>
+                  </select>
+                </div>
+              </div>
+               <div class="col-md-12">
+                <div class="d-flex align-items-center">
+                  <label class="form-label me-2 mb-0" style="width: 150px;">Vida útil llanta Del. Izq</label>
+                  <select formControlName="llanta_del_izq" class="form-select">
+                    <option value="">Seleccione</option>
+                    <option value="Bueno 90% - 100%">Bueno 90% - 100%</option>
+                    <option value="Aceptable 60% - 89%">Aceptable 60% - 89%</option>
+                    <option value="Malo 0% - 59%">Malo 0% - 59%</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="col-md-12">
+                <div class="d-flex align-items-center">
+                  <label class="form-label me-2 mb-0" style="width: 150px;">Vida útil llanta Tra. Izq</label>
+                  <select formControlName="llanta_tras_izq" class="form-select">
+                    <option value="">Seleccione</option>
+                    <option value="Bueno 90% - 100%">Bueno 90% - 100%</option>
+                    <option value="Aceptable 60% - 89%">Aceptable 60% - 89%</option>
+                    <option value="Malo 0% - 59%">Malo 0% - 59%</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="col-md-12">
+                <div class="d-flex align-items-center">
+                  <label class="form-label me-2 mb-0" style="width: 150px;">Freno de Mano</label>
+                  <select formControlName="freno_mano" class="form-select">
+                    <option value="">Seleccione</option>
+                    <option value="Bueno 90% - 100%">Bueno 90% - 100%</option>
+                    <option value="Aceptable 60% - 89%">Aceptable 60% - 89%</option>
+                    <option value="Malo 0% - 59%">Malo 0% - 59%</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="col-md-12">
+                <div class="d-flex align-items-center">
+                  <label class="form-label me-2 mb-0" style="width: 150px;">Suspensión Trasera</label>
+                  <select formControlName="suspension_tras" class="form-select">
+                    <option value="">Seleccione</option>
+                    <option value="Bueno 90% - 100%">Bueno 90% - 100%</option>
+                    <option value="Aceptable 60% - 89%">Aceptable 60% - 89%</option>
+                    <option value="Malo 0% - 59%">Malo 0% - 59%</option>
+                  </select>
+                </div>
+              </div>
+
+            </div>
+        </div>
+        <div class="col-md-6">
+          <div class="row">
+            <div class="col-md-12">
+                <div class="d-flex align-items-center">
+                  <label class="form-label me-2 mb-0" style="width: 150px;">Pintura</label>
+                  <select formControlName="pintura" class="form-select">
+                    <option value="">Seleccione</option>
+                    <option value="Bueno 90% - 100%">Bueno 90% - 100%</option>
+                    <option value="Aceptable 60% - 89%">Aceptable 60% - 89%</option>
+                    <option value="Malo 0% - 59%">Malo 0% - 59%</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-12">
+                <div class="d-flex align-items-center">
+                  <label class="form-label me-2 mb-0" style="width: 150px;">Ruedas Delanteras</label>
+                  <select formControlName="ruedas_delanteras" class="form-select">
+                    <option value="">Seleccione</option>
+                    <option value="Bueno 90% - 100%">Bueno 90% - 100%</option>
+                    <option value="Aceptable 60% - 89%">Aceptable 60% - 89%</option>
+                    <option value="Malo 0% - 59%">Malo 0% - 59%</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="col-md-12">
+                <div class="d-flex align-items-center">
+                  <label class="form-label me-2 mb-0" style="width: 150px;">Vida útil llanta Del. Der</label>
+                  <select formControlName="llanta_del_der" class="form-select">
+                    <option value="">Seleccione</option>
+                    <option value="Bueno 90% - 100%">Bueno 90% - 100%</option>
+                    <option value="Aceptable 60% - 89%">Aceptable 60% - 89%</option>
+                    <option value="Malo 0% - 59%">Malo 0% - 59%</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="col-md-12">
+                <div class="d-flex align-items-center">
+                  <label class="form-label me-2 mb-0" style="width: 150px;">Vida útil llanta Tra. Der</label>
+                  <select formControlName="llanta_tras_der" class="form-select">
+                    <option value="">Seleccione</option>
+                    <option value="Bueno 90% - 100%">Bueno 90% - 100%</option>
+                    <option value="Aceptable 60% - 89%">Aceptable 60% - 89%</option>
+                    <option value="Malo 0% - 59%">Malo 0% - 59%</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="col-md-12">
+                <div class="d-flex align-items-center">
+                  <label class="form-label me-2 mb-0" style="width: 150px;">Suspensión Delantera</label>
+                  <select formControlName="suspension_delantera" class="form-select">
+                    <option value="">Seleccione</option>
+                    <option value="Bueno 90% - 100%">Bueno 90% - 100%</option>
+                    <option value="Aceptable 60% - 89%">Aceptable 60% - 89%</option>
+                    <option value="Malo 0% - 59%">Malo 0% - 59%</option>
+                  </select>
+                </div>
+              </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="card mb-4">
+      <div class="card-header fw-semibold title-section" style="background-color: #d50000; color: white; text-align: center;">
+        Datos Adicionales
+      </div>
+       <div class="card-body row ">
+        <div class="row">
+
+          <div class="col-md-6">
+            <div class="card mb-4" >
+              <div class="card-body row">
+
+                  <div class="col-md-12">
+                    <div class="d-flex align-items-center">
+                      <label class="form-label me-2 mb-0" style="width: 150px;">Ciudad Inspección</label>
+                      <input type="text" class="form-control " formControlName="ciudad" />
+                    </div>
+                  </div>
+                  <div class="col-md-12">
+                    <div class="d-flex align-items-center">
+                      <label class="form-label me-2 mb-0" style="width: 150px;">Observaciones</label>
+                      <textarea  class="form-control " formControlName="observaciones" ></textarea>
+                    </div>
+                  </div>
+
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="card mb-4" >
+              <div class="card-body row">
+
+                  <div class="col-md-12">
+                    <div class="d-flex align-items-center">
+                      <label class="form-label me-2 mb-0" style="width: 150px;">Se Expide Para</label>
+                      <textarea  class="form-control " formControlName="expide_para" ></textarea>
+                    </div>
+                  </div>
+
+              </div>
+            </div>
+          </div>
+                  
+
+          
+        </div>
+      </div>
+
+    </div>
+
+
+
+
+
+  </div>
+
+
+
+  <!-- ===================== ACCIONES ===================== -->
+  <div class="d-flex gap-2">
+    <button class="btn btn-primary" (click)="guardar()" type="button">
+      {{ isEdit ? 'Actualizar Avalúo' : 'Crear Avalúo' }}
+    </button>
+   
+  </div>
+</div>

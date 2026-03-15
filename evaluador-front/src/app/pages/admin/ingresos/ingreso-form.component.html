@@ -1,0 +1,495 @@
+<h2 class="mb-3">{{ editMode ? 'Editar Ingreso' : 'Nuevo Ingreso' }}</h2>
+
+<form [formGroup]="form" (ngSubmit)="guardar()" class="needs-validation" novalidate>
+  <!-- DATOS GENERALES -->
+  <div class="card mb-4">
+    <div class="card-header fw-semibold title-section">Datos generales</div>
+    <div class="card-body">
+      <div class="row g-3" formGroupName="datosGenerales">
+        <div class="col-md-4">
+          <label class="form-label">Tipo de Servicio</label>
+          <select class="form-select" formControlName="tiposervicio">
+            <option value="">Seleccione…</option>
+            <option>Avaluo e Inspección</option>
+            <option>Avaluo</option>
+            <option>Inspección</option>            
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Estado</label>
+          <select class="form-select" formControlName="estado" >            
+            <option>Ingresado</option>
+            <option>En Inspección</option>
+            <option>Finalizado</option>             
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Solicitante</label>
+          <input type="text" class="form-control" formControlName="solicitante" placeholder="Nombre del solicitante">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Documento Solicitante</label>
+          <input type="text" class="form-control" formControlName="documentoSolicitante" placeholder="CC/NIT">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Dirección Solicitante</label>
+          <input type="text" class="form-control" formControlName="direccion_solicitante" placeholder="Dirección Solicitante">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Teléfono Solicitante</label>
+          <input type="text" class="form-control" formControlName="telefono_solicitante" placeholder="Teléfono Solicitante">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Placa</label>
+          <input type="text" class="form-control" formControlName="placa" placeholder="ABC123">
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Ubicación Activo</label>
+          <input type="text" class="form-control" formControlName="ubicacionActivo" placeholder="Ciudad / Dirección">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Objeto del avalúo</label>
+          <input type="text" class="form-control" formControlName="objetoAvaluo" placeholder="Propósito del avalúo">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Fecha solicitud</label>
+          <input type="date" class="form-control" formControlName="fechaSolicitud">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Fecha de inspección</label>
+          <input type="date" class="form-control" formControlName="fechaInspeccion">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Fecha informe</label>
+          <input type="date" class="form-control" formControlName="fechaInforme">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Código interno / móvil</label>
+          <input type="text" class="form-control" formControlName="codigoInternoMovil" placeholder="Código interno">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INFORMACIÓN DEL BIEN -->
+  <div class="card mb-4">
+    <div class="card-header fw-semibold title-section">Información del Bien</div>
+    <div class="card-body">
+      <div class="row g-3" formGroupName="informacionBien">
+        <div class="col-md-4">
+          <label class="form-label">Tipo de propiedad</label>
+          <input type="text" class="form-control" formControlName="tipoPropiedad" placeholder="Vehículo / Maquinaria / etc.">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Fecha matrícula</label>
+          <input type="date" class="form-control" formControlName="fechaMatricula">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Móvil</label>
+          <input type="text" class="form-control" formControlName="movil" placeholder="Código o móvil">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Marca</label>
+          <input type="text" class="form-control" formControlName="marca">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Línea</label>
+          <input type="text" class="form-control" formControlName="linea">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Clase</label>
+          <input type="text" class="form-control" formControlName="clase">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Tipo carrocería</label>
+          <input type="text" class="form-control" formControlName="tipoCarroceria">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Cantidad de Ejes</label>
+          <input type="number" class="form-control" formControlName="cantidad_ejes" min="0">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Categoría</label>
+          <input type="text" class="form-control" formControlName="categoria">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Color</label>
+          <input type="text" class="form-control" formControlName="color">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Cilindraje</label>
+          <input type="number" class="form-control" formControlName="cilindraje" min="0" step="1">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Modelo</label>
+          <input type="number" class="form-control" formControlName="modelo" min="1900" step="1">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Kilometraje</label>
+          <input type="number" class="form-control" formControlName="kilometraje" min="0" step="1">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Caja de cambios</label>
+          <select class="form-select" formControlName="cajaCambios">
+            <option value="">Seleccione…</option>
+            <option>Manual</option>
+            <option>Automática</option>
+            <option>CVT</option>
+            <option>Otra</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Tipo de tracción</label>
+          <select class="form-select" formControlName="tipoTraccion">
+            <option value="">Seleccione…</option>
+            <option>4x2</option>
+            <option>4x4</option>
+            <option>FWD</option>
+            <option>RWD</option>
+            <option>AWD</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Número de pasajeros</label>
+          <input type="number" class="form-control" formControlName="numeroPasajeros" min="0" step="1">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Capacidad de carga (kg)</label>
+          <input type="number" class="form-control" formControlName="capacidadCarga" min="0" step="1">
+        </div>      
+
+        <!-- Identificación -->
+        <div class="col-md-4">
+          <label class="form-label">Número de chasis</label>
+          <input type="text" class="form-control" formControlName="numeroChasis">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Número de serie</label>
+          <input type="text" class="form-control" formControlName="numeroSerie">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Número de motor</label>
+          <input type="text" class="form-control" formControlName="numeroMotor">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Número VIN</label>
+          <input type="text" class="form-control" formControlName="numeroVin">
+        </div>
+        
+
+        <div class="col-md-4">
+          <label class="form-label">Peso Bruto Vehicular</label>
+          <input type="text" class="form-control" formControlName="peso_bruto">
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Nacionalidad</label>
+          <select class="form-select" formControlName="nacionalidad">
+            <option value="">Seleccione…</option>
+            <option>Nacional</option>
+            <option>Importado</option>
+            <option>N/A</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Propietario</label>
+          <input type="text" class="form-control" formControlName="propietario">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Documento Propietario</label>
+          <input type="text" class="form-control" formControlName="documento_propietario">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Empresa de afiliación</label>
+          <input type="text" class="form-control" formControlName="empresaAfiliacion">
+        </div>
+
+        <div class="card-header fw-semibold title-section">Licencia de Tránsito</div>
+        <div class="col-md-6">
+          <label class="form-label">Ciudad Registro</label>
+          <input type="text" class="form-control" formControlName="ciudad_registro" placeholder="Ciudad Registro">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">No. Licencia de Tránsito</label>
+          <input type="text" class="form-control" formControlName="no_licencia" placeholder="No. Licencia de Tránsito">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Fecha de Expedición</label>
+          <input type="date" class="form-control" formControlName="fecha_expedicion_licencia" placeholder="Fecha de Expedición">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Organismo de Tránsito</label>
+          <input type="text" class="form-control" formControlName="organismo_transito" placeholder="Organismo de Tránsito">
+        </div>
+
+        <div class="card-header fw-semibold title-section">Seguro Obligatorio de Accidentes de Tránsito</div>
+
+        <div class="col-md-6">
+          <label class="form-label">N° póliza SOAT</label>
+          <input type="text" class="form-control" formControlName="soat" placeholder="N° póliza">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Fecha Expedición SOAT</label>
+          <input type="date" class="form-control" formControlName="fecha_expedicion_soat" placeholder="Fecha Expedición SOAT">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Fecha Inicio Vigencia SOAT</label>
+          <input type="date" class="form-control" formControlName="fecha_inicio_vigencia_soat" placeholder="Fecha Inicio Vigencia SOAT">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Fecha Vencimiento SOAT</label>
+          <input type="date" class="form-control" formControlName="fecha_vencimiento_soat" placeholder="Fecha Vencimiento SOAT">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Entidad Que Expide SOAT</label>
+          <input type="text" class="form-control" formControlName="entidad_expide_soat" placeholder="Entidad Que Expide SOAT">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Estado SOAT</label>
+          <select class="form-select" formControlName="estado_soat">
+            <option value="">Seleccione…</option>
+            <option>Vigente</option>
+            <option>Vencido</option>
+          </select>
+        </div>
+
+        <div class="card-header fw-semibold title-section">Revisión Tecno Mecánica</div>
+
+        <div class="col-md-6">
+          <label class="form-label">Fecha Expedición RTM</label>
+          <input type="date" class="form-control" formControlName="rtm" placeholder="Fecha Expedición RTM">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Fecha vencimiento RTM</label>
+          <input type="date" class="form-control" formControlName="fecha_vencimiento_rtm" placeholder="Fecha vencimiento RTM">
+        </div>
+         <div class="col-md-6">
+          <label class="form-label">Centro de Revisión RTM</label>
+          <input type="text" class="form-control" formControlName="centro_revision_rtm" placeholder="Centro de Revisión RTM">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Estado RTM</label>
+          <select class="form-select" formControlName="estado_rtm">
+            <option value="">Seleccione…</option>
+            <option>Vigente</option>
+            <option>Vencido</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+   <!-- Estado Vehiculo ante el RunT -->
+  <div class="card mb-4">
+    <div class="card-header fw-semibold title-section">Estado del Vehiculo ante el RUNT</div>
+    <div class="card-body">
+      <div class="row g-3" formGroupName="estadoVehiculoRunt">
+        <div class="col-md-4">
+          <label class="form-label">Fech Inicial Matricula</label>
+           <input type="date" class="form-control" formControlName="fecha_inicial_matricula" >
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Estado Matricula</label>
+          <select class="form-select" formControlName="estado_matricula" >            
+            <option>Activa</option>
+            <option>Cancelada</option>
+            <option>Suspendida</option>             
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Traslados de Matricula</label>
+          <select class="form-select" formControlName="traslados_matricula" >            
+            <option>Seleccione</option>
+            <option>Si</option>
+            <option>No</option>             
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Tipo de Servicio</label>
+          <select class="form-select" formControlName="tipo_servicio_vehiculo" >            
+            <option>Particular</option>
+            <option>Publico</option>
+            <option>Oficial</option>             
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Cambios Tipos de Servicios</label>
+          <select class="form-select" formControlName="cambios_tipo_servicio" >            
+            <option>Seleccione</option>
+            <option>Si</option>
+            <option>No</option>             
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Fecha Último cambio de Servicio</label>
+          <input type="date" class="form-control" formControlName="fecha_ult_cambio_servicio" >
+        </div>       
+
+        <div class="col-md-6">
+          <label class="form-label">Cambio Color Historica</label>
+          <input type="text" class="form-control" formControlName="cambio_color_historica">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Fecha último cambio Color</label>
+          <input type="date" class="form-control" formControlName="fecha_ult_cambio_color">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Color al cual fue modificado</label>
+          <input type="text" class="form-control" formControlName="color_cambiado">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Cambio de Blindaje/Desblindaje</label>
+          <input type="text" class="form-control" formControlName="cambios_blindaje">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Fecha Cambio Blindaje</label>
+          <input type="date" class="form-control" formControlName="fecha_cambio_blindaje">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Repotenciado</label>
+          <select class="form-select" formControlName="repotenciado" >            
+            <option>Si</option>
+            <option>No</option>
+            <option>N/A</option>             
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estado Vehiculo ante el RunT -->
+  <div class="card mb-4">
+    <div class="card-header fw-semibold title-section">Novedades Vehículo</div>
+    <div class="card-body">
+      <div class="row g-3" formGroupName="novedadesVehiculo">
+        <div class="col-md-4">
+          <label class="form-label">Tiene Gravamenes</label>
+           <select class="form-select" formControlName="tiene_gravamedes" >            
+            <option>Si</option>
+            <option>No</option>
+            <option>N/A</option>             
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Tiene Prenda</label>
+          <select class="form-select" formControlName="tiene_prenda" >            
+            <option>Si</option>
+            <option>No</option>
+            <option>N/A</option>           
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Regrabado Número Motor</label>
+          <input type="text" class="form-control" formControlName="regrabado_no_motor" >
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Regrabado Número Chasis</label>
+          
+          <input type="text" class="form-control" formControlName="regrabado_no_chasis" >
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Regrabado Número Serie</label>
+          <input type="text" class="form-control" formControlName="regrabado_no_serie">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Regrabado Número VIN</label>
+          <input type="text" class="form-control" formControlName="regrabado_no_vin" >
+        </div>       
+
+        <div class="col-md-4">
+          <label class="form-label">Limitación a la Propiedad</label>
+          <input type="text" class="form-control" formControlName="limitacion_propiedad">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Número Documento Proceso</label>
+          <input type="text" class="form-control" formControlName="numero_doc_proceso">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Entidad Jurídica</label>
+          <input type="text" class="form-control" formControlName="entidad_juridica">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Tipo Documento Demandante</label>
+          <input type="text" class="form-control" formControlName="tipo_doc_demandante">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Número Identificación Demandante</label>
+          <input type="text" class="form-control" formControlName="no_identificacion_demandante">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Fecha Expedición</label>          
+          <input type="date" class="form-control" formControlName="fecha_expedicion_novedad">          
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Fecha Radicación</label>          
+          <input type="date" class="form-control" formControlName="fecha_radicacion">          
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+<div class="card mb-4">
+  <div class="card-header fw-semibold text-center text-white bg-danger">
+    Histórico de Propietarios
+  </div>
+
+  <div class="card-body" formArrayName="historicoPropietarios">
+
+    <div *ngFor="let propietario of historicoPropietarios.controls; let i = index" [formGroupName]="i" class="border rounded p-3 mb-3 bg-light">
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Nombres/Empresas</label>
+          <input type="text" class="form-control" formControlName="nombre_empresa">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Tipo de Propietario</label>
+          <input type="text" class="form-control" formControlName="tipo_propietario">
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Tipo de Identificación</label>
+          <input type="text" class="form-control" formControlName="tipo_identificacion">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Número de Identificación</label>
+          <input type="text" class="form-control" formControlName="numero_identificacion">
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Fecha de Inicio de Propiedad</label>
+          <input type="date" class="form-control" formControlName="fecha_inicio">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Estado</label>
+          <input type="text" class="form-control" formControlName="estado">
+        </div>
+      </div>
+
+      <div class="text-end mt-3">
+        <button type="button" class="btn btn-danger btn-sm" (click)="removePropietario(i)">
+          Eliminar
+        </button>
+      </div>
+    </div>
+
+    <button type="button" class="btn btn-primary mt-2" (click)="addPropietario()">
+      Agregar Propietario
+    </button>
+  </div>
+</div>
+
+
+
+  <div class="d-flex gap-2">
+    <button type="submit" class="btn btn-primary" >Guardar</button>
+    <button type="button" class="btn btn-secondary" (click)="cancelar()">Cancelar</button>
+  </div>
+</form>

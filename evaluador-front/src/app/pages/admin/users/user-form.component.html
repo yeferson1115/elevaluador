@@ -1,0 +1,148 @@
+<div class="card mt-2 p-3">
+  <h4>{{ user?.id ? 'Editar Usuario' : 'Nuevo Usuario' }}</h4>
+  <form (ngSubmit)="save()" #userForm="ngForm">
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Nombre</label>
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="name"
+          name="name"
+          required
+        />
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Documento</label>
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="document"
+          name="document"
+          required
+        />
+      </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label">T.P</label>
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="tarjeta_profecional"
+          name="tarjeta_profecional"
+          required
+        />
+      </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label">R.A.A</label>
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="r_aa"
+          name="r_aa"
+          required
+        />
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Profesión</label>
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="profesion"
+          name="profesion"
+          required
+        />
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Celular</label>
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="phone"
+          name="phone"
+          required
+        />
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Email</label>
+        <input
+          type="email"
+          class="form-control"
+          [(ngModel)]="email"
+          name="email"
+          required
+        />
+      </div>
+
+      <div *ngIf="!user?.id" class="col-md-6 mb-3">
+        <label class="form-label">Contraseña</label>
+        <input
+          type="password"
+          class="form-control"
+          [(ngModel)]="password"
+          name="password"
+          minlength="6"
+          required
+        />
+      </div>
+
+      <div *ngIf="!user?.id" class="col-md-6 mb-3">
+        <label class="form-label">Confirmar Contraseña</label>
+        <input
+          type="password"
+          class="form-control"
+          [(ngModel)]="passwordConfirm"
+          name="passwordConfirm"
+          minlength="6"
+          required
+        />
+        <div *ngIf="password !== passwordConfirm" class="text-danger mt-1">
+          Las contraseñas no coinciden
+        </div>
+      </div>
+
+      <div class="col-12 mb-3">
+        <label class="form-label">Rol</label>
+        <div *ngFor="let role of availableRoles" class="form-check">
+          <input
+            class="form-check-input"
+            type="radio"
+            [value]="role.id"
+            name="role"
+            [(ngModel)]="selectedRoleId"
+            [id]="'role-' + role.id"
+            required
+          />
+          <label class="form-check-label" [for]="'role-' + role.id">
+            {{ role.name }}
+          </label>
+        </div>
+        <div *ngIf="!selectedRoleId" class="text-danger mt-1">
+          Debes seleccionar un rol
+        </div>
+      </div>
+    </div>
+
+    <button
+      type="submit"
+      class="btn btn-success"
+      [disabled]="
+        userForm.invalid ||
+        (password !== passwordConfirm && !user?.id) ||
+        !selectedRoleId
+      "
+    >
+      Guardar
+    </button>
+    <button
+      type="button"
+      class="btn btn-secondary ms-2"
+      (click)="cancel.emit()"
+    >
+      Cancelar
+    </button>
+  </form>
+</div>

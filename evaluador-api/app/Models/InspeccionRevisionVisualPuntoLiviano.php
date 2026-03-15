@@ -1,0 +1,142 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
+class InspeccionRevisionVisualPuntoLiviano extends Model
+{
+    use HasFactory;
+
+    protected $table = 'inspeccion_rev_visual_punto_liviano';
+
+    protected $primaryKey = 'id';
+
+    public $timestamps = true;
+
+    protected $fillable = [
+        'inspeccion_id',
+        'paragolpes_delantero',
+        'soporte_paragolpes_der',
+        'soporte_paragolpes_izq',
+        'rejilla_paragolpes',
+        'capo',
+        'bisagra_capo',
+        'persiana',
+        'unidad_farola_der',
+        'unidad_farola_izq',
+        'luz_posicion_der',
+        'luz_posicion_izq',
+        'exploradora_der',
+        'exploradora_izq',
+        'cocuyo_der',
+        'cocuyo_izq',
+        'paragolpes_trasero',
+        'soporte_paragolpes_tras',
+        'tapa_baul_compuerta',
+        'panel_trasero',
+        'piso_baul',
+        'stop_der',
+        'stop_izq',
+        'stop_compuerta_der',
+        'stop_compuerta_izq',
+        'tercer_stop',
+        'tapizado_capota',
+        'alfombra_piso',
+        'tapizado_puerta_delantera_der',
+        'tapizado_puerta_delantera_izq',
+        'tapizado_puerta_trasera_der',
+        'tapizado_puerta_trasera_izq',
+        'tapizado_paral_parabrisas_der',
+        'tapizado_paral_parabrisas_izq',
+        'tapizado_paral_central_der',
+        'tapizado_paral_central_izq',
+        'tapizado_baul_der',
+        'tapizado_baul_izq',
+        'abullonado_millare',
+        'consola_central',
+        'mecanismo_elevavidrios_principal',
+        'elevavidrios_puerta_delantera_der',
+        'elevavidrios_puerta_delantera_izq',
+        'elevavidrios_puerta_trasera_der',
+        'elevavidrios_puerta_trasera_izq',
+        'caja_direccion',
+        'brazo_direccion',
+        'terminal_direccion',
+        'motor',
+        'caja_de_velocidades',
+        'traccion_doble',
+        'modulo_ECM_ECU_PCM',
+        'bomba_inyección',
+        'turbo',
+        'alternador',
+        'caja_direccion_mec',
+        'bateria',
+        'sistema_exhosto',
+        'catalizador',
+        'embrague_termico',
+        'eje_delantero',
+        'instalacion_electrica_motor',
+        'radiador',
+        'condensador',
+        'tijera',
+        'portamangueta',
+        'amortiguador_delantero_der',
+        'amortiguador_delantero_izq',
+        'muelle_delantero_der',
+        'muelle_delantero_izq',
+        'muelle_trasero_der',
+        'muelle_trasero_izq',
+        'amortiguador_trasero_der',
+        'amortiguador_trasero_izq',
+        'puente_delantero',
+        'cuna_motor',
+        'puente_trasero',
+        'suspension_multilink_trasera',
+        'punta_chasis_delantera_der',
+        'punta_chasis_delantera_izq',
+        'punta_chasis_trasera_der',
+        'punta_chasis_trasera_izq',
+        'viga_chasis',
+        'traviesa_chasis',
+        'piso_habitaculo',
+        'panoramico_delantero',
+        'panoramico_trasero',
+        'vidrio_puerta_delantera_der',
+        'vidrio_puerta_delantera_izq',
+        'vidrio_puerta_trasera_der',
+        'vidrio_puerta_trasera_izq',
+        'capota',
+        'antena_capota',
+        'guardafango_der',
+        'guardafango_izq',
+        'cocuyo_guardafango_der',
+        'cocuyo_guardafango_izq',
+        'puerta_delantera_der',
+        'puerta_delantera_izq',
+        'puerta_trasera_der',
+        'puerta_trasera_izq',
+        'costado_der',
+        'costado_izq',
+        'paral_puerta_der',
+        'paral_puerta_izq',
+        'paral_parabrisas_der',
+        'paral_parabrisas_izq',
+        'estribo_der',
+        'estribo_izq',
+        'paral_central_der',
+        'paral_central_izq'
+    ];
+
+
+   
+	
+	
+
+    // Relación inversa: pertenece a una inspección
+    public function inspeccion()
+    {
+        return $this->belongsTo(Inspeccion::class);
+    }
+}

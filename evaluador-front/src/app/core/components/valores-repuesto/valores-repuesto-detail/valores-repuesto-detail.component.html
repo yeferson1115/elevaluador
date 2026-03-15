@@ -1,0 +1,128 @@
+<div class="container-fluid py-4">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="mb-0">Detalle de Valor de Repuesto</h3>
+    <div>
+      <button class="btn btn-primary me-2" (click)="edit()" [disabled]="loading">
+        <i class="bi bi-pencil me-2"></i>
+        Editar
+      </button>
+      <button class="btn btn-outline-secondary" (click)="goBack()" [disabled]="loading">
+        <i class="bi bi-arrow-left me-2"></i>
+        Volver
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="text-center py-5" *ngIf="loading">
+    <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+    <div class="mt-2">Cargando datos...</div>
+  </div>
+
+  <!-- Content -->
+  <div class="card" *ngIf="item && !loading">
+    <div class="card-body">
+      <!-- Información Básica -->
+      <h5 class="mb-3">Información Básica</h5>
+      <div class="row mb-4">
+        <div class="col-md-3">
+          <div class="fw-bold text-muted mb-1">ID</div>
+          <div class="fs-5">{{ item.id }}</div>
+        </div>
+        <div class="col-md-3">
+          <div class="fw-bold text-muted mb-1">Tipo</div>
+          <div class="fs-5">{{ item.tipo }}</div>
+        </div>
+        <div class="col-md-3">
+          <div class="fw-bold text-muted mb-1">Cilindraje</div>
+          <div class="fs-5">{{ item.cilindraje_to }} cc - {{ item.cilindraje_from }}</div>
+        </div>
+      </div>
+
+      <!-- Valores -->
+      <h5 class="mb-3">Valores</h5>
+      <div class="table-responsive">
+        <table class="table table-bordered">
+          <thead class="table-light">
+            <tr>
+              <th>Concepto</th>
+              <th>Valor</th>
+              <th>Concepto</th>
+              <th>Valor</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Llantas</strong></td>
+              <td>{{ formatCurrency(item.llantas) }}</td>
+              <td><strong>Tapicería</strong></td>
+              <td>{{ formatCurrency(item.tapiceria) }}</td>
+            </tr>
+            <tr>
+              <td><strong>SOAT</strong></td>
+              <td>{{ formatCurrency(item.soat) }}</td>
+              <td><strong>RTM</strong></td>
+              <td>{{ formatCurrency(item.rtm) }}</td>
+            </tr>
+            <tr>
+              <td><strong>Kit Arrastre</strong></td>
+              <td>{{ formatCurrency(item.kit_arrastre) }}</td>
+              <td><strong>Motor Mantenimiento</strong></td>
+              <td>{{ formatCurrency(item.motor_mantenimiento) }}</td>
+            </tr>
+            <tr>
+              <td><strong>Pintura</strong></td>
+              <td>{{ formatCurrency(item.pintura) }}</td>
+              <td><strong>Latonería</strong></td>
+              <td>{{ formatCurrency(item.latoneria) }}</td>
+            </tr>
+            <tr>
+              <td><strong>Chasis</strong></td>
+              <td>{{ formatCurrency(item.chasis) }}</td>
+              <td><strong>Frenos</strong></td>
+              <td>{{ formatCurrency(item.frenos) }}</td>
+            </tr>
+            <tr>
+              <td><strong>Batería</strong></td>
+              <td>{{ formatCurrency(item.bateria) }}</td>
+              <td><strong>Tanque Combustible</strong></td>
+              <td>{{ formatCurrency(item.tanque_combustible) }}</td>
+            </tr>
+            <tr>
+              <td><strong>Llave</strong></td>
+              <td>{{ formatCurrency(item.llave) }}</td>
+              <td><strong>Sistema Eléctrico</strong></td>
+              <td>{{ formatCurrency(item.sis_electrico) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Fechas de Auditoría -->
+      <div class="row mt-4" *ngIf="item.created_at || item.updated_at">
+        <div class="col-md-6" *ngIf="item.created_at">
+          <div class="fw-bold text-muted mb-1">Fecha de Creación</div>
+          <div>{{ item.created_at | date:'dd/MM/yyyy HH:mm' }}</div>
+        </div>
+        <div class="col-md-6" *ngIf="item.updated_at">
+          <div class="fw-bold text-muted mb-1">Última Actualización</div>
+          <div>{{ item.updated_at | date:'dd/MM/yyyy HH:mm' }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error o no encontrado -->
+  <div class="text-center py-5" *ngIf="!item && !loading">
+    <i class="bi bi-exclamation-triangle text-warning" style="font-size: 4rem;"></i>
+    <h4 class="mt-3">Registro no encontrado</h4>
+    <p class="text-muted">El registro que buscas no existe o ha sido eliminado.</p>
+    <button class="btn btn-primary mt-3" (click)="goBack()">
+      <i class="bi bi-arrow-left me-2"></i>
+      Volver al listado
+    </button>
+  </div>
+</div>

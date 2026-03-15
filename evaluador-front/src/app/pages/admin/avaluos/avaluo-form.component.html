@@ -1,0 +1,1120 @@
+<div class="container my-4" [formGroup]="form">
+  <h3 class="mb-3">
+    {{ isEdit ? 'Editar Avalúo' : 'Nuevo Avalúo' }}
+  </h3>
+
+  <!-- ===================== IDENTIFICACIÓN / ESTADO ===================== -->
+  <div class="card mb-4">
+    <div class="card-header fw-semibold title-section">Ingreso</div>
+    <div class="card-body row g-3">
+      <div class="col-md-2">
+        <label class="form-label">ID</label>
+        <input class="form-control" formControlName="id" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Tipo de Servicio</label>
+        <input class="form-control" formControlName="tiposervicio" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Estado</label>
+        <input class="form-control" formControlName="estado" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Código Interno / Móvil</label>
+        <input class="form-control" formControlName="codigo_interno_movil" />
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Creado</label>
+        <input class="form-control" formControlName="created_at" />
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Actualizado</label>
+        <input class="form-control" formControlName="updated_at" />
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== SOLICITANTE ===================== -->
+  <div class="card mb-4">
+    <div class="card-header fw-semibold title-section">Datos del Solicitante</div>
+    <div class="card-body row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Solicitante</label>
+        <input class="form-control" formControlName="solicitante" />
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Documento</label>
+        <input class="form-control" formControlName="documento_solicitante" />
+      </div>
+      <div class="col-md-8">
+        <label class="form-label">Dirección</label>
+        <input class="form-control" formControlName="direccion_solicitante" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Teléfono</label>
+        <input class="form-control" formControlName="telefono_solicitante" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Fecha Solicitud</label>
+        <input type="date" class="form-control" formControlName="fecha_solicitud" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Fecha Inspección</label>
+        <input type="date" class="form-control" formControlName="fecha_inspeccion" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Fecha Informe</label>
+        <input type="date" class="form-control" formControlName="fecha_informe" />
+      </div>
+      <div class="col-12">
+        <label class="form-label">Objeto del Avalúo</label>
+        <input class="form-control" formControlName="objeto_avaluo" />
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== VEHÍCULO ===================== -->
+  <div class="card mb-4">
+    <div class="card-header fw-semibold title-section">Datos del Vehículo</div>
+    <div class="card-body row g-3">
+      <div class="col-md-3">
+        <label class="form-label">Placa</label>
+        <input class="form-control" formControlName="placa" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Ubicación del Activo</label>
+        <input class="form-control" formControlName="ubicacion_activo" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Tipo Propiedad</label>
+        <input class="form-control" formControlName="tipo_propiedad" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Fecha Matrícula</label>
+        <input type="date" class="form-control" formControlName="fecha_matricula" />
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label">Móvil</label>
+        <input class="form-control" formControlName="movil" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Marca</label>
+        <input class="form-control" formControlName="marca" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Línea</label>
+        <input class="form-control" formControlName="linea" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Clase</label>
+        <input class="form-control" formControlName="clase" />
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label">Carrocería</label>
+        <input class="form-control" formControlName="tipo_carroceria" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Categoría</label>
+        <input class="form-control" formControlName="categoria" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Color</label>
+        <input class="form-control" formControlName="color" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Cilindraje</label>
+        <input type="number" class="form-control" formControlName="cilindraje" />
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label">Modelo</label>
+        <input type="number" class="form-control" formControlName="modelo" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Kilometraje</label>
+        <input type="number" class="form-control" formControlName="kilometraje" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Caja de Cambios</label>
+        <input class="form-control" formControlName="caja_cambios" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Tracción</label>
+        <input class="form-control" formControlName="tipo_traccion" />
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label">Pasajeros</label>
+        <input type="number" class="form-control" formControlName="numero_pasajeros" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Capacidad de Carga</label>
+        <input type="number" class="form-control" formControlName="capacidad_carga" />
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===================== IDENTIFICACIÓN VEHICULAR ===================== -->
+  <div class="card mb-4">
+    <div class="card-header fw-semibold title-section">Identificación Vehicular</div>
+    <div class="card-body row g-3">
+      <div class="col-md-4">
+        <label class="form-label">Número de Chasis</label>
+        <input class="form-control" formControlName="numero_chasis" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Número de Serie</label>
+        <input class="form-control" formControlName="numero_serie" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Número de Motor</label>
+        <input class="form-control" formControlName="numero_motor" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Nacionalidad</label>
+        <input class="form-control" formControlName="nacionalidad" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Propietario</label>
+        <input class="form-control" formControlName="propietario" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Empresa Afiliación</label>
+        <input class="form-control" formControlName="empresa_afiliacion" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Ciudad Registro</label>
+        <input class="form-control" formControlName="ciudad_registro" />
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== SOAT ===================== -->
+  <div class="card mb-4">
+    <div class="card-header fw-semibold title-section">SOAT</div>
+    <div class="card-body row g-3">
+      <div class="col-md-4">
+        <label class="form-label">Número SOAT</label>
+        <input class="form-control" formControlName="soat" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Expedición</label>
+        <input type="date" class="form-control" formControlName="fecha_expedicion_soat" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Inicio Vigencia</label>
+        <input type="date" class="form-control" formControlName="fecha_inicio_vigencia_soat" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Vencimiento</label>
+        <input type="date" class="form-control" formControlName="fecha_vencimiento_soat" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Entidad que Expide</label>
+        <input class="form-control" formControlName="entidad_expide_soat" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Estado SOAT</label>
+        <input class="form-control" formControlName="estado_soat" />
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== RTM ===================== -->
+  <div class="card mb-4">
+    <div class="card-header fw-semibold title-section">Revisión Técnico Mecánica (RTM)</div>
+    <div class="card-body row g-3">
+      <div class="col-md-3">
+        <label class="form-label">Fecha RTM</label>
+        <input type="date" class="form-control" formControlName="rtm" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Vencimiento RTM</label>
+        <input type="date" class="form-control" formControlName="fecha_vencimiento_rtm" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Centro de Revisión</label>
+        <input class="form-control" formControlName="centro_revision_rtm" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Estado RTM</label>
+        <input class="form-control" formControlName="estado_rtm" />
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== LICENCIA ===================== -->
+  <div class="card mb-4">
+    <div class="card-header fw-semibold title-section">Licencia</div>
+    <div class="card-body row g-3">
+      <div class="col-md-4">
+        <label class="form-label">No. Licencia</label>
+        <input class="form-control" formControlName="no_licencia" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Fecha Expedición Matricula</label>
+        <input type="date" class="form-control" formControlName="fecha_expedicion_licencia" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Organismo de Tránsito</label>
+        <input class="form-control" formControlName="organismo_transito" />
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== AVALÚO (EDITABLE) ===================== -->
+  <div class="card mb-4" formGroupName="avaluo">
+    <div class="card-header fw-semibold title-section">
+      Avalúo ({{ isEdit ? 'Edición' : 'Nuevo' }})
+    </div>
+    <div class="card-body row g-3 mt-1">
+      <div class="col-md-6">
+         <div class="row align-items-center">
+            <label class="col-4 col-form-label">Formato</label>
+            <div class="col-8">
+              <select class="form-select" formControlName="formato">
+                <option value="">Seleccione</option>
+                <option value="El Avaluador">El Avaluador</option>
+                <!--<option value="Sec. Movilidad Bogotá">Sec. Movilidad Bogotá</option>-->
+              </select>
+
+            </div>          
+         </div>
+          
+        </div>
+      <div class="col-md-6">
+         <div class="row align-items-center">
+            <label class="col-4 col-form-label">Metodo</label>
+            <div class="col-8">
+              <select class="form-select" formControlName="tipo">
+                <option value="">Seleccione</option>
+                <option value="comercial">Comercial</option>
+                <option value="jans">Jans</option>
+              </select>
+
+            </div>          
+         </div>
+          
+        </div>
+
+      <div class="col-md-6 ">
+        <div class="row align-items-center">
+          <label class="col-4 col-form-label">Ingreso ID</label>
+          <div class="col-8">
+            <input type="number" class="form-control" formControlName="ingreso_id" />
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="row align-items-center">
+          <label class="col-4 col-form-label">Fecha Inspección</label>
+          <div class="col-8">
+            <input type="date" class="form-control" formControlName="fecha_inspeccion" />
+          </div>        
+        </div>        
+      </div>
+      <div *ngIf="form.get('avaluo.tipo')?.value === 'comercial'" class="row">
+
+        <!-- Clasificados -->
+          <div class="col-md-12 mt-3">
+            <h5>Clasificados</h5>
+            <button class="btn btn-primary btn-sm mb-2" type="button" (click)="addClasificado()">Agregar</button>
+            <div formArrayName="clasificados">
+              <div *ngFor="let clas of clasificados.controls; let i = index" [formGroupName]="i" class="row mb-2">
+                <div class="col-md-5">
+                  <input type="text" class="form-control" placeholder="Modelo" formControlName="modelo">
+                </div>
+                <div class="col-md-5">
+                  <input type="number" class="form-control" placeholder="Valor" formControlName="valor">
+                </div>
+                <div class="col-md-2">
+                  <button class="btn btn-danger btn-sm" type="button" (click)="removeClasificado(i)">X</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Corregidos -->
+          <div class="col-md-12 mt-3">
+            <h5>Corregidos</h5>
+            <button class="btn btn-primary btn-sm mb-2" type="button" (click)="addCorregido()">Agregar</button>
+            <div formArrayName="corregidos">
+              <div *ngFor="let corr of corregidos.controls; let i = index" [formGroupName]="i" class="row mb-2">
+                <div class="col-md-5">
+                  <input type="text" class="form-control" placeholder="Modelo" formControlName="modelo">
+                </div>
+                <div class="col-md-5">
+                  <input type="number" class="form-control" placeholder="Valor" formControlName="valor">
+                </div>
+                <div class="col-md-2">
+                  <button class="btn btn-danger btn-sm" type="button" (click)="removeCorregido(i)">X</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+      </div>
+
+      <div *ngIf="form.get('avaluo.tipo')?.value === 'jans'" class="row mt-2">
+
+
+        <div class="col-md-6 mb-1">
+          <div class="row align-items-center">
+            <label class="col-4 col-form-label">Vida Útil (años)</label>
+            <div class="col-8">
+              <input type="number" class="form-control" formControlName="vida_util_anos" />
+            </div>        
+          </div>        
+        </div>
+
+        <div class="col-md-6 mb-1">
+          <div class="row align-items-center">
+            <label class="col-4 col-form-label">Vida Útil Probable(Meses)</label>
+            <div class="col-8">
+              <input type="number" class="form-control" formControlName="vida_util_probable" />
+            </div>        
+          </div>        
+        </div>
+
+        <div class="col-md-6 mb-1">
+          <div class="row align-items-center">
+            <label class="col-4 col-form-label">Vida Usada (meses)</label>
+            <div class="col-8">
+              <input type="number" class="form-control" formControlName="vida_usada_meses" />
+            </div>          
+          </div>        
+        </div>
+
+        <div class="col-md-6 mb-1">
+          <div class="row align-items-center">
+            <label class="col-4 col-form-label">Antigüedad</label>
+            <div class="col-8">
+              <input type="number" class="form-control" formControlName="antiguedad" />
+            </div>          
+          </div>        
+        </div>
+        
+        <div class="col-md-6 mb-1 ">
+          <div class="row align-items-center">
+            <label class="col-4 col-form-label">Vida Útil</label>
+            <div class="col-8">
+              <input type="number" class="form-control" formControlName="vida_util" />
+            </div>        
+          </div>        
+        </div>
+
+        <div class="col-md-6 mb-1">
+          <div class="row align-items-center">
+            <label class="col-4 col-form-label">Vida Usada (días)</label>
+            <div class="col-8">
+              <input type="number" class="form-control" formControlName="vida_usada_dias" readonly  />
+            </div>
+            
+          </div>        
+        </div>
+
+        <div class="col-md-6 mb-1">
+          <div class="row align-items-center">
+            <label class="col-4 col-form-label">Vida Usada (meses)</label>
+            <div class="col-8">
+              <input type="number" class="form-control" formControlName="vida_usada_meses" />
+            </div>          
+          </div>        
+        </div>
+
+        <div class="col-md-6 mb-1">
+          <div class="row align-items-center">
+            <label class="col-4 col-form-label">Vida Usada (años)</label>
+            <div class="col-8">
+              <input type="number" class="form-control" formControlName="vida_usada_anos" />
+            </div>        
+          </div>        
+        </div> 
+        
+        <div class="col-md-6 mb-1">
+          <div class="row align-items-center">
+            <label class="col-4 col-form-label">Vida Útil Remate (Meses)</label>
+            <div class="col-8">
+              <input type="number" class="form-control" formControlName="vida_util_remate" readonly style="background-color: #d7211e;color: #fff;"/>
+            </div>        
+          </div>        
+        </div>   
+        
+        <div class="col-md-6 mb-1">
+          <div class="row align-items-center">
+            <label class="col-4 col-form-label">Valor Reposición</label>
+            <div class="col-8">
+              <input type="number" class="form-control" formControlName="valor_reposicion" />
+            </div>        
+          </div>        
+        </div>
+        <div class="col-md-6 mb-1">
+          <div class="row align-items-center">
+            <label class="col-4 col-form-label">Porcentaje Reposición</label>
+            <div class="col-8">
+              <select class="form-select" formControlName="porc_reposicion">
+                <option *ngFor="let i of [].constructor(100); let index = index" [value]="index + 1">
+                  {{ index + 1 }}
+                </option>
+              </select>
+            </div>        
+          </div>        
+        </div>
+
+        <div class="col-md-6 mb-1">
+          <div class="row align-items-center">
+            <label class="col-4 col-form-label">Valor Residual</label>
+            <div class="col-8">
+              <input type="number" class="form-control" formControlName="valor_residual" />
+            </div>          
+          </div>        
+        </div>
+
+        <div class="col-md-6 mb-1">
+          <div class="row align-items-center">
+            <label class="col-4 col-form-label">Estado Conservación</label>
+            <div class="col-8">
+              <select class="form-control" formControlName="estado_conservacion" >
+                <option>Seleccione</option>
+                <option>0.00000</option>
+                <option>0.00032</option>
+                <option>0.02520</option>
+                <option>0.08090</option>
+                <option>0.18100</option>
+                <option>0.33200</option>
+                <option>0.52600</option>
+                <option>0.75200</option>
+                <option>1.00000</option>
+              </select>
+            </div>        
+          </div>        
+        </div>
+
+        <div class="col-md-6 mb-1">
+          <div class="row align-items-center">
+            <label class="col-4 col-form-label">X</label>
+            <div class="col-8">
+              <select class="form-control" formControlName="x" >
+                <option>Seleccione</option>
+                <option *ngFor="let val of valores" [value]="val">{{ val }}</option>
+              </select> 
+            </div>        
+          </div>            
+        </div>
+        <div class="col-md-6 mb-1">
+          <div class="row align-items-center">
+            <label class="col-4 col-form-label">K</label>
+            <div class="col-8">
+              <input type="number" class="form-control" formControlName="k" readonly />
+            </div>          
+          </div>        
+        </div>
+        <div class="col-md-6 mb-1">
+          <div class="row align-items-center">
+            <label class="col-4 col-form-label">Valor resonable</label>
+            <div class="col-8">
+              <input type="number" class="form-control" formControlName="valor_resonable" style="background-color: #d7211e;color: #fff;"/>
+            </div>          
+          </div>        
+        </div>
+
+        <div class="col-md-6 mb-1" *ngIf="form.get('avaluo.formato')?.value === 'Sec. Movilidad Bogotá'">
+          <div class="row align-items-center">
+            <label class="col-4 col-form-label">Chatarra</label>
+            <div class="col-8">
+              <select  class="form-select" formControlName="chatarra" >
+                <option value="">Seleccione</option>
+                <option value="Si">Si</option>
+                <option value="No">No</option>
+              </select>
+            </div>          
+          </div>        
+        </div>
+
+      </div>
+
+      
+
+      <div class="card-header fw-semibold title-section">
+        Consideraciones Finales del Avalúo ({{ isEdit ? 'Edición' : 'Nuevo' }})
+      </div>
+
+      <div class="col-md-12">
+        <div class="row align-items-center">
+          <label class="col-4 col-form-label">Capacidad Transportadora</label>
+          <div class="col-8">
+            <textarea  class="form-control" formControlName="capacidad_transportadora" ></textarea>
+          </div>          
+        </div>        
+      </div>
+
+      <div class="col-md-6">
+        <div class="row align-items-center">
+          <label class="col-4 col-form-label">Valor Razonable</label>
+          <div class="col-8">
+            <input type="number" class="form-control" formControlName="valor_razonable" />
+          </div>        
+        </div>        
+      </div>
+      <div class="col-md-6">
+        <div class="row align-items-center">
+          <label class="col-4 col-form-label">Valor Carrocería</label>
+          <div class="col-8">
+            <input type="number" class="form-control" formControlName="valor_carroceria" />
+          </div>          
+        </div>        
+      </div>
+
+      <div class="col-md-6">
+        <div class="row align-items-center">
+          <label class="col-4 col-form-label">Valor Accesorios</label>
+          <div class="col-8">
+            <input type="number" class="form-control" formControlName="valor_accesorios" />
+          </div>
+        
+        </div>
+        
+      </div>
+      <div class="col-md-6">
+        <div class="row align-items-center">
+          <label class="col-4 col-form-label">Valor Reparaciones</label>
+          <div class="col-8">
+            <input type="number" class="form-control" formControlName="valor_reparaciones" />
+          </div>        
+        </div>        
+      </div>
+      <div class="col-md-6">
+        <div class="row align-items-center">
+          <label class="col-4 col-form-label">Valor Llantas</label>
+          <div class="col-8">
+            <input type="number" class="form-control" formControlName="valor_llantas" />
+          </div>        
+        </div>        
+      </div>
+
+      <div class="col-md-6">
+        <div class="row align-items-center">
+          <label class="col-4 col-form-label">Valor Pintura</label>
+          <div class="col-8">
+            <input type="number" class="form-control" formControlName="valor_pintura" />
+          </div>        
+        </div>        
+      </div>
+      <div class="col-md-6">
+        <div class="row align-items-center">
+          <label class="col-4 col-form-label">Overhaul Motor</label>
+          <div class="col-8">
+            <input type="number" class="form-control" formControlName="valor_overhaul_motor" />
+          </div>
+        
+        </div>        
+      </div>
+      <div class="col-md-6">
+        <div class="row align-items-center">
+          <label class="col-4 col-form-label">Factor Demérito</label>
+          <div class="col-8">
+            <input type="number" class="form-control" formControlName="factor_demerito" />
+          </div>
+        
+        </div>        
+      </div>
+      
+
+      <div class="col-md-6">
+        <div class="row align-items-center">
+          <label class="col-4 col-form-label">Índice Resp. Mínimo</label>
+          <div class="col-8">
+            <input type="number" class="form-control" formControlName="indice_responsabilidad_minimo" />
+          </div>
+        
+        </div>
+        
+      </div>
+      <div class="col-md-6">
+        <div class="row align-items-center">
+          <label class="col-4 col-form-label">Avalúo Total</label>
+          <div class="col-8">
+            <input type="number" class="form-control" formControlName="avaluo_total" />
+          </div>
+        
+        </div>
+        
+      </div>
+      <div class="col-md-6">
+        <div class="row align-items-center">
+          <label class="col-4 col-form-label">No. Factura</label>
+          <div class="col-8">
+            <input class="form-control" formControlName="no_factura" />
+          </div>
+        
+        </div>
+        
+      </div>
+      <div class="col-md-6">
+        <div class="row align-items-center">
+          <label class="col-4 col-form-label">Declaración Importación</label>
+          <div class="col-8">
+            <input class="form-control" formControlName="declaracion_importacion" />
+          </div>
+        
+        </div>
+        
+      </div>
+
+      <div class="col-md-6">
+        <div class="row align-items-center">
+          <label class="col-4 col-form-label">Fecha Importación</label>
+          <div class="col-8">
+            <input type="date" class="form-control" formControlName="fecha_importacion" />
+          </div>
+        
+        </div>
+        
+      </div>
+      <div class="col-md-6">
+        <div class="row align-items-center">
+          <label class="col-4 col-form-label">Registro Maquinaria</label>
+          <div class="col-8">
+            <input class="form-control" formControlName="registro_maquinaria" />
+          </div>
+        
+        </div>
+        
+      </div>
+
+      <div class="col-md-6">
+        <div class="row align-items-center">
+          <label class="col-4 col-form-label">GPS</label>
+          <div class="col-8">
+            <input class="form-control" formControlName="gps" />
+          </div>        
+        </div> 
+      </div>
+
+      <div class="col-md-6" *ngIf="form.get('avaluo.formato')?.value === 'Sec. Movilidad Bogotá'">
+        <div class="row align-items-center">
+          <label class="col-4 col-form-label">Valor Tecnomecanica</label>
+          <div class="col-8">
+            <input class="form-control" formControlName="valor_RTM" />
+          </div>        
+        </div> 
+      </div>
+
+      <div class="col-md-6" *ngIf="form.get('avaluo.formato')?.value === 'Sec. Movilidad Bogotá'">
+        <div class="row align-items-center">
+          <label class="col-4 col-form-label">Valor SOAT</label>
+          <div class="col-8">
+            <input class="form-control" formControlName="valor_SOAT" />
+          </div>        
+        </div> 
+      </div>
+
+      <div class="col-md-6" *ngIf="form.get('avaluo.formato')?.value === 'Sec. Movilidad Bogotá'">
+        <div class="row align-items-center">
+          <label class="col-4 col-form-label">Valor Faltantes</label>
+          <div class="col-8">
+            <input class="form-control" formControlName="valor_faltantes" />
+          </div>        
+        </div> 
+      </div>
+
+      <!-- Índice de Reparabilidad (siempre visible) -->
+    <div class="col-md-6 mb-3">
+      <div class="row align-items-center">
+        <label class="col-4 col-form-label">Índice Reparabilidad</label>
+        <div class="col-8">
+          <input type="number" 
+                class="form-control" 
+                formControlName="indice_reparabilidad" 
+                readonly 
+                style="background-color: #f8f9fa;" />      
+        </div>
+      </div>
+    </div>
+
+      
+
+      <hr *ngIf="form.get('avaluo.chatarra')?.value === 'Si' && form.get('avaluo.formato')?.value === 'Sec. Movilidad Bogotá'">
+      <div class="card mt-3" *ngIf="form.get('avaluo.chatarra')?.value === 'Si' && form.get('avaluo.formato')?.value === 'Sec. Movilidad Bogotá'">
+        <div class="card-header title-section text-white mb-1">
+          <h6 class="mb-0 text-white">Chatarra</h6>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+
+            <div class="col-md-6">
+              <div class="row align-items-center">
+                <label class="col-4 col-form-label">Valor Chatarra Kg</label>
+                <div class="col-8">
+                  <input type="number" class="form-control" formControlName="valor_chatarra_kg" />
+                </div>              
+              </div>              
+            </div>
+
+            <div class="col-md-6">
+              <div class="row align-items-center">
+                <label class="col-4 col-form-label">Peso Chatarra Kg</label>
+                <div class="col-8">
+                  <input type="number" class="form-control" formControlName="peso_chatarra_kg" />
+                </div>              
+              </div>              
+            </div>
+
+            <div class="col-md-6">
+              <div class="row align-items-center">
+                <label class="col-4 col-form-label">Valor Total Chatarra</label>
+                <div class="col-8">
+                  <input type="number" class="form-control" formControlName="valor_total_chatarra" readonly />
+                </div>              
+              </div>              
+            </div>
+
+          </div>
+
+          
+        </div>
+      </div>
+
+
+      <hr>
+      <div class="card mt-3">
+        <div class="card-header title-section text-white mb-1">
+          <h6 class="mb-0 text-white">Limitaciones o Posibles Fuentes de Error</h6>
+        </div>
+        <div class="card-body">
+          <div formArrayName="limitaciones">
+            <div *ngFor="let item of limitaciones.controls; let i = index" [formGroupName]="i" class="mb-2">
+              <div class="input-group">
+                <input type="text" class="form-control" formControlName="texto" placeholder="Describa una limitación o posible fuente de error">
+                <button type="button" class="btn btn-danger" (click)="removeLimitacion(i)">
+                  <i class="bi bi-trash"></i> Eliminar
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <button type="button" class="btn btn-primary mt-2" (click)="addLimitacion()">
+            <i class="bi bi-plus-circle"></i> Agregar Limitación
+          </button>
+        </div>
+      </div>
+
+      <hr>
+<div class="card mt-3">
+  <div class="card-header title-section text-white mb-1">
+    <h6 class="mb-0 text-white mb-1">Estado de Llantas (%)</h6>
+  </div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Llanta Delantera Izquierda</label>
+        <select class="form-select" formControlName="llanta_delantera_izquierda">
+          <option value="">Seleccione...</option>
+          <option *ngFor="let p of porcentajes" [value]="p">{{ p }}%</option>
+        </select>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Llanta Delantera Derecha</label>
+        <select class="form-select" formControlName="llanta_delantera_derecha">
+          <option value="">Seleccione...</option>
+          <option *ngFor="let p of porcentajes" [value]="p">{{ p }}%</option>
+        </select>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Llanta Trasera Izquierda</label>
+        <select class="form-select" formControlName="llanta_trasera_izquierda">
+          <option value="">Seleccione...</option>
+          <option *ngFor="let p of porcentajes" [value]="p">{{ p }}%</option>
+        </select>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Llanta Trasera Derecha</label>
+        <select class="form-select" formControlName="llanta_trasera_derecha">
+          <option value="">Seleccione...</option>
+          <option *ngFor="let p of porcentajes" [value]="p">{{ p }}%</option>
+        </select>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Llanta de Repuesto</label>
+        <select class="form-select" formControlName="llanta_repuesto">
+          <option value="">Seleccione...</option>
+          <option *ngFor="let p of porcentajes" [value]="p">{{ p }}%</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Estado Automotor (solo visible si formato es "Sec. Movilidad Bogotá") -->
+<div
+  class="card mt-3"
+  *ngIf="form.get('avaluo.formato')?.value === 'Sec. Movilidad Bogotá'"
+>
+  <div class="card-header title-section text-white mb-1">
+    <h6 class="mb-0 text-white">Estado Automotor</h6>
+  </div>
+  <div class="card-body">
+    <div class="row g-3">
+
+      <!-- Latonería -->
+      <div class="col-md-6">
+        <label class="form-label">Latonería</label>
+        <select class="form-select" formControlName="latoneria_estado">
+          <option value="">Seleccione...</option>
+          <option>Bueno</option>
+          <option>Regular</option>
+          <option>Malo</option>
+          <option>Desfavorable</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Valor Latonería</label>
+        <input type="number" class="form-control" formControlName="latoneria_valor" />
+      </div>
+
+      <!-- Pintura -->
+      <div class="col-md-6">
+        <label class="form-label">Pintura</label>
+        <select class="form-select" formControlName="pintura_estado">
+          <option value="">Seleccione...</option>
+          <option>Bueno</option>
+          <option>Regular</option>
+          <option>Malo</option>
+          <option>Desfavorable</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+       
+      </div>
+
+      <!-- Tapicería -->
+      <div class="col-md-6">
+        <label class="form-label">Tapicería</label>
+        <select class="form-select" formControlName="tapiceria_estado">
+          <option value="">Seleccione...</option>
+          <option>Bueno</option>
+          <option>Regular</option>
+          <option>Malo</option>
+          <option>Desfavorable</option>
+          <option>No Presenta</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Valor Tapicería</label>
+        <input type="number" class="form-control" formControlName="tapiceria_valor" />
+      </div>
+
+      <!-- Motor -->
+      <div class="col-md-6">
+        <label class="form-label">Motor</label>
+        <select class="form-select" formControlName="motor_estado">
+          <option value="">Seleccione...</option>
+          <option>Operativo</option>
+          <option>Inoperativo</option>
+          <option>No Presenta</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Valor Motor</label>
+        <input type="number" class="form-control" formControlName="motor_valor" />
+      </div>
+
+      <!-- Chasis -->
+      <div class="col-md-6">
+        <label class="form-label">Chasis</label>
+        <select class="form-select" formControlName="chasis_estado">
+          <option value="">Seleccione...</option>
+          <option>Bueno</option>
+          <option>Regular</option>
+          <option>Malo</option>
+          <option>Desfavorable</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Valor Chasis</label>
+        <input type="number" class="form-control" formControlName="chasis_valor" />
+      </div>
+
+      <!-- Transmisión -->
+      <div class="col-md-6">
+        <label class="form-label">Transmisión</label>
+        <select class="form-select" formControlName="transmision_estado">
+          <option value="">Seleccione...</option>
+          <option>Bueno</option>
+          <option>Regular</option>
+          <option>Malo</option>
+          <option>Desfavorable</option>
+          <option>No Presenta</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Valor Transmisión</label>
+        <input type="number" class="form-control" formControlName="transmision_valor" />
+      </div>
+
+      <!-- Sistema Freno -->
+      <div class="col-md-6">
+        <label class="form-label">Sistema Freno</label>
+        <select class="form-select" formControlName="frenos_estado">
+          <option value="">Seleccione...</option>
+          <option>Bueno</option>
+          <option>Regular</option>
+          <option>Malo</option>
+          <option>Desfavorable</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Valor Freno</label>
+        <input type="number" class="form-control" formControlName="frenos_valor" />
+      </div>
+
+      <!-- Refrigeración -->
+      <div class="col-md-6">
+        <label class="form-label">Refrigeración</label>
+        <select class="form-select" formControlName="refrigeracion_estado">
+          <option value="">Seleccione...</option>
+          <option>Bueno</option>
+          <option>Regular</option>
+          <option>Malo</option>
+          <option>Desfavorable</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Valor Refrigeración</label>
+        <input type="number" class="form-control" formControlName="refrigeracion_valor" />
+      </div>
+
+      <!-- Sistema Eléctrico -->
+      <div class="col-md-6">
+        <label class="form-label">Sistema Eléctrico</label>
+        <select class="form-select" formControlName="electrico_estado">
+          <option value="">Seleccione...</option>
+          <option>Bueno</option>
+          <option>Regular</option>
+          <option>Malo</option>
+          <option>Desfavorable</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Valor Eléctrico</label>
+        <input type="number" class="form-control" formControlName="electrico_valor" />
+      </div>
+
+      <!-- Tanque Combustible -->
+      <div class="col-md-6">
+        <label class="form-label">Tanque Combustible</label>
+        <select class="form-select" formControlName="tanque_estado">
+          <option value="">Seleccione...</option>
+          <option>Bueno</option>
+          <option>Malo</option>
+          <option>No Presenta</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Valor Tanque</label>
+        <input type="number" class="form-control" formControlName="tanque_valor" />
+      </div>
+
+      <!-- Batería -->
+      <div class="col-md-6">
+        <label class="form-label">Batería</label>
+        <select class="form-select" formControlName="bateria_estado">
+          <option value="">Seleccione...</option>
+          <option>Presenta</option>
+          <option>No Presenta</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Valor Batería</label>
+        <input type="number" class="form-control" formControlName="bateria_valor" />
+      </div>
+
+      <!-- Llantas -->
+      <div class="col-md-6">
+        <label class="form-label">Llantas</label>
+        <select class="form-select" formControlName="llantas_estado">
+          <option value="">Seleccione...</option>
+          <option>Buenas</option>
+          <option>Malas</option>
+          <option>No Presenta</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        
+      </div>
+
+      <!-- Llave -->
+      <div class="col-md-6">
+        <label class="form-label">Llave</label>
+        <select class="form-select" formControlName="llave_estado">
+          <option value="">Seleccione...</option>
+          <option>Presenta</option>
+          <option>No Presenta</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Valor Llave</label>
+        <input type="number" class="form-control" formControlName="llave_valor" />
+      </div>
+
+      <!-- Vidrios -->
+      <div class="col-md-6">
+        <label class="form-label">Vidrios</label>
+        <select class="form-select" formControlName="vidrios_estado">
+          <option value="">Seleccione...</option>
+          <option>Buenos</option>
+          <option>Fisurado</option>
+          <option>Mal Estado</option>
+          <option>No Aplica</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Valor Vidrios</label>
+        <input type="number" class="form-control" formControlName="vidrios_valor" />
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<div class="card mt-3">
+  <div class="card-header title-section text-white mb-1">
+    <h6 class="mb-0 text-white mb-1">Observaciones</h6>
+  </div>
+  <div class="card-body">
+    <div class="row g-3">
+      
+
+
+      <div class="col-md-6">
+        <label class="form-label">Observaciones</label>
+        <textarea class="form-control" formControlName="observaciones"></textarea>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+
+    </div>
+  </div>
+
+  <!-- ===================== ACCIONES ===================== -->
+  <div class="d-flex gap-2">
+    <button class="btn btn-primary" (click)="guardar()" type="button">
+      {{ isEdit ? 'Actualizar Avalúo' : 'Crear Avalúo' }}
+    </button>
+   
+  </div>
+</div>

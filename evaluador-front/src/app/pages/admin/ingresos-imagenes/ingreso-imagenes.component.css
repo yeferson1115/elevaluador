@@ -1,0 +1,78 @@
+.image-container {
+  position: relative;
+  display: inline-block;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  cursor: pointer;
+  border-radius: 0.25rem;
+  z-index: 1; /* debajo del botón eliminar */
+}
+
+.image-container:hover .overlay {
+  opacity: 1;
+}
+
+button.btn-danger {
+  z-index: 2; /* por encima del overlay */
+}
+
+/* Estilos para Drag & Drop */
+.drag-over {
+  border-color: #0d6efd !important;
+  background-color: rgba(13, 110, 253, 0.05) !important;
+  border-style: dashed !important;
+}
+
+.max-reached {
+  opacity: 0.7;
+}
+
+.drag-drop-zone {
+  padding: 10px;
+  border: 2px dashed #dee2e6;
+  border-radius: 5px;
+  margin-top: 10px;
+  background-color: #f8f9fa;
+  transition: all 0.3s ease;
+}
+
+.drag-drop-zone:hover {
+  border-color: #0d6efd;
+  background-color: rgba(13, 110, 253, 0.05);
+}
+
+.empty-slot {
+  background-color: #f8f9fa;
+  border-color: #dee2e6 !important;
+}
+
+.border-dashed {
+  border-style: dashed !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .col-md-3 {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+}
+
+@media (max-width: 576px) {
+  .col-md-3 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
