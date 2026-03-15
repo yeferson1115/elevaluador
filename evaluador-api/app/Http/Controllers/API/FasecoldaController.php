@@ -10,6 +10,82 @@ use App\Imports\FasecoldaImport;
 
 class FasecoldaController extends Controller
 {
+
+    public function index(Request $request)
+    {
+        $query = FasecoldaValor::query()->select('codigo_fasecolda')->distinct();
+
+        if ($request->filled('codigo')) {
+            $codigo = $request->get('codigo');
+            $query->where('codigo_fasecolda', 'like', "%{$codigo}%");
+        }
+
+        $codigos = $query->orderBy('codigo_fasecolda')
+            ->paginate((int) $request->get('per_page', 10));
+
+        $codigos->getCollection()->transform(function ($item) {
+            $codigo = $item->codigo_fasecolda;
+            $registros = FasecoldaValor::where('codigo_fasecolda', $codigo)->count();
+            $ultimaActualizacion = FasecoldaValor::where('codigo_fasecolda', $codigo)->max('updated_at');
+
+            return [
+                'codigo_fasecolda' => $codigo,
+                'registros' => $registros,
+                'updated_at' => $ultimaActualizacion,
+            ];
+        });
+
+        return response()->json($codigos);
+    }
+
+    public function destroy($codigo)
+    {
+        $eliminados = FasecoldaValor::where('codigo_fasecolda', $codigo)->delete();
+
+        if ($eliminados === 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se encontró la memoria indicada'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Memoria eliminada correctamente'
+        ]);
+    }
+
+    public function update(Request $request, $codigo)
+    {
+        $request->validate([
+            'codigo_fasecolda' => 'required|string|max:50'
+        ]);
+
+        $nuevoCodigo = $request->codigo_fasecolda;
+
+        if ($nuevoCodigo !== $codigo && FasecoldaValor::where('codigo_fasecolda', $nuevoCodigo)->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ya existe una memoria con ese código'
+            ], 422);
+        }
+
+        $actualizados = FasecoldaValor::where('codigo_fasecolda', $codigo)
+            ->update(['codigo_fasecolda' => $nuevoCodigo]);
+
+        if ($actualizados === 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se encontró la memoria indicada'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Código de memoria actualizado correctamente'
+        ]);
+    }
+
     public function import(Request $request)
     {
         $request->validate([

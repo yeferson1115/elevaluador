@@ -39,6 +39,7 @@
               <th>ID</th>
               <th>Tipo</th>
               <th>Cilindraje</th>
+              <th>¿Especial?</th>
               <th>Llantas</th>
               <th>Tapicería</th>
               <th>SOAT</th>
@@ -53,6 +54,7 @@
               <td>{{ item.id }}</td>
               <td>{{ item.tipo }}</td>
               <td>{{ item.cilindraje_to }} cc - {{ item.cilindraje_from }} cc</td>
+              <td>{{ formatEspecial(item.especial) }}</td>
               <td>{{ formatCurrency(item.llantas) }}</td>
               <td>{{ formatCurrency(item.tapiceria) }}</td>
               <td>{{ formatCurrency(item.soat) }}</td>
@@ -75,14 +77,14 @@
             
             <!-- Mostrar cuando no hay datos y no está cargando -->
             <tr *ngIf="valoresRepuestos.length === 0 && !loading">
-              <td colspan="8" class="text-center py-4">
+              <td colspan="9" class="text-center py-4">
                 No se encontraron registros
               </td>
             </tr>
             
             <!-- Mostrar cuando está cargando -->
             <tr *ngIf="loading">
-              <td colspan="8" class="text-center py-4">
+              <td colspan="9" class="text-center py-4">
                 <div class="spinner-border text-primary" role="status">
                   <span class="visually-hidden">Cargando...</span>
                 </div>
