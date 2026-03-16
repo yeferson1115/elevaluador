@@ -1,6 +1,6 @@
 <div class="col-md-12 mb-1">
   <div class="d-flex align-items-center">
-    <label class="form-label me-2 mb-0" [style.width.px]="150">{{ label || formControlName }}</label>
+    <label class="form-label me-2 mb-0" [style.width.px]="150">{{ label }}</label>
     <select class="form-select" [formControlName]="formControlName">
       <option value="">Seleccione</option>
       <option *ngFor="let option of options" [value]="option">{{ option }}</option>
