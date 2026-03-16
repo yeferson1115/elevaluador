@@ -16,11 +16,54 @@ use App\Models\InspeccionIndicadores;
 use App\Models\InspeccionParteBaja;
 use App\Models\InspeccionAccesorios;
 use App\Models\InspeccionRevisionVisualPuntoLiviano;
+use App\Models\InspeccionRevisionVisualPuntoMoto;
 
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class InspeccionController extends Controller
 {
+    private function tipoVehiculoUsaRevisionPuntoLiviano(?string $tipoVehiculo): bool
+    {
+        return $tipoVehiculo === 'Liviano';
+    }
+
+    private function tipoVehiculoUsaRevisionPuntoMoto(?string $tipoVehiculo): bool
+    {
+        return in_array($tipoVehiculo, ['Motocileta', 'Motocicleta'], true);
+    }
+
+    private function guardarRevisionVisualPuntoLiviano(Inspeccion $inspeccion, array $data): void
+    {
+        if (!array_key_exists('inspeccion_revision_visual_punto_liviano', $data) || !is_array($data['inspeccion_revision_visual_punto_liviano'])) {
+            return;
+        }
+
+        if (!$this->tipoVehiculoUsaRevisionPuntoLiviano($data['tipo_vehiculo'] ?? null)) {
+            return;
+        }
+
+        $inspeccion->inspeccionRevisionVisualPuntoLiviano()->updateOrCreate(
+            ['inspeccion_id' => $inspeccion->id],
+            $data['inspeccion_revision_visual_punto_liviano']
+        );
+    }
+
+    private function guardarRevisionVisualPuntoMoto(Inspeccion $inspeccion, array $data): void
+    {
+        if (!array_key_exists('inspeccion_revision_visual_punto_moto', $data) || !is_array($data['inspeccion_revision_visual_punto_moto'])) {
+            return;
+        }
+
+        if (!$this->tipoVehiculoUsaRevisionPuntoMoto($data['tipo_vehiculo'] ?? null)) {
+            return;
+        }
+
+        $inspeccion->inspeccionRevisionVisualPuntoMoto()->updateOrCreate(
+            ['inspeccion_id' => $inspeccion->id],
+            $data['inspeccion_revision_visual_punto_moto']
+        );
+    }
+
     // Obtener listado paginado con búsqueda
     public function index(Request $request)
     {
@@ -60,7 +103,8 @@ public function show($id)
     'inspeccion.inspeccionTapiceria',
     'inspeccion.inspeccionAccesorios',
     'inspeccion.inspeccionParteBaja',
-    'inspeccion.inspeccionRevisionVisualPuntoLiviano'
+    'inspeccion.inspeccionRevisionVisualPuntoLiviano',
+    'inspeccion.inspeccionRevisionVisualPuntoMoto'
 ])
 ->find($id);
 
@@ -83,6 +127,7 @@ public function show($id)
         $inspeccion->setRelation('inspeccionVisual', new \App\Models\InspeccionVisual(array_fill_keys((new \App\Models\InspeccionVisual)->getFillable(), null)));
         $inspeccion->setRelation('inspeccionRevisionVisual', new \App\Models\InspeccionRevisionVisual(array_fill_keys((new \App\Models\InspeccionRevisionVisual)->getFillable(), null)));
          $inspeccion->setRelation('inspeccionRevisionVisualPuntoLiviano', new \App\Models\InspeccionRevisionVisualPuntoLiviano(array_fill_keys((new \App\Models\InspeccionRevisionVisualPuntoLiviano)->getFillable(), null)));
+         $inspeccion->setRelation('inspeccionRevisionVisualPuntoMoto', new \App\Models\InspeccionRevisionVisualPuntoMoto(array_fill_keys((new \App\Models\InspeccionRevisionVisualPuntoMoto)->getFillable(), null)));
 
         $ingreso->setRelation('inspeccion', $inspeccion);
     } else {
@@ -120,6 +165,9 @@ public function show($id)
 
         if (!$inspeccion->inspeccionRevisionVisualPuntoLiviano)
             $inspeccion->setRelation('inspeccionRevisionVisualPuntoLiviano', new \App\Models\InspeccionRevisionVisualPuntoLiviano(array_fill_keys((new \App\Models\InspeccionRevisionVisualPuntoLiviano)->getFillable(), null)));
+
+        if (!$inspeccion->inspeccionRevisionVisualPuntoMoto)
+            $inspeccion->setRelation('inspeccionRevisionVisualPuntoMoto', new \App\Models\InspeccionRevisionVisualPuntoMoto(array_fill_keys((new \App\Models\InspeccionRevisionVisualPuntoMoto)->getFillable(), null)));
 
         
     }
@@ -201,9 +249,8 @@ public function show($id)
         $inspeccion->inspeccionRevisionVisual()->create($data['inspeccion_revision_visual']);
     }
 
-    if (isset($data['inspeccion_revision_visual_punto_liviano'])) {
-        $inspeccion->inspeccionRevisionVisualPuntoLiviano()->create($data['inspeccion_revision_visual_punto_liviano']);
-    }
+    $this->guardarRevisionVisualPuntoLiviano($inspeccion, $data);
+    $this->guardarRevisionVisualPuntoMoto($inspeccion, $data);
 
 
     
@@ -220,7 +267,8 @@ public function show($id)
             'inspeccionParteBaja',
             'inspeccionVisual',
             'inspeccionRevisionVisual',
-            'inspeccionRevisionVisualPuntoLiviano'
+            'inspeccionRevisionVisualPuntoLiviano',
+            'inspeccionRevisionVisualPuntoMoto'
         ])->find($inspeccion->id);
         $ingreso = Ingreso::with('inspeccion','images','historicoPropietarios')->find($inspeccion->ingreso_id);
         
@@ -252,7 +300,11 @@ public function show($id)
             'inspeccionExterior',
             'inspeccionIndicadores',
             'inspeccionParteBaja',
-            'inspeccionAccesorios'
+            'inspeccionAccesorios',
+            'inspeccionVisual',
+            'inspeccionRevisionVisual',
+            'inspeccionRevisionVisualPuntoLiviano',
+            'inspeccionRevisionVisualPuntoMoto'
         ]),
     ], 201);
 }
@@ -312,8 +364,7 @@ public function show($id)
             'inspeccion_exterior'     => 'inspeccionExterior',
             'inspeccion_parte_baja'   => 'inspeccionParteBaja',
             'inspeccion_indicadores'  => 'inspeccionIndicadores',
-            'inspeccion_revision_visual' => 'inspeccionRevisionVisual',
-            'inspeccion_revision_visual_punto_liviano'=>'inspeccionRevisionVisualPuntoLiviano'
+            'inspeccion_revision_visual' => 'inspeccionRevisionVisual'
         ];
 
         foreach ($relaciones as $campo => $relacion) {
@@ -326,6 +377,9 @@ public function show($id)
                 }
             }
         }
+
+        $this->guardarRevisionVisualPuntoLiviano($inspeccion, $data);
+        $this->guardarRevisionVisualPuntoMoto($inspeccion, $data);
 
         // Actualizar accesorios (borrar y crear nuevos si se envían)
         if (isset($data['accesorios']) && is_array($data['accesorios'])) {
@@ -353,7 +407,8 @@ public function show($id)
             'inspeccionParteBaja',
             'inspeccionVisual',
             'inspeccionRevisionVisual',
-            'inspeccionRevisionVisualPuntoLiviano'
+            'inspeccionRevisionVisualPuntoLiviano',
+            'inspeccionRevisionVisualPuntoMoto'
         ])->find($inspeccion->id);
         $ingreso = Ingreso::with('inspeccion','images','historicoPropietarios')->find($request->id);
         
@@ -385,6 +440,10 @@ public function show($id)
                 'inspeccionIndicadores',
                 'inspeccionParteBaja',
                 'inspeccionAccesorios',
+                'inspeccionVisual',
+                'inspeccionRevisionVisual',
+                'inspeccionRevisionVisualPuntoLiviano',
+                'inspeccionRevisionVisualPuntoMoto',
             ]),
         ]);
     }

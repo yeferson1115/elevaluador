@@ -103,4 +103,10 @@ class Inspeccion extends Model
 
 
 
+
+
+    public function inspeccionRevisionVisualPuntoMoto()
+    {
+        return $this->hasOne(InspeccionRevisionVisualPuntoMoto::class);
+    }
 }

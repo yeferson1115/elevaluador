@@ -2413,7 +2413,9 @@
           
           </div>
         </div>
+      </div>
 
+      <div class="card mb-4" formGroupName="inspeccion_revision_visual_punto_moto">
         <div class="card-body row g-3" [hidden]="!isMotocicleta">
           <div class="col-md-6" *ngFor="let seccion of motocicletaRevisionVisual">
             <div class="card-header fw-semibold title-section mt-3 mb-1">{{ seccion.categoria }}</div>
@@ -2425,7 +2427,6 @@
             </app-inspeccion-select>
           </div>
         </div>
-
       </div>
       <hr>
       <div class="card-body row" formGroupName="inspeccion_revision_visual" >
