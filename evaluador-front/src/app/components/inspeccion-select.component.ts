@@ -26,12 +26,28 @@ export class InspeccionSelectComponent {
     fugas: ['Sin fuga', 'Humedad', 'Fuga sin goteo', 'Fuga con goteo', 'Fuga continua', 'No verificable', 'N/A'],
     funcionamiento: ['Funciona', 'No funciona', 'No verificable', 'N/A'],
     damaged: ['Golpe', 'Abolladura', 'Rayón', 'Leve', 'Medio', 'Fuerte', 'Removido', 'Bueno', 'N/A'],
-    condición: ['Bueno', 'Regular', 'Malo', 'No verificable', 'N/A'],
+    condicion: ['Bueno', 'Regular', 'Malo', 'No verificable', 'N/A'],
     mecanica: ['Excelente', 'Bueno', 'Regular', 'Malo', 'Deficiente', 'No verificable', 'N/A'],
     llantas: ['Excelente', 'Bueno', 'Regular', 'Malo', 'Deficiente', 'No verificable', 'N/A']
   };
 
+  private normalizeSelectorType(value: string | null | undefined): string {
+    return (value ?? 'damaged')
+      .toString()
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+  }
+
   get options(): string[] {
-    return this.selectorOptions[this.selectorType.toLowerCase()] ?? this.selectorOptions['damaged'];
+    const key = this.normalizeSelectorType(this.selectorType);
+    const selectedOptions = this.selectorOptions[key];
+
+    if (Array.isArray(selectedOptions) && selectedOptions.length > 0) {
+      return selectedOptions;
+    }
+
+    return this.selectorOptions['damaged'];
   }
 }
