@@ -17,7 +17,7 @@ import { ReactiveFormsModule, ControlContainer } from '@angular/forms';
 })
 export class InspeccionSelectComponent {
   @Input() label!: string;
-  @Input() formControlName!: string;
+  @Input() controlName!: string;
   @Input() selectorType = 'damaged';
 
   private readonly selectorOptions: Record<string, string[]> = {
