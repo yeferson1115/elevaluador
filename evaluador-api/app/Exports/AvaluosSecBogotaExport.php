@@ -46,13 +46,8 @@ class AvaluosSecBogotaExport implements FromQuery, WithHeadings, WithMapping
             'PLACAS',
             'FECHA',
             'VIGENTES',
-            'INSPECCION',
-            'NAVE',
             'AVALUADOR',
             'PATIO',
-            'FILA',
-            'UBICACIÓN',
-            'INFORMACION ADICIONAL',
             'INGRESO A PATIOS',
             'ESTADO_VEHICULO',
             'TIPOSERVICIO',
@@ -88,8 +83,6 @@ class AvaluosSecBogotaExport implements FromQuery, WithHeadings, WithMapping
             'BATERIA',
             'LLANTAS',
             'LLAVE',
-            'FALTANTES',
-            'ESTADO GENERAL',
             'VLR REPARACION',
             '%',
             'REPOSICIÓN',
@@ -98,7 +91,6 @@ class AvaluosSecBogotaExport implements FromQuery, WithHeadings, WithMapping
             'FUENTE',
             'CONCEPTO TECNICO',
             'PESO',            
-            'AVALUO POR PESO',
             'AVALUO',
             'OBSERVACION'
         ];
@@ -197,26 +189,11 @@ class AvaluosSecBogotaExport implements FromQuery, WithHeadings, WithMapping
             // VIGENTES (¿días vigentes?)
             '', // Dejar vacío por ahora
             
-            // INSPECCION
-            $ingreso->avaluo->fecha_inspeccion ?? '',
-            
-            // NAVE
-            '', // Dejar vacío por ahora
-            
             // ACCION (usar acción del avalúo)
             $ingreso->avaluo->evaluador ?? 'AVALUAR',
             
             // PATIO
             $ingreso->avaluo->ubicacion ?? '',
-            
-            // FILA
-            $ingreso->avaluo->fila ?? '',
-            
-            // UBICACIÓN
-            $ingreso->ubicacion_activo ?? '',
-            
-            // INFORMACION ADICIONAL
-            $ingreso->avaluo->informacion_adicional ?? '',
             
             // INGRESO A PATIOS
             $ingreso->fecha_solicitud ?? '',
@@ -323,12 +300,6 @@ class AvaluosSecBogotaExport implements FromQuery, WithHeadings, WithMapping
             // LLAVE (Valor llave)
             $ingreso->avaluo->llave_estado ?? '',
             
-            // FALTANTES (Descripción de faltantes)
-            $ingreso->avaluo->descripcion_faltantes ?? '',
-            
-            // ESTADO GENERAL
-            $ingreso->avaluo->estado_general ?? '',
-            
             // VLR REPARACION (Valor de reparación total)
             $totalFinal  ?? 0,
             
@@ -352,10 +323,6 @@ class AvaluosSecBogotaExport implements FromQuery, WithHeadings, WithMapping
             
             // PESO (Peso chatarra)
             $pesoChatarraKg,           
-           
-            
-            // AVALUO POR PESO
-            $avaluoPorPeso,
             
             // AVALUO (Valor total final)
             $valorTotal,
