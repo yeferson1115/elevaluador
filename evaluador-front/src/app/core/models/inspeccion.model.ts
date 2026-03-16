@@ -255,6 +255,54 @@ export interface InspeccionRevisionVisualPuntoLiviano {
   paral_central_izq:string | null;
 }
 
+export interface InspeccionRevisionVisualPuntoMoto {
+  id?: number | null;
+  unidad_farola_moto:string | null;
+  visera:string | null;
+  direccionales_moto:string | null;
+  manillar:string | null;
+  espejo_izq_moto:string | null;
+  espejo_der_moto:string | null;
+  carenaje_delantero:string | null;
+  horquilla:string | null;
+  guardafango_frontal:string | null;
+  tanque_combustible:string | null;
+  sillon:string | null;
+  chasis:string | null;
+  estribo_moto:string | null;
+  tapa_lateral_izq:string | null;
+  tapa_lateral_der:string | null;
+  tapa_trasera_izq:string | null;
+  tapa_trasera_der:string | null;
+  guardafango_trasero:string | null;
+  stop_moto:string | null;
+  pata:string | null;
+  caballete:string | null;
+  mango_calapie:string | null;
+  maleta:string | null;
+  cofre_trasero:string | null;
+  barra_telescopica_izq:string | null;
+  barra_telescopica_der:string | null;
+  amortiguador_trasero_moto:string | null;
+  motor_moto:string | null;
+  kit_arrastre:string | null;
+  sistema_escape:string | null;
+  bateria_moto:string | null;
+  mango_acelerador:string | null;
+  manigueta_freno:string | null;
+  manigueta_embrague:string | null;
+  deposito_liquido_hidraulico:string | null;
+  tablero_instrumentos:string | null;
+  pedal_freno:string | null;
+  pedal_cambios:string | null;
+  disco_campana_delantera:string | null;
+  disco_campana_trasera:string | null;
+  aceite_motor_fugas:string | null;
+  combustible_fugas:string | null;
+  llanta_delantera_moto:string | null;
+  llanta_trasera_moto:string | null;
+}
+
 export interface Inspeccion {
   id?: number | null;
   ingreso_id: number | null;
@@ -292,5 +340,6 @@ export interface Inspeccion {
   inspeccion_visual: InspeccionVisual[];
   inspeccion_revision_visual:RevisionVisual;
   inspeccion_revision_visual_punto_liviano:InspeccionRevisionVisualPuntoLiviano;
+  inspeccion_revision_visual_punto_moto:InspeccionRevisionVisualPuntoMoto;
   
 }

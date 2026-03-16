@@ -21,6 +21,88 @@ export class InspeccionFormComponent implements OnInit {
   isEdit = false;
   avaluoId?: number;
 
+  readonly motocicletaRevisionVisual = [
+    {
+      categoria: 'Delantero',
+      items: [
+        { label: 'Unidad Farola', controlName: 'unidad_farola_moto', selectorType: 'damaged' },
+        { label: 'Visera', controlName: 'visera', selectorType: 'damaged' },
+        { label: 'Direccionales', controlName: 'direccionales_moto', selectorType: 'damaged' },
+        { label: 'Manillar', controlName: 'manillar', selectorType: 'damaged' },
+        { label: 'Espejo izq', controlName: 'espejo_izq_moto', selectorType: 'damaged' },
+        { label: 'Espejo der', controlName: 'espejo_der_moto', selectorType: 'damaged' },
+        { label: 'Carenaje delantero', controlName: 'carenaje_delantero', selectorType: 'damaged' },
+        { label: 'Horquilla', controlName: 'horquilla', selectorType: 'damaged' },
+        { label: 'Guardafango frontal', controlName: 'guardafango_frontal', selectorType: 'damaged' }
+      ]
+    },
+    {
+      categoria: 'Exterior',
+      items: [
+        { label: 'Tanque de combustible', controlName: 'tanque_combustible', selectorType: 'damaged' },
+        { label: 'Sillin', controlName: 'sillon', selectorType: 'damaged' },
+        { label: 'Chasis', controlName: 'chasis', selectorType: 'damaged' },
+        { label: 'Estribo', controlName: 'estribo_moto', selectorType: 'damaged' },
+        { label: 'Tapa lateral izq', controlName: 'tapa_lateral_izq', selectorType: 'damaged' },
+        { label: 'Tapa lateral der', controlName: 'tapa_lateral_der', selectorType: 'damaged' },
+        { label: 'Tapa trasera izq', controlName: 'tapa_trasera_izq', selectorType: 'damaged' },
+        { label: 'Tapa trasera der', controlName: 'tapa_trasera_der', selectorType: 'damaged' },
+        { label: 'Guardafango trasero', controlName: 'guardafango_trasero', selectorType: 'damaged' },
+        { label: 'Stop', controlName: 'stop_moto', selectorType: 'damaged' },
+        { label: 'Pata', controlName: 'pata', selectorType: 'damaged' },
+        { label: 'Caballete', controlName: 'caballete', selectorType: 'damaged' },
+        { label: 'Mango calapie', controlName: 'mango_calapie', selectorType: 'damaged' },
+        { label: 'Maleta', controlName: 'maleta', selectorType: 'damaged' },
+        { label: 'Cofre trasero', controlName: 'cofre_trasero', selectorType: 'damaged' }
+      ]
+    },
+    {
+      categoria: 'Suspensión',
+      items: [
+        { label: 'Barra telescopica izq', controlName: 'barra_telescopica_izq', selectorType: 'funcionamiento' },
+        { label: 'Barra telescopica der', controlName: 'barra_telescopica_der', selectorType: 'funcionamiento' },
+        { label: 'Amortiguador trasero', controlName: 'amortiguador_trasero_moto', selectorType: 'funcionamiento' }
+      ]
+    },
+    {
+      categoria: 'Mecanica',
+      items: [
+        { label: 'Motor', controlName: 'motor_moto', selectorType: 'mecanica' },
+        { label: 'Kit de arrastre', controlName: 'kit_arrastre', selectorType: 'mecanica' },
+        { label: 'Sistema de escape', controlName: 'sistema_escape', selectorType: 'damaged' },
+        { label: 'Bateria', controlName: 'bateria_moto', selectorType: 'funcionamiento' },
+        { label: 'Mango acelerador', controlName: 'mango_acelerador', selectorType: 'funcionamiento' },
+        { label: 'Manigueta freno', controlName: 'manigueta_freno', selectorType: 'funcionamiento' },
+        { label: 'Manigueta embrague', controlName: 'manigueta_embrague', selectorType: 'funcionamiento' },
+        { label: 'Deposito liquido hidraulico', controlName: 'deposito_liquido_hidraulico', selectorType: 'estado' },
+        { label: 'Tablero de instrumentos', controlName: 'tablero_instrumentos', selectorType: 'mecanica' },
+        { label: 'Pedal freno', controlName: 'pedal_freno', selectorType: 'mecanica' },
+        { label: 'Pedal cambios', controlName: 'pedal_cambios', selectorType: 'mecanica' }
+      ]
+    },
+    {
+      categoria: 'Frenos',
+      items: [
+        { label: 'Disco / Campana delantera', controlName: 'disco_campana_delantera', selectorType: 'mecanica' },
+        { label: 'Disco / Campana trasera', controlName: 'disco_campana_trasera', selectorType: 'mecanica' }
+      ]
+    },
+    {
+      categoria: 'Fugas',
+      items: [
+        { label: 'Aceite motor', controlName: 'aceite_motor_fugas', selectorType: 'fugas' },
+        { label: 'Combustible', controlName: 'combustible_fugas', selectorType: 'fugas' }
+      ]
+    },
+    {
+      categoria: 'Llantas',
+      items: [
+        { label: 'Llanta delantera', controlName: 'llanta_delantera_moto', selectorType: 'llantas' },
+        { label: 'Llanta trasera', controlName: 'llanta_trasera_moto', selectorType: 'llantas' }
+      ]
+    }
+  ];
+
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
@@ -413,6 +495,54 @@ private buildForm(): void {
       paral_central_izq:[''],
     }),
     
+    inspeccion_revision_visual_punto_moto: this.fb.group({
+      id: [null],
+      unidad_farola_moto:[''],
+      visera:[''],
+      direccionales_moto:[''],
+      manillar:[''],
+      espejo_izq_moto:[''],
+      espejo_der_moto:[''],
+      carenaje_delantero:[''],
+      horquilla:[''],
+      guardafango_frontal:[''],
+      tanque_combustible:[''],
+      sillon:[''],
+      chasis:[''],
+      estribo_moto:[''],
+      tapa_lateral_izq:[''],
+      tapa_lateral_der:[''],
+      tapa_trasera_izq:[''],
+      tapa_trasera_der:[''],
+      guardafango_trasero:[''],
+      stop_moto:[''],
+      pata:[''],
+      caballete:[''],
+      mango_calapie:[''],
+      maleta:[''],
+      cofre_trasero:[''],
+      barra_telescopica_izq:[''],
+      barra_telescopica_der:[''],
+      amortiguador_trasero_moto:[''],
+      motor_moto:[''],
+      kit_arrastre:[''],
+      sistema_escape:[''],
+      bateria_moto:[''],
+      mango_acelerador:[''],
+      manigueta_freno:[''],
+      manigueta_embrague:[''],
+      deposito_liquido_hidraulico:[''],
+      tablero_instrumentos:[''],
+      pedal_freno:[''],
+      pedal_cambios:[''],
+      disco_campana_delantera:[''],
+      disco_campana_trasera:[''],
+      aceite_motor_fugas:[''],
+      combustible_fugas:[''],
+      llanta_delantera_moto:[''],
+      llanta_trasera_moto:[''],
+    }),
+
     inspeccion_revision_visual: this.fb.group({
       id: [null],
       pintura: [''],
@@ -507,7 +637,12 @@ get revisionVisual(): FormArray {
   return this.form.get('inspeccion.inspeccion_visual') as FormArray;
 }
 
-get revisionVisualArray(): FormGroup[] {
+  get revisionVisualArray(): FormGroup[] {
   return (this.form.get('inspeccion.inspeccion_visual') as FormArray).controls as FormGroup[];
+}
+
+get isMotocicleta(): boolean {
+  const tipoVehiculo = this.form.get('inspeccion.tipo_vehiculo')?.value;
+  return tipoVehiculo === 'Motocileta' || tipoVehiculo === 'Motocicleta';
 }
 }
