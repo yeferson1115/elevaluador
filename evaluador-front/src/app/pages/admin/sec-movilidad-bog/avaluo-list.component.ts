@@ -9,7 +9,6 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
 import { Permissions } from '../../../core/constants/permissions.const';
 import { AlertService } from '../../../core/services/alert.service';
 import { environment } from '../../../../environments/environment';
-import { HttpResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-avaluo-list',
@@ -28,6 +27,8 @@ export class AvaluoListComponent {
   avaluos: Ingreso[] = [];
   currentPage = 1;
   lastPage = 1;
+  selectedIds = new Set<number>();
+  selectionMode: 'manual' | 'allFiltered' = 'manual';
 
   constructor(private service: IngresoService, private router: Router,private alert: AlertService) {
     this.cargarAvaluos();
@@ -39,6 +40,7 @@ export class AvaluoListComponent {
     this.service.getAvaluos(page, this.filtro, 'Sec Bogota').subscribe({
       next: (response) => {
         this.avaluos = response.data;
+        this.sincronizarSeleccionPagina();
         this.currentPage = response.current_page;
         this.lastPage = response.last_page;
         this.loading = false;
@@ -75,6 +77,97 @@ export class AvaluoListComponent {
 
   onBuscar(): void {
     this.cargarAvaluos(1);
+  }
+
+  toggleSeleccion(id: number | undefined, checked: boolean): void {
+    if (!id || this.selectionMode === 'allFiltered') {
+      return;
+    }
+
+    if (checked) {
+      this.selectedIds.add(id);
+    } else {
+      this.selectedIds.delete(id);
+    }
+  }
+
+  toggleSeleccionPagina(event: Event): void {
+    if (this.selectionMode === 'allFiltered') {
+      return;
+    }
+
+    const checked = (event.target as HTMLInputElement).checked;
+
+    this.avaluos.forEach((avaluo) => {
+      if (!avaluo.id) {
+        return;
+      }
+
+      if (checked) {
+        this.selectedIds.add(avaluo.id);
+      } else {
+        this.selectedIds.delete(avaluo.id);
+      }
+    });
+  }
+
+  seleccionarVisibles(): void {
+    this.selectionMode = 'manual';
+
+    this.avaluos.forEach((avaluo) => {
+      if (avaluo.id) {
+        this.selectedIds.add(avaluo.id);
+      }
+    });
+  }
+
+  seleccionarTodosFiltrados(): void {
+    this.selectionMode = 'allFiltered';
+    this.selectedIds.clear();
+  }
+
+  limpiarSeleccion(): void {
+    this.selectionMode = 'manual';
+    this.selectedIds.clear();
+  }
+
+  estaSeleccionado(id: number | undefined): boolean {
+    if (!id) {
+      return false;
+    }
+
+    return this.selectionMode === 'allFiltered' || this.selectedIds.has(id);
+  }
+
+  get haySeleccionParcialPagina(): boolean {
+    const idsPagina = this.avaluos
+      .map((avaluo) => avaluo.id)
+      .filter((id): id is number => !!id);
+
+    return this.selectionMode !== 'allFiltered'
+      && idsPagina.some((id) => this.selectedIds.has(id))
+      && !this.todosVisiblesSeleccionados;
+  }
+
+  get todosVisiblesSeleccionados(): boolean {
+    const idsPagina = this.avaluos
+      .map((avaluo) => avaluo.id)
+      .filter((id): id is number => !!id);
+
+    return this.selectionMode === 'allFiltered'
+      || (idsPagina.length > 0 && idsPagina.every((id) => this.selectedIds.has(id)));
+  }
+
+  get totalSeleccionados(): number {
+    return this.selectedIds.size;
+  }
+
+  get exportaTodosFiltrados(): boolean {
+    return this.selectionMode === 'allFiltered';
+  }
+
+  private sincronizarSeleccionPagina(): void {
+    this.avaluos = [...this.avaluos];
   }
 
   irAImagenes(id: number): void {
@@ -119,6 +212,10 @@ onFileSelected(event: Event): void {
     return environment.url + `documentos/${ruta}`;
   }
 
+  get haySeleccionExportable(): boolean {
+    return this.exportaTodosFiltrados || this.totalSeleccionados > 0;
+  }
+
   exportarExcel(): void {
   this.loading = true;
   
@@ -144,9 +241,16 @@ onFileSelected(event: Event): void {
 
 
 exportarCertificadosZip(): void {
+  if (!this.haySeleccionExportable) {
+    this.alert.warning("Debes seleccionar al menos un registro o usar 'Seleccionar todos los filtrados' antes de exportar el ZIP.");
+    return;
+  }
+
   this.loading = true;
-  
-  this.service.exportCertificadosZip(this.filtro).subscribe({
+
+  const ids = this.exportaTodosFiltrados ? [] : Array.from(this.selectedIds);
+
+  this.service.exportCertificadosZip(this.filtro, ids).subscribe({
     next: (blob: Blob) => {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -157,7 +261,12 @@ exportarCertificadosZip(): void {
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
       this.loading = false;
-      this.alert.success('Certificados exportados exitosamente ✅');
+      const scopeMessage = this.exportaTodosFiltrados
+        ? 'todos los certificados filtrados'
+        : ids.length > 0
+          ? `${ids.length} certificado(s) seleccionado(s)`
+          : 'todos los certificados filtrados';
+      this.alert.success(`Certificados exportados exitosamente ✅ (${scopeMessage})`);
     },
     error: (error) => {
       console.error('Error al exportar certificados:', error);

@@ -219,13 +219,18 @@ import(file: File): Observable<any> {
     });
   }
 
-  exportCertificadosZip(filtro: string = ''): Observable<any> {
-  const params = new HttpParams().set('filtro', filtro);
-  return this.http.get(`${this.apiUrl}/export-certificados-zip`, {
-    params,
-    responseType: 'blob'
-  });
-}
+  exportCertificadosZip(filtro: string = '', ids: number[] = []): Observable<any> {
+    let params = new HttpParams().set('filtro', filtro);
+
+    ids.forEach((id) => {
+      params = params.append('ids[]', id.toString());
+    });
+
+    return this.http.get(`${this.apiUrl}/export-certificados-zip`, {
+      params,
+      responseType: 'blob'
+    });
+  }
 
 // En tu IngresoService (Angular)
 // En tu servicio
