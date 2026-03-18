@@ -490,8 +490,10 @@ private function obtenerIdsSeleccionados(Request $request): array
         ->all();
 }
 
-private function aplicarFiltroExportacion($query, string $tiposervicio, string $filtro = '', array $ids = [])
+private function aplicarFiltroExportacion($query, string $tiposervicio, ?string $filtro = '', array $ids = [])
 {
+    $filtro = trim((string) ($filtro ?? ''));
+
     $query->where('tiposervicio', $tiposervicio)
           ->whereHas('avaluo', function($q) {
               $q->whereNotNull('file')

@@ -28,6 +28,7 @@ export class AvaluoListComponent {
   currentPage = 1;
   lastPage = 1;
   selectedIds = new Set<number>();
+  selectionMode: 'manual' | 'allFiltered' = 'manual';
 
   constructor(private service: IngresoService, private router: Router,private alert: AlertService) {
     this.cargarAvaluos();
@@ -79,7 +80,7 @@ export class AvaluoListComponent {
   }
 
   toggleSeleccion(id: number | undefined, checked: boolean): void {
-    if (!id) {
+    if (!id || this.selectionMode === 'allFiltered') {
       return;
     }
 
@@ -91,6 +92,10 @@ export class AvaluoListComponent {
   }
 
   toggleSeleccionPagina(event: Event): void {
+    if (this.selectionMode === 'allFiltered') {
+      return;
+    }
+
     const checked = (event.target as HTMLInputElement).checked;
 
     this.avaluos.forEach((avaluo) => {
@@ -107,6 +112,8 @@ export class AvaluoListComponent {
   }
 
   seleccionarVisibles(): void {
+    this.selectionMode = 'manual';
+
     this.avaluos.forEach((avaluo) => {
       if (avaluo.id) {
         this.selectedIds.add(avaluo.id);
@@ -114,12 +121,22 @@ export class AvaluoListComponent {
     });
   }
 
+  seleccionarTodosFiltrados(): void {
+    this.selectionMode = 'allFiltered';
+    this.selectedIds.clear();
+  }
+
   limpiarSeleccion(): void {
+    this.selectionMode = 'manual';
     this.selectedIds.clear();
   }
 
   estaSeleccionado(id: number | undefined): boolean {
-    return !!id && this.selectedIds.has(id);
+    if (!id) {
+      return false;
+    }
+
+    return this.selectionMode === 'allFiltered' || this.selectedIds.has(id);
   }
 
   get haySeleccionParcialPagina(): boolean {
@@ -127,7 +144,9 @@ export class AvaluoListComponent {
       .map((avaluo) => avaluo.id)
       .filter((id): id is number => !!id);
 
-    return idsPagina.some((id) => this.selectedIds.has(id)) && !this.todosVisiblesSeleccionados;
+    return this.selectionMode !== 'allFiltered'
+      && idsPagina.some((id) => this.selectedIds.has(id))
+      && !this.todosVisiblesSeleccionados;
   }
 
   get todosVisiblesSeleccionados(): boolean {
@@ -135,11 +154,16 @@ export class AvaluoListComponent {
       .map((avaluo) => avaluo.id)
       .filter((id): id is number => !!id);
 
-    return idsPagina.length > 0 && idsPagina.every((id) => this.selectedIds.has(id));
+    return this.selectionMode === 'allFiltered'
+      || (idsPagina.length > 0 && idsPagina.every((id) => this.selectedIds.has(id)));
   }
 
   get totalSeleccionados(): number {
     return this.selectedIds.size;
+  }
+
+  get exportaTodosFiltrados(): boolean {
+    return this.selectionMode === 'allFiltered';
   }
 
   private sincronizarSeleccionPagina(): void {
@@ -215,7 +239,7 @@ onFileSelected(event: Event): void {
 exportarCertificadosZip(): void {
   this.loading = true;
 
-  const ids = Array.from(this.selectedIds);
+  const ids = this.exportaTodosFiltrados ? [] : Array.from(this.selectedIds);
 
   this.service.exportCertificadosZip(this.filtro, ids).subscribe({
     next: (blob: Blob) => {
@@ -228,9 +252,11 @@ exportarCertificadosZip(): void {
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
       this.loading = false;
-      const scopeMessage = ids.length > 0
-        ? `${ids.length} certificado(s) seleccionado(s)`
-        : 'todos los certificados filtrados';
+      const scopeMessage = this.exportaTodosFiltrados
+        ? 'todos los certificados filtrados'
+        : ids.length > 0
+          ? `${ids.length} certificado(s) seleccionado(s)`
+          : 'todos los certificados filtrados';
       this.alert.success(`Certificados exportados exitosamente ✅ (${scopeMessage})`);
     },
     error: (error) => {
