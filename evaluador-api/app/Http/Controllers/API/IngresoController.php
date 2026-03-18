@@ -67,8 +67,11 @@ public function index(Request $request)
         $query->where(function ($q) use ($search) {
             $q->where('placa', 'like', "%{$search}%")
                 ->orWhere('solicitante', 'like', "%{$search}%")
-                ->orWhere('documento_solicitante', 'like', "%{$search}%");
-        }); // CORRECCIÓN: Cerrar tanto la función anónima como el where()
+                ->orWhere('documento_solicitante', 'like', "%{$search}%")
+                ->orWhereHas('avaluo', function ($subQuery) use ($search) {
+                    $subQuery->where('evaluador', 'like', "%{$search}%");
+                });
+        });
     }
 
     return response()->json($query->paginate(10));

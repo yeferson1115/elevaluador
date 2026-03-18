@@ -212,6 +212,10 @@ onFileSelected(event: Event): void {
     return environment.url + `documentos/${ruta}`;
   }
 
+  get haySeleccionExportable(): boolean {
+    return this.exportaTodosFiltrados || this.totalSeleccionados > 0;
+  }
+
   exportarExcel(): void {
   this.loading = true;
   
@@ -237,6 +241,11 @@ onFileSelected(event: Event): void {
 
 
 exportarCertificadosZip(): void {
+  if (!this.haySeleccionExportable) {
+    this.alert.warning("Debes seleccionar al menos un registro o usar 'Seleccionar todos los filtrados' antes de exportar el ZIP.");
+    return;
+  }
+
   this.loading = true;
 
   const ids = this.exportaTodosFiltrados ? [] : Array.from(this.selectedIds);
