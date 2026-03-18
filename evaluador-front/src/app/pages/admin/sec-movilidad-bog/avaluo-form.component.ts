@@ -695,7 +695,25 @@ private fusionarConValoresPorDefectoIngreso(avaluoData: any): any {
       estado_registro_runt:'',
       numero_motor:'',
       numero_chasis:'',
-      tipo_carroceria:''
+      tipo_carroceria:'',
+      placa:'',
+      fecha_solicitud:'',
+      fecha_inspeccion:'',
+      fecha_matricula:'',
+      marca:'',
+      linea:'',
+      clase:'',
+      color:'',
+      cilindraje:'',
+      modelo:'',
+      kilometraje:'',
+      caja_cambios:'',
+      cantidad_ejes:'',
+      peso_bruto:'',
+      peso_mermado:'',
+      numeroVin:'',
+      tipo_servicio_vehiculo:'',
+      id:''
 
   };
 
