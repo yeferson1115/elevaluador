@@ -250,34 +250,27 @@ exportarCertificadosZip(): void {
 
   const ids = this.exportaTodosFiltrados ? [] : Array.from(this.selectedIds);
 
-  this.service.exportCertificadosZip(this.filtro, ids).subscribe({
-    next: (blob: Blob) => {
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `certificados-sec-bogota-${new Date().toISOString().split('T')[0]}.zip`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
+  this.service.exportCertificadosZipBackground(this.filtro, ids).subscribe({
+    next: (response: any) => {
       this.loading = false;
       const scopeMessage = this.exportaTodosFiltrados
         ? 'todos los certificados filtrados'
         : ids.length > 0
           ? `${ids.length} certificado(s) seleccionado(s)`
           : 'todos los certificados filtrados';
-      this.alert.success(`Certificados exportados exitosamente ✅ (${scopeMessage})`);
+      this.alert.success(`La generación del ZIP quedó en segundo plano ✅ (${scopeMessage}). Se enviará un correo a ${response?.email ?? 'tu cuenta'} con la ruta de descarga.`);
     },
     error: (error) => {
       console.error('Error al exportar certificados:', error);
-      
-      // Manejo de errores específicos
+
       if (error.status === 404) {
         this.alert.warning('No hay certificados para exportar con el filtro actual');
+      } else if (error.status === 422) {
+        this.alert.warning(error.error?.message || 'Tu usuario no tiene un correo configurado para recibir la ruta de descarga');
       } else {
-        this.alert.error('Error al generar el archivo ZIP');
+        this.alert.error('Error al encolar la generación del archivo ZIP');
       }
-      
+
       this.loading = false;
     }
   });

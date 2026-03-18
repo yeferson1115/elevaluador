@@ -23,6 +23,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Database\Eloquent\Builder;
+use App\Jobs\GenerateCertificadosZipJob;
 
 class IngresoController extends Controller
 {
@@ -1567,6 +1568,40 @@ private function generarPdfParaZipOptimizado(Ingreso $ingreso, $modoMasivo = fal
 /**
  * Método principal mejorado con detección automática
  */
+public function exportCertificadosZipBackground(Request $request)
+{
+    $user = auth()->user();
+
+    if (! $user || empty($user->email)) {
+        return response()->json([
+            'message' => 'El usuario autenticado no tiene un correo configurado para enviar la ruta de descarga.'
+        ], 422);
+    }
+
+    $filtro = $request->get('filtro', '');
+    $ids = $this->obtenerIdsSeleccionados($request);
+    $exportaTodosFiltrados = empty($ids);
+
+    $query = Ingreso::query();
+    $this->aplicarFiltroExportacion($query, 'Sec Bogota', $filtro, $ids);
+    $total = $query->count();
+
+    if ($total === 0) {
+        return response()->json([
+            'message' => 'No hay certificados con PDF disponible para exportar con el filtro actual.'
+        ], 404);
+    }
+
+    GenerateCertificadosZipJob::dispatch($user->id, $filtro, $ids, $exportaTodosFiltrados);
+
+    return response()->json([
+        'message' => 'La generación del ZIP quedó en segundo plano. Recibirás un correo con la ruta de descarga cuando esté listo.',
+        'email' => $user->email,
+        'total_estimado' => $total,
+        'modo' => $exportaTodosFiltrados ? 'todos_filtrados' : 'seleccion_manual',
+    ], 202);
+}
+
 public function exportCertificadosZipMejorado(Request $request)
 {
     $filtro = $request->get('filtro', '');
