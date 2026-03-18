@@ -30,12 +30,14 @@ export class FasecoldaImportComponent {
   editandoMemoriaCodigoOriginal: string | null = null;
   editandoMemoriaCodigoNuevo = '';
   guardandoMemoria = false;
+  editandoMemoriaPesoVacio: number | null = null;
 
   editandoRegistroId: number | null = null;
-  registroDraft: { tipo: 'clasificado' | 'corregido'; modelo: number | null; valor: number | null } = {
+  registroDraft: { tipo: 'clasificado' | 'corregido'; modelo: number | null; valor: number | null; peso_vacio: number | null } = {
     tipo: 'clasificado',
     modelo: null,
-    valor: null
+    valor: null,
+    peso_vacio: null
   };
   guardandoRegistro = false;
 
@@ -45,7 +47,8 @@ export class FasecoldaImportComponent {
     private alert: AlertService
   ) {
     this.importForm = this.fb.group({
-      codigo_fasecolda: ['', Validators.required]
+      codigo_fasecolda: ['', Validators.required],
+      peso_vacio: ['']
     });
 
     this.cargarMemorias();
@@ -71,6 +74,10 @@ export class FasecoldaImportComponent {
     const formData = new FormData();
     formData.append('file', this.selectedFile);
     formData.append('codigo_fasecolda', this.importForm.get('codigo_fasecolda')?.value);
+    const pesoVacio = this.importForm.get('peso_vacio')?.value;
+    if (pesoVacio !== null && pesoVacio !== undefined && pesoVacio !== '') {
+      formData.append('peso_vacio', pesoVacio);
+    }
 
     this.fasecoldaService.importarExcel(formData).subscribe({
       next: () => {
@@ -140,24 +147,35 @@ export class FasecoldaImportComponent {
   iniciarEdicionMemoria(memoria: FasecoldaMemoria): void {
     this.editandoMemoriaCodigoOriginal = memoria.codigo_fasecolda;
     this.editandoMemoriaCodigoNuevo = memoria.codigo_fasecolda;
+    this.editandoMemoriaPesoVacio = memoria.peso_vacio;
   }
 
   cancelarEdicionMemoria(): void {
     this.editandoMemoriaCodigoOriginal = null;
     this.editandoMemoriaCodigoNuevo = '';
+    this.editandoMemoriaPesoVacio = null;
     this.guardandoMemoria = false;
   }
 
   guardarEdicionMemoria(memoria: FasecoldaMemoria): void {
     const nuevoCodigo = this.editandoMemoriaCodigoNuevo.trim();
 
-    if (!nuevoCodigo || nuevoCodigo === memoria.codigo_fasecolda) {
+    const pesoVacio = this.editandoMemoriaPesoVacio === null || this.editandoMemoriaPesoVacio === undefined
+      ? null
+      : Number(this.editandoMemoriaPesoVacio);
+
+    if (!nuevoCodigo) {
+      this.alert.error('El código Fasecolda es obligatorio');
+      return;
+    }
+
+    if (nuevoCodigo === memoria.codigo_fasecolda && pesoVacio === memoria.peso_vacio) {
       this.cancelarEdicionMemoria();
       return;
     }
 
     this.guardandoMemoria = true;
-    this.fasecoldaService.actualizarCodigo(memoria.codigo_fasecolda, nuevoCodigo).subscribe({
+    this.fasecoldaService.actualizarCodigo(memoria.codigo_fasecolda, nuevoCodigo, pesoVacio).subscribe({
       next: () => {
         this.alert.success('Código actualizado correctamente');
         if (this.codigoSeleccionado === memoria.codigo_fasecolda) {
@@ -179,13 +197,14 @@ export class FasecoldaImportComponent {
     this.registroDraft = {
       tipo: registro.tipo === 'corregido' ? 'corregido' : 'clasificado',
       modelo: registro.modelo,
-      valor: registro.valor
+      valor: registro.valor,
+      peso_vacio: registro.peso_vacio
     };
   }
 
   cancelarEdicionRegistro(): void {
     this.editandoRegistroId = null;
-    this.registroDraft = { tipo: 'clasificado', modelo: null, valor: null };
+    this.registroDraft = { tipo: 'clasificado', modelo: null, valor: null, peso_vacio: null };
     this.guardandoRegistro = false;
   }
 
@@ -199,7 +218,8 @@ export class FasecoldaImportComponent {
     this.fasecoldaService.actualizarRegistro(registro.id, {
       tipo: this.registroDraft.tipo,
       modelo: Number(this.registroDraft.modelo),
-      valor: Number(this.registroDraft.valor)
+      valor: Number(this.registroDraft.valor),
+      peso_vacio: this.registroDraft.peso_vacio === null ? null : Number(this.registroDraft.peso_vacio)
     }).subscribe({
       next: () => {
         this.alert.success('Registro actualizado correctamente');

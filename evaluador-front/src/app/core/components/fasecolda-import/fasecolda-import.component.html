@@ -21,7 +21,20 @@
             </div>
           </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-3">
+          <div class="mb-3">
+            <label class="form-label">Peso a vacío</label>
+            <input
+              type="number"
+              class="form-control"
+              formControlName="peso_vacio"
+              min="0"
+              step="0.01"
+              placeholder="Ej: 3500"
+            >
+          </div>
+        </div>
+        <div class="col-md-3">
           <div class="mb-3">
             <label class="form-label">Archivo Excel *</label>
             <input
@@ -72,6 +85,7 @@
           <tr>
             <th>Código</th>
             <th>Registros</th>
+            <th>Peso a vacío</th>
             <th>Última actualización</th>
             <th style="width: 300px;">Acciones</th>
           </tr>
@@ -87,6 +101,12 @@
               </ng-template>
             </td>
             <td>{{ memoria.registros }}</td>
+            <td>
+              <ng-container *ngIf="editandoMemoriaCodigoOriginal === memoria.codigo_fasecolda; else pesoMemoriaNormal">
+                <input class="form-control form-control-sm" type="number" step="0.01" [(ngModel)]="editandoMemoriaPesoVacio" />
+              </ng-container>
+              <ng-template #pesoMemoriaNormal>{{ memoria.peso_vacio ?? '-' }}</ng-template>
+            </td>
             <td>{{ formatDate(memoria.updated_at) }}</td>
             <td>
               <button class="btn btn-sm btn-info me-2" (click)="verRegistros(memoria.codigo_fasecolda)" title="Ver registros">
@@ -114,11 +134,11 @@
           </tr>
 
           <tr *ngIf="!loadingMemorias && memorias.length === 0">
-            <td colspan="4" class="text-center py-4">No hay memorias cargadas</td>
+            <td colspan="5" class="text-center py-4">No hay memorias cargadas</td>
           </tr>
 
           <tr *ngIf="loadingMemorias">
-            <td colspan="4" class="text-center py-4">
+            <td colspan="6" class="text-center py-4">
               <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">Cargando...</span>
               </div>
@@ -158,6 +178,7 @@
             <th>Tipo</th>
             <th>Modelo</th>
             <th>Valor</th>
+            <th>Peso a vacío</th>
             <th>Actualizado</th>
             <th style="width: 280px;">Acciones</th>
           </tr>
@@ -187,6 +208,12 @@
               </ng-container>
               <ng-template #valorRegistroNormal>{{ registro.valor | number:'1.0-0' }}</ng-template>
             </td>
+            <td>
+              <ng-container *ngIf="editandoRegistroId === registro.id; else pesoVacioRegistroNormal">
+                <input class="form-control form-control-sm" type="number" step="0.01" [(ngModel)]="registroDraft.peso_vacio" />
+              </ng-container>
+              <ng-template #pesoVacioRegistroNormal>{{ registro.peso_vacio ?? '-' }}</ng-template>
+            </td>
             <td>{{ formatDate(registro.updated_at) }}</td>
             <td>
               <ng-container *ngIf="editandoRegistroId === registro.id; else accionesRegistroNormal">
@@ -209,11 +236,11 @@
           </tr>
 
           <tr *ngIf="!loadingRegistros && registros.length === 0">
-            <td colspan="5" class="text-center py-4">No hay registros para este código</td>
+            <td colspan="6" class="text-center py-4">No hay registros para este código</td>
           </tr>
 
           <tr *ngIf="loadingRegistros">
-            <td colspan="5" class="text-center py-4">
+            <td colspan="6" class="text-center py-4">
               <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">Cargando...</span>
               </div>

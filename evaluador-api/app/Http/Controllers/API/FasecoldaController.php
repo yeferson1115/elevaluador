@@ -25,12 +25,15 @@ class FasecoldaController extends Controller
 
         $codigos->getCollection()->transform(function ($item) {
             $codigo = $item->codigo_fasecolda;
-            $registros = FasecoldaValor::where('codigo_fasecolda', $codigo)->count();
-            $ultimaActualizacion = FasecoldaValor::where('codigo_fasecolda', $codigo)->max('updated_at');
+            $registrosQuery = FasecoldaValor::where('codigo_fasecolda', $codigo);
+            $registros = $registrosQuery->count();
+            $ultimaActualizacion = $registrosQuery->max('updated_at');
+            $pesoVacio = $registrosQuery->value('peso_vacio');
 
             return [
                 'codigo_fasecolda' => $codigo,
                 'registros' => $registros,
+                'peso_vacio' => $pesoVacio,
                 'updated_at' => $ultimaActualizacion,
             ];
         });
@@ -58,7 +61,8 @@ class FasecoldaController extends Controller
     public function update(Request $request, $codigo)
     {
         $request->validate([
-            'codigo_fasecolda' => 'required|string|max:50'
+            'codigo_fasecolda' => 'required|string|max:50',
+            'peso_vacio' => 'nullable|numeric'
         ]);
 
         $nuevoCodigo = $request->codigo_fasecolda;
@@ -70,8 +74,14 @@ class FasecoldaController extends Controller
             ], 422);
         }
 
+        $datosActualizar = ['codigo_fasecolda' => $nuevoCodigo];
+
+        if ($request->has('peso_vacio')) {
+            $datosActualizar['peso_vacio'] = $request->peso_vacio;
+        }
+
         $actualizados = FasecoldaValor::where('codigo_fasecolda', $codigo)
-            ->update(['codigo_fasecolda' => $nuevoCodigo]);
+            ->update($datosActualizar);
 
         if ($actualizados === 0) {
             return response()->json([
@@ -92,7 +102,7 @@ class FasecoldaController extends Controller
         $registros = FasecoldaValor::where('codigo_fasecolda', $codigo)
             ->orderBy('tipo')
             ->orderBy('modelo')
-            ->get(['id', 'codigo_fasecolda', 'tipo', 'modelo', 'valor', 'updated_at']);
+            ->get(['id', 'codigo_fasecolda', 'tipo', 'modelo', 'valor', 'peso_vacio', 'updated_at']);
 
         return response()->json([
             'success' => true,
@@ -106,6 +116,7 @@ class FasecoldaController extends Controller
             'tipo' => 'required|in:clasificado,corregido',
             'modelo' => 'required|integer',
             'valor' => 'required|numeric',
+            'peso_vacio' => 'nullable|numeric',
         ]);
 
         $registro = FasecoldaValor::find($id);
@@ -121,6 +132,7 @@ class FasecoldaController extends Controller
             'tipo' => $request->tipo,
             'modelo' => $request->modelo,
             'valor' => $request->valor,
+            'peso_vacio' => $request->peso_vacio,
         ]);
 
         return response()->json([
@@ -153,7 +165,8 @@ class FasecoldaController extends Controller
     {
         $request->validate([
             'file' => 'required|mimes:xlsx,xls',
-            'codigo_fasecolda' => 'required|string|max:50'
+            'codigo_fasecolda' => 'required|string|max:50',
+            'peso_vacio' => 'nullable|numeric'
         ]);
         
         try {
@@ -161,7 +174,7 @@ class FasecoldaController extends Controller
             FasecoldaValor::where('codigo_fasecolda', $request->codigo_fasecolda)->delete();
             
             // Importar archivo
-            Excel::import(new FasecoldaImport($request->codigo_fasecolda), $request->file('file'));
+            Excel::import(new FasecoldaImport($request->codigo_fasecolda, $request->peso_vacio), $request->file('file'));
             
             return response()->json([
                 'success' => true,
@@ -187,13 +200,15 @@ class FasecoldaController extends Controller
                         'id' => $item->id,
                         'tipo' => $item->tipo,
                         'modelo' => $item->modelo,
-                        'valor' => $item->valor
+                        'valor' => $item->valor,
+                        'peso_vacio' => $item->peso_vacio
                     ];
                 })->values();
             });
             
         return response()->json([
             'success' => true,
+            'peso_vacio' => FasecoldaValor::where('codigo_fasecolda', $codigo)->value('peso_vacio'),
             'data' => $valores
         ]);
     }
@@ -214,7 +229,8 @@ class FasecoldaController extends Controller
             'success' => true,
             'data' => [
                 'clasificado' => $clasificado,
-                'corregido' => $corregido
+                'corregido' => $corregido,
+                'peso_vacio' => $clasificado?->peso_vacio ?? $corregido?->peso_vacio
             ]
         ]);
     }
