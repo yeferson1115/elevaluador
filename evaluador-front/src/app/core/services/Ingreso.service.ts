@@ -219,6 +219,13 @@ import(file: File): Observable<any> {
     });
   }
 
+  exportCertificadosZipBackground(filtro: string = '', ids: number[] = []): Observable<any> {
+    return this.http.post(`${this.apiUrl}/export-certificados-zip-background`, {
+      filtro,
+      ids
+    });
+  }
+
   exportCertificadosZip(filtro: string = '', ids: number[] = []): Observable<any> {
     let params = new HttpParams().set('filtro', filtro);
 
