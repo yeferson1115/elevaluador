@@ -479,6 +479,43 @@ public function importmovilidad(Request $request)
 }
 
 
+
+private function obtenerIdsSeleccionados(Request $request): array
+{
+    return collect($request->input('ids', []))
+        ->map(fn ($id) => (int) $id)
+        ->filter(fn ($id) => $id > 0)
+        ->unique()
+        ->values()
+        ->all();
+}
+
+private function aplicarFiltroExportacion($query, string $tiposervicio, string $filtro = '', array $ids = [])
+{
+    $query->where('tiposervicio', $tiposervicio)
+          ->whereHas('avaluo', function($q) {
+              $q->whereNotNull('file')
+                ->where('file', '!=', '');
+          });
+
+    if (!empty($ids)) {
+        $query->whereIn('id', $ids);
+    }
+
+    if ($filtro) {
+        $query->where(function ($q) use ($filtro) {
+            $q->where('placa', 'like', '%' . $filtro . '%')
+              ->orWhere('solicitante', 'like', '%' . $filtro . '%')
+              ->orWhere('ubicacion_activo', 'like', '%' . $filtro . '%')
+              ->orWhereHas('avaluo', function ($subQuery) use ($filtro) {
+                  $subQuery->where('evaluador', 'like', '%' . $filtro . '%');
+              });
+        });
+    }
+
+    return $query;
+}
+
 public function exportSecBog(Request $request)
 {
     $filtro = $request->get('filtro', '');
@@ -495,6 +532,7 @@ public function exportCertificadosZip(Request $request)
     
     $filtro = $request->get('filtro', '');
     $tiposervicio = 'Sec Bogota';
+    $ids = $this->obtenerIdsSeleccionados($request);
     
     // Crear la consulta con el mismo filtro que el Excel
     $query = Ingreso::with([
@@ -506,24 +544,9 @@ public function exportCertificadosZip(Request $request)
         'avaluo.corregidos', 
         'avaluo.limitaciones', 
         'images'
-    ])
-    ->where('tiposervicio', $tiposervicio)
-    ->whereHas('avaluo', function($q) {
-        $q->whereNotNull('file')
-          ->where('file', '!=', '');
-    });
-    
-    if ($filtro) {
-        $query->where(function ($q) use ($filtro) {
-            $q->where('placa', 'like', '%' . $filtro . '%')
-              ->orWhere('solicitante', 'like', '%' . $filtro . '%')
-              ->orWhere('ubicacion_activo', 'like', '%' . $filtro . '%')
-              // ✅ AGREGAR FILTRO POR EVALUADOR
-              ->orWhereHas('avaluo', function ($subQuery) use ($filtro) {
-                  $subQuery->where('evaluador', 'like', '%' . $filtro . '%');
-              });
-        });
-    }
+    ]);
+
+    $this->aplicarFiltroExportacion($query, $tiposervicio, $filtro, $ids);
     
     $ingresos = $query->get();
     
@@ -1158,20 +1181,11 @@ public function exportCertificadosZipOptimizado(Request $request)
     
     $filtro = $request->get('filtro', '');
     $tiposervicio = 'Sec Bogota';
+    $ids = $this->obtenerIdsSeleccionados($request);
     
     // ✅ Solo obtener IDs primero para estimar
-    $query = Ingreso::where('tiposervicio', $tiposervicio)
-                    ->whereHas('avaluo', function($q) {
-                        $q->whereNotNull('file')
-                          ->where('file', '!=', '');
-                    });
-    
-    if ($filtro) {
-        $query->where(function ($q) use ($filtro) {
-            $q->where('placa', 'like', '%' . $filtro . '%')
-              ->orWhere('solicitante', 'like', '%' . $filtro . '%');
-        });
-    }
+    $query = Ingreso::query();
+    $this->aplicarFiltroExportacion($query, $tiposervicio, $filtro, $ids);
     
     $total = $query->count();
     
@@ -1340,20 +1354,11 @@ public function exportCertificadosZipForzado(Request $request)
     
     $filtro = $request->get('filtro', '');
     $tiposervicio = 'Sec Bogota';
+    $ids = $this->obtenerIdsSeleccionados($request);
     
     // Solo IDs para contar
-    $query = Ingreso::where('tiposervicio', $tiposervicio)
-                    ->whereHas('avaluo', function($q) {
-                        $q->whereNotNull('file')
-                          ->where('file', '!=', '');
-                    });
-    
-    if ($filtro) {
-        $query->where(function ($q) use ($filtro) {
-            $q->where('placa', 'like', '%' . $filtro . '%')
-              ->orWhere('solicitante', 'like', '%' . $filtro . '%');
-        });
-    }
+    $query = Ingreso::query();
+    $this->aplicarFiltroExportacion($query, $tiposervicio, $filtro, $ids);
     
     $total = $query->count();
     
@@ -1526,20 +1531,11 @@ public function exportCertificadosZipMejorado(Request $request)
 {
     $filtro = $request->get('filtro', '');
     $tiposervicio = 'Sec Bogota';
+    $ids = $this->obtenerIdsSeleccionados($request);
     
     // Contar registros
-    $query = Ingreso::where('tiposervicio', $tiposervicio)
-                    ->whereHas('avaluo', function($q) {
-                        $q->whereNotNull('file')
-                          ->where('file', '!=', '');
-                    });
-    
-    if ($filtro) {
-        $query->where(function ($q) use ($filtro) {
-            $q->where('placa', 'like', '%' . $filtro . '%')
-              ->orWhere('solicitante', 'like', '%' . $filtro . '%');
-        });
-    }
+    $query = Ingreso::query();
+    $this->aplicarFiltroExportacion($query, $tiposervicio, $filtro, $ids);
     
     $total = $query->count();
     
