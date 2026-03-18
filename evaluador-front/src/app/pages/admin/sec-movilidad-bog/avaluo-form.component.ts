@@ -364,7 +364,7 @@ calcularPesoMermado(pesoVacio: number | null): void {
       peso_bruto:[{ value: ''}],
       peso_mermado:[{ value: ''}],  
       estado_registro_runt:[{ value: ''}], 
-      capacidad_ton: [{ value: ''}],    
+      capacidad_ton: [{ value: '0'}],    
       numero_chasis: [{ value: ''}],
       numero_serie: [{ value: ''}],
       numero_motor: [{ value: '' }],
@@ -390,7 +390,7 @@ calcularPesoMermado(pesoVacio: number | null): void {
       movil: [{ value: '', disabled: true }],
       categoria: [{ value: '', disabled: true }],
       tipo_traccion: [{ value: '', disabled: true }],
-      numero_pasajeros: [{ value: '' }],
+      numero_pasajeros: [{ value: '2' }],
       capacidad_carga: [{ value: '', disabled: true }],
       nacionalidad: [{ value: '', disabled: true }],
       propietario: [{ value: '', disabled: true }],
@@ -464,30 +464,30 @@ calcularPesoMermado(pesoVacio: number | null): void {
         llanta_repuesto: [''],
         latoneria_estado: ['Regular'],
         latoneria_valor: [''],
-        pintura_estado: [''],
-        tapiceria_estado: [''], 
+        pintura_estado: ['Regular'],
+        tapiceria_estado: ['Malo'], 
         tapiceria_valor: [''],
-        motor_estado: [''], 
+        motor_estado: ['Inoperativo'], 
         motor_valor: [''],
-        chasis_estado: [''], 
+        chasis_estado: ['Regular'], 
         chasis_valor: [''],
-        transmision_estado: [''], 
+        transmision_estado: ['Malo'], 
         transmision_valor: [''],
-        frenos_estado: [''], 
+        frenos_estado: ['Malo'], 
         frenos_valor: [''],
-        refrigeracion_estado: [''], 
+        refrigeracion_estado: ['No Aplica'], 
         refrigeracion_valor: [''],
-        electrico_estado: [''], 
+        electrico_estado: ['Regular'], 
         electrico_valor: [''],
-        tanque_estado: [''], 
+        tanque_estado: ['Regular'], 
         tanque_valor: [''],
-        bateria_estado: [''], 
+        bateria_estado: ['No Sirve'], 
         bateria_valor: [''],
-        llantas_estado: [''], 
+        llantas_estado: ['Malas'], 
         llantas_valor: [''],
-        llave_estado: [''],
+        llave_estado: ['No Presenta'],
         llave_valor: [''],
-        vidrios_estado: [''], 
+        vidrios_estado: ['No Aplica'], 
         vidrios_valor: [''],
         chatarra:[''],
         valor_chatarra_kg:[0],
@@ -510,16 +510,20 @@ calcularPesoMermado(pesoVacio: number | null): void {
         this.router.navigate(['/admin/avaluo-sec-bgta']);
         return;
       }
-
-      this.form.patchValue(resp);
+      const ingresoDataFusionado = this.fusionarConValoresPorDefectoIngreso(resp);
+      this.form.patchValue(ingresoDataFusionado);
       this.filtroEspecial = !!this.form.get('es_repuesto_especial')?.value;
 
       const avaluoForm = this.form.get('avaluo');
       if (resp.avaluo) {
-        avaluoForm?.patchValue(resp.avaluo);
+        
          // Guardar valores originales
         this.claseOriginal = resp.clase || '';
         this.cilindrajeOriginal = resp.cilindraje || 0;
+        const avaluoDataFusionado = this.fusionarConValoresPorDefecto(resp.avaluo);
+  
+        // Aplicar los datos fusionados al formulario
+        avaluoForm?.patchValue(avaluoDataFusionado);
 
         // Clasificados
         if (resp.avaluo.clasificados?.length) {
@@ -600,6 +604,121 @@ calcularPesoMermado(pesoVacio: number | null): void {
       this.router.navigate(['/admin/avaluo-sec-bgta']);
     },
   });
+}
+
+private fusionarConValoresPorDefecto(avaluoData: any): any {
+  // Obtener los valores por defecto del formulario para avaluo
+  const valoresPorDefecto = {
+    // Estados con sus valores por defecto
+    latoneria_estado: 'Regular',
+    pintura_estado: 'Regular',
+    tapiceria_estado: 'Malo',
+    motor_estado: 'Inoperativo',
+    chasis_estado: 'Regular',
+    transmision_estado: 'Malo',
+    frenos_estado: 'Malo',
+    refrigeracion_estado: 'No Aplica',
+    electrico_estado: 'Regular',
+    tanque_estado: 'Regular',
+    bateria_estado: 'No Sirve',
+    llantas_estado: 'Malas',
+    llave_estado: 'No Presenta',
+    vidrios_estado: 'No Aplica',
+    
+    // Valores numéricos por defecto (0)
+    latoneria_valor: 0,
+    valor_pintura: 0,
+    motor_valor: 0,
+    chasis_valor: 0,
+    tapiceria_valor: 0,
+    refrigeracion_valor: 0,
+    electrico_valor: 0,
+    valor_llantas: 0,
+    transmision_valor: 0,
+    vidrios_valor: 0,
+    tanque_valor: 0,
+    bateria_valor: 0,
+    frenos_valor: 0,
+    llave_valor: 0,
+    valor_RTM: 0,
+    valor_SOAT: 0,
+    valor_faltantes: 0,
+    valor_chatarra_kg: 0,
+    peso_chatarra_kg: 0,
+    
+    // Otros campos con valores por defecto
+    chatarra: '',
+    codigo_fasecolda: '',
+    observaciones: '',
+    x: '',
+    factor_demerito: 1
+  };
+
+  const resultado: any = {};
+
+  // Para cada campo en valoresPorDefecto
+  Object.keys(valoresPorDefecto).forEach(campo => {
+    // Si el backend tiene un valor para este campo Y no es null/undefined
+    if (avaluoData && avaluoData[campo] !== null && avaluoData[campo] !== undefined) {
+      // Usar el valor del backend
+      resultado[campo] = avaluoData[campo];
+      console.log(`Campo ${campo}: usando valor del backend =`, avaluoData[campo]);
+    } else {
+      // Usar el valor por defecto
+      resultado[campo] = valoresPorDefecto[campo as keyof typeof valoresPorDefecto];
+      console.log(`Campo ${campo}: usando valor por defecto =`, valoresPorDefecto[campo as keyof typeof valoresPorDefecto]);
+    }
+  });
+
+  // Incluir otros campos que no están en valoresPorDefecto pero vienen del backend
+  if (avaluoData) {
+    Object.keys(avaluoData).forEach(campo => {
+      if (!(campo in valoresPorDefecto) && 
+          campo !== 'clasificados' && 
+          campo !== 'corregidos' && 
+          campo !== 'limitaciones') {
+        resultado[campo] = avaluoData[campo];
+      }
+    });
+  }
+
+  return resultado;
+}
+
+private fusionarConValoresPorDefectoIngreso(avaluoData: any): any {
+  // Obtener los valores por defecto del formulario para avaluo
+  const valoresPorDefecto = {
+    // Estados con sus valores por defecto
+     capacidad_ton: '0',
+      numero_pasajeros: '2',
+      numero_serie:'',
+      estado_registro_runt:'',
+      numero_motor:'',
+      numero_chasis:'',
+      tipo_carroceria:''
+
+  };
+
+  const resultado: any = {};
+
+  // Para cada campo en valoresPorDefecto
+  Object.keys(valoresPorDefecto).forEach(campo => {
+    // Si el backend tiene un valor para este campo Y no es null/undefined
+    if (avaluoData && avaluoData[campo] !== null && avaluoData[campo] !== undefined) {
+      // Usar el valor del backend
+      resultado[campo] = avaluoData[campo];
+      console.log(`Campo ${campo}: usando valor del backend =`, avaluoData[campo]);
+    } else {
+      // Usar el valor por defecto
+      resultado[campo] = valoresPorDefecto[campo as keyof typeof valoresPorDefecto];
+      console.log(`Campo ${campo}: usando valor por defecto =`, valoresPorDefecto[campo as keyof typeof valoresPorDefecto]);
+    }
+  });
+
+  // Incluir otros campos que no están en valoresPorDefecto pero vienen del backend
+ 
+
+  return resultado;
 }
 
 private buscarValoresRepuestoParaCamposVacios(): void {
