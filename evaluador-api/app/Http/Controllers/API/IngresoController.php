@@ -22,59 +22,94 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Database\Eloquent\Builder;
 
 class IngresoController extends Controller
 {
     // Obtener listado paginado con búsqueda
 public function index(Request $request)
 {
-    $query = Ingreso::query();
+    $query = Ingreso::query()
+        ->select('ingresos.*')
+        ->with($this->buildIndexRelations($request->tipo));
 
     // Si el usuario NO es admin, filtrar por user_id en avaluo o inspeccion
-     if (!auth()->user()->hasRole('admin') && !auth()->user()->hasRole('Super Administrador')){
+    if (!auth()->user()->hasRole('admin') && !auth()->user()->hasRole('Super Administrador')) {
         $userId = auth()->id();
 
-        $query->where(function ($q) use ($userId) {
-            $q->whereHas('avaluo', function ($sub) use ($userId) {
+        $query->where(function (Builder $q) use ($userId) {
+            $q->whereHas('avaluo', function (Builder $sub) use ($userId) {
                 $sub->where('user_id', $userId);
-            })->orWhereHas('inspeccion', function ($sub) use ($userId) {
+            })->orWhereHas('inspeccion', function (Builder $sub) use ($userId) {
                 $sub->where('user_id', $userId);
             });
         });
     }
 
     // Filtro principal: tipo de servicio
-    if ($request->has('tipo') && !empty($request->tipo)) {
+    if ($request->filled('tipo')) {
         $tipo = $request->tipo;
-        if($tipo == 'Sec Bogota'){
-            $query->whereIn('tiposervicio', ['Sec Bogota']);
-        } else {
-            $query->whereIn('tiposervicio', [$request->tipo, 'Avaluo e Inspección']);
-        }
-        
 
-        if ($tipo === 'Inspección') {
-            $query->with(['inspeccion']);
-        }
-        if ($tipo === 'Avaluo' || $tipo == 'Sec Bogota') {
-            $query->with(['avaluo']);
+        if ($tipo === 'Sec Bogota') {
+            $query->where('tiposervicio', 'Sec Bogota');
+        } else {
+            $query->whereIn('tiposervicio', [$tipo, 'Avaluo e Inspección']);
         }
     }
 
     // Filtro secundario: búsqueda por texto
-    if ($request->has('search') && !empty($request->search)) {
-        $search = $request->input('search');
-        $query->where(function ($q) use ($search) {
-            $q->where('placa', 'like', "%{$search}%")
-                ->orWhere('solicitante', 'like', "%{$search}%")
-                ->orWhere('documento_solicitante', 'like', "%{$search}%")
-                ->orWhereHas('avaluo', function ($subQuery) use ($search) {
-                    $subQuery->where('evaluador', 'like', "%{$search}%");
-                });
-        });
+    if ($request->filled('search')) {
+        $this->applyCompactSearch($query, $request->input('search'));
     }
 
-    return response()->json($query->paginate(10));
+    return response()->json(
+        $query->orderByDesc('ingresos.id')->paginate(10)
+    );
+}
+
+private function buildIndexRelations(?string $tipo): array
+{
+    $relations = [];
+
+    if ($tipo === 'Inspección') {
+        $relations['inspeccion'] = function ($query) {
+            $query->select('id', 'ingreso_id', 'user_id');
+        };
+    }
+
+    if ($tipo === 'Avaluo' || $tipo === 'Sec Bogota') {
+        $relations['avaluo'] = function ($query) {
+            $query->select('id', 'ingreso_id', 'user_id', 'evaluador', 'file');
+        };
+    }
+
+    return $relations;
+}
+
+private function applyCompactSearch(Builder $query, string $search): void
+{
+    $search = trim($search);
+
+    if ($search == '') {
+        return;
+    }
+
+    $normalizedSearch = mb_strtoupper($search);
+    $plateLooksSpecific = preg_match('/^[A-Z0-9-]{5,10}$/', $normalizedSearch) === 1;
+
+    $query->where(function (Builder $q) use ($search, $normalizedSearch, $plateLooksSpecific) {
+        if ($plateLooksSpecific) {
+            $q->whereRaw('UPPER(placa) LIKE ?', [$normalizedSearch . '%']);
+        } else {
+            $q->whereRaw('UPPER(placa) LIKE ?', ['%' . $normalizedSearch . '%']);
+        }
+
+        $q->orWhere('solicitante', 'like', "%{$search}%")
+            ->orWhere('documento_solicitante', 'like', "%{$search}%")
+            ->orWhereHas('avaluo', function (Builder $subQuery) use ($search) {
+                $subQuery->where('evaluador', 'like', "%{$search}%");
+            });
+    });
 }
 
 
