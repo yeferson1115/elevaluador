@@ -22,6 +22,7 @@ export class FasecoldaImportComponent {
   pageSize = 10;
   totalItems = 0;
   totalPages = 0;
+  filtroCodigo = '';
 
   codigoSeleccionado = '';
   registros: FasecoldaRegistro[] = [];
@@ -101,7 +102,8 @@ export class FasecoldaImportComponent {
 
     this.fasecoldaService.getMemorias({
       page: this.currentPage,
-      per_page: this.pageSize
+      per_page: this.pageSize,
+      codigo: this.filtroCodigo.trim() || undefined
     }).subscribe({
       next: (response) => {
         this.memorias = response.data || [];
@@ -255,6 +257,22 @@ export class FasecoldaImportComponent {
         }
       });
     });
+  }
+
+
+  aplicarFiltroCodigo(): void {
+    this.currentPage = 1;
+    this.cancelarEdicionMemoria();
+    this.cargarMemorias();
+  }
+
+  limpiarFiltroCodigo(): void {
+    if (!this.filtroCodigo) {
+      return;
+    }
+
+    this.filtroCodigo = '';
+    this.aplicarFiltroCodigo();
   }
 
   eliminarMemoria(memoria: FasecoldaMemoria): void {
