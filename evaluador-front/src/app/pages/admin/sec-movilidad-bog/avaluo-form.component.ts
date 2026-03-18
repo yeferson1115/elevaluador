@@ -1117,7 +1117,7 @@ cargarValoresFasecolda() {
     this.fasecoldaService.getValores(codigoFasecolda).subscribe({
       next: (response) => {
         if (response.success && response.data) {
-          this.cargarDatosEnFormulario(response.data);
+          this.cargarDatosEnFormulario(response.data, response.peso_vacio ?? null);
         }
       },
       error: (error) => {
@@ -1127,7 +1127,7 @@ cargarValoresFasecolda() {
   }
 }
 
-private cargarDatosEnFormulario(data: any) {
+private cargarDatosEnFormulario(data: any, pesoVacio: number | null = null) {
   // Limpiar arrays existentes
   const clasificadosArray = this.clasificados;
   const corregidosArray = this.corregidos;
@@ -1155,6 +1155,10 @@ private cargarDatosEnFormulario(data: any) {
     });
   }
   
+  if (pesoVacio !== null && pesoVacio !== undefined) {
+    this.form.get('peso_bruto')?.setValue(pesoVacio);
+  }
+
   // Buscar valor para el modelo actual del vehículo
   this.buscarValorPorModelo();
 }
@@ -1167,6 +1171,10 @@ buscarValorPorModelo() {
     this.fasecoldaService.buscarPorModelo(codigoFasecolda, modelo).subscribe({
       next: (response) => {
         if (response.success && response.data) {
+          const pesoVacio = response.data.peso_vacio;
+          if (pesoVacio !== null && pesoVacio !== undefined) {
+            this.form.get('peso_bruto')?.setValue(pesoVacio);
+          }
           this.sugerirValorReposicion(response.data);
         }
       }

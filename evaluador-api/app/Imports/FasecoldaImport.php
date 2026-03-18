@@ -9,10 +9,12 @@ use Illuminate\Support\Collection;
 class FasecoldaImport implements ToCollection
 {
     protected $codigoFasecolda;
+    protected $pesoVacio;
     
-    public function __construct($codigoFasecolda)
+    public function __construct($codigoFasecolda, $pesoVacio = null)
     {
         $this->codigoFasecolda = $codigoFasecolda;
+        $this->pesoVacio = $pesoVacio;
     }
     
     public function collection(Collection $rows)
@@ -25,7 +27,8 @@ class FasecoldaImport implements ToCollection
                     'codigo_fasecolda' => $this->codigoFasecolda,
                     'tipo' => 'clasificado',
                     'modelo' => $row[0],
-                    'valor' => $row[1]
+                    'valor' => $row[1],
+                    'peso_vacio' => $this->pesoVacio
                 ]);
             }
             
@@ -35,7 +38,8 @@ class FasecoldaImport implements ToCollection
                     'codigo_fasecolda' => $this->codigoFasecolda,
                     'tipo' => 'corregido',
                     'modelo' => $row[2],
-                    'valor' => $row[3]
+                    'valor' => $row[3],
+                    'peso_vacio' => $this->pesoVacio
                 ]);
             }
         }

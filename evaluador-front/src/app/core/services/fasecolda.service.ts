@@ -7,6 +7,7 @@ export interface FasecoldaMemoria {
   codigo_fasecolda: string;
   registros: number;
   updated_at: string | null;
+  peso_vacio: number | null;
 }
 
 export interface FasecoldaMemoriaResponse {
@@ -24,6 +25,7 @@ export interface FasecoldaRegistro {
   modelo: number;
   valor: number;
   updated_at: string | null;
+  peso_vacio: number | null;
 }
 
 @Injectable({
@@ -50,9 +52,10 @@ export class FasecoldaService {
     return this.http.get<FasecoldaMemoriaResponse>(`${this.apiUrl}`, { params: params as any });
   }
 
-  actualizarCodigo(codigoActual: string, codigoNuevo: string): Observable<any> {
+  actualizarCodigo(codigoActual: string, codigoNuevo: string, pesoVacio: number | null): Observable<any> {
     return this.http.put(`${this.apiUrl}/${codigoActual}`, {
-      codigo_fasecolda: codigoNuevo
+      codigo_fasecolda: codigoNuevo,
+      peso_vacio: pesoVacio
     });
   }
 
@@ -64,7 +67,7 @@ export class FasecoldaService {
     return this.http.get<{ success: boolean; data: FasecoldaRegistro[] }>(`${this.apiUrl}/${codigo}/registros`);
   }
 
-  actualizarRegistro(id: number, payload: { tipo: string; modelo: number; valor: number }): Observable<any> {
+  actualizarRegistro(id: number, payload: { tipo: string; modelo: number; valor: number; peso_vacio: number | null }): Observable<any> {
     return this.http.put(`${this.apiUrl}/registro/${id}`, payload);
   }
 

@@ -14,7 +14,8 @@ class FasecoldaValor extends Model
         'codigo_fasecolda',
         'tipo',
         'modelo',
-        'valor'
+        'valor',
+        'peso_vacio'
     ];
 
    
