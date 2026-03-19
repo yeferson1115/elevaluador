@@ -96,7 +96,7 @@
         <button class="btn btn-primary me-2" (click)="aplicarFiltroCodigo()" [disabled]="loadingMemorias">
           Buscar
         </button>
-        <button class="btn btn-outline-secondary" (click)="limpiarFiltroCodigo()" [disabled]="loadingMemorias || (!filtroCodigo && !codigoFiltroAplicado)">
+        <button class="btn btn-outline-secondary" (click)="limpiarFiltroCodigo()" [disabled]="loadingMemorias || (!filtroCodigo && !buscandoPorCodigo)">
           Limpiar
         </button>
       </div>
@@ -157,7 +157,7 @@
           </tr>
 
           <tr *ngIf="!loadingMemorias && memorias.length === 0">
-            <td colspan="5" class="text-center py-4">{{ codigoFiltroAplicado ? 'No se encontraron memorias para el código buscado' : 'No hay memorias cargadas' }}</td>
+            <td colspan="5" class="text-center py-4">{{ buscandoPorCodigo ? 'No se encontraron memorias para el código buscado' : 'No hay memorias cargadas' }}</td>
           </tr>
 
           <tr *ngIf="loadingMemorias">

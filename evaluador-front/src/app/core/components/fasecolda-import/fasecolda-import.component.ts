@@ -23,7 +23,7 @@ export class FasecoldaImportComponent implements OnInit {
   totalItems = 0;
   totalPages = 0;
   filtroCodigo = '';
-  codigoFiltroAplicado = '';
+  buscandoPorCodigo = false;
 
   codigoSeleccionado = '';
   registros: FasecoldaRegistro[] = [];
@@ -57,20 +57,20 @@ export class FasecoldaImportComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.reiniciarVistaMemorias();
+    this.cargarVistaInicial();
   }
 
+  get registrosPaginados(): FasecoldaRegistro[] {
+    const inicio = (this.currentPageRegistros - 1) * this.pageSizeRegistros;
+    return this.registros.slice(inicio, inicio + this.pageSizeRegistros);
+  }
 
-  reiniciarVistaMemorias(): void {
-    this.currentPage = 1;
-    this.filtroCodigo = '';
-    this.codigoFiltroAplicado = '';
-    this.codigoSeleccionado = '';
-    this.registros = [];
-    this.currentPageRegistros = 1;
-    this.cancelarEdicionMemoria();
-    this.cancelarEdicionRegistro();
-    this.cargarMemorias();
+  get totalRegistros(): number {
+    return this.registros.length;
+  }
+
+  get totalPaginasRegistros(): number {
+    return Math.max(1, Math.ceil(this.totalRegistros / this.pageSizeRegistros));
   }
 
   get registrosPaginados(): FasecoldaRegistro[] {
@@ -119,7 +119,7 @@ export class FasecoldaImportComponent implements OnInit {
         this.selectedFile = null;
         const fileInput = document.getElementById('fileInput') as HTMLInputElement;
         if (fileInput) fileInput.value = '';
-        this.cargarMemorias();
+        this.cargarVistaInicial();
       },
       error: (error) => {
         this.loading = false;
@@ -128,13 +128,21 @@ export class FasecoldaImportComponent implements OnInit {
     });
   }
 
-  cargarMemorias(): void {
+  cargarVistaInicial(): void {
+    this.currentPage = 1;
+    this.filtroCodigo = '';
+    this.buscandoPorCodigo = false;
+    this.cancelarEdicionMemoria();
+    this.cargarMemorias();
+  }
+
+  cargarMemorias(page: number = this.currentPage): void {
     this.loadingMemorias = true;
+    this.currentPage = page;
 
     this.fasecoldaService.getMemorias({
       page: this.currentPage,
-      per_page: this.pageSize,
-      codigo: this.codigoFiltroAplicado || undefined
+      per_page: this.pageSize
     }).subscribe({
       next: (response) => {
         this.memorias = response.data || [];
@@ -147,6 +155,39 @@ export class FasecoldaImportComponent implements OnInit {
         this.loadingMemorias = false;
         this.memorias = [];
         this.alert.error('No fue posible cargar el listado de memorias');
+      }
+    });
+  }
+
+  buscarMemoriasPorCodigo(): void {
+    const codigo = this.filtroCodigo.trim();
+
+    if (!codigo) {
+      this.cargarVistaInicial();
+      return;
+    }
+
+    this.loadingMemorias = true;
+    this.currentPage = 1;
+    this.buscandoPorCodigo = true;
+    this.cancelarEdicionMemoria();
+
+    this.fasecoldaService.getMemorias({
+      page: 1,
+      per_page: this.pageSize,
+      codigo
+    }).subscribe({
+      next: (response) => {
+        this.memorias = response.data || [];
+        this.currentPage = response.current_page || 1;
+        this.totalPages = response.last_page || 1;
+        this.totalItems = response.total || 0;
+        this.loadingMemorias = false;
+      },
+      error: () => {
+        this.loadingMemorias = false;
+        this.memorias = [];
+        this.alert.error('No fue posible buscar memorias por código');
       }
     });
   }
@@ -222,7 +263,7 @@ export class FasecoldaImportComponent implements OnInit {
           this.filtroCodigo = nuevoCodigo;
         }
         this.cancelarEdicionMemoria();
-        this.cargarMemorias();
+        this.cargarVistaInicial();
       },
       error: (error) => {
         this.guardandoMemoria = false;
@@ -297,22 +338,15 @@ export class FasecoldaImportComponent implements OnInit {
   }
 
   aplicarFiltroCodigo(): void {
-    this.currentPage = 1;
-    this.codigoFiltroAplicado = this.filtroCodigo.trim();
-    this.cancelarEdicionMemoria();
-    this.cargarMemorias();
+    this.buscarMemoriasPorCodigo();
   }
 
   limpiarFiltroCodigo(): void {
-    if (!this.filtroCodigo && !this.codigoFiltroAplicado) {
+    if (!this.filtroCodigo && !this.buscandoPorCodigo) {
       return;
     }
 
-    this.filtroCodigo = '';
-    this.codigoFiltroAplicado = '';
-    this.currentPage = 1;
-    this.cancelarEdicionMemoria();
-    this.cargarMemorias();
+    this.cargarVistaInicial();
   }
 
   eliminarMemoria(memoria: FasecoldaMemoria): void {
@@ -329,7 +363,7 @@ export class FasecoldaImportComponent implements OnInit {
       this.fasecoldaService.eliminarMemoria(memoria.codigo_fasecolda).subscribe({
         next: () => {
           this.alert.success('Memoria eliminada correctamente');
-          if (this.currentPage > 1 && this.memorias.length === 1) {
+          if (this.currentPage > 1 && this.memorias.length === 1 && !this.buscandoPorCodigo) {
             this.currentPage -= 1;
           }
           if (this.codigoSeleccionado === memoria.codigo_fasecolda) {
@@ -337,12 +371,7 @@ export class FasecoldaImportComponent implements OnInit {
             this.registros = [];
             this.currentPageRegistros = 1;
           }
-          if (this.codigoFiltroAplicado === memoria.codigo_fasecolda) {
-            this.filtroCodigo = '';
-            this.codigoFiltroAplicado = '';
-            this.currentPage = 1;
-          }
-          this.cargarMemorias();
+          this.cargarVistaInicial();
         },
         error: (error) => {
           this.alert.error(error?.error?.message || 'No fue posible eliminar la memoria');
@@ -352,12 +381,20 @@ export class FasecoldaImportComponent implements OnInit {
   }
 
   onPageChange(page: number): void {
-    if (page < 1 || page > this.totalPages || page === this.currentPage) {
+    if (this.buscandoPorCodigo || page < 1 || page > this.totalPages || page === this.currentPage) {
       return;
     }
 
-    this.currentPage = page;
-    this.cargarMemorias();
+    this.cargarMemorias(page);
+  }
+
+  onPageChangeRegistros(page: number): void {
+    if (page < 1 || page > this.totalPaginasRegistros || page === this.currentPageRegistros) {
+      return;
+    }
+
+    this.currentPageRegistros = page;
+    this.cancelarEdicionRegistro();
   }
 
   onPageChangeRegistros(page: number): void {
