@@ -12,6 +12,7 @@ import { AlertService } from '../../../core/services/alert.service';
   styleUrls: ['./fasecolda-import.component.css']
 })
 export class FasecoldaImportComponent implements OnInit {
+  codigoFiltroAplicado: string | null = null;
   importForm: FormGroup;
   selectedFile: File | null = null;
   loading = false;
@@ -58,19 +59,6 @@ export class FasecoldaImportComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarVistaInicial();
-  }
-
-  get registrosPaginados(): FasecoldaRegistro[] {
-    const inicio = (this.currentPageRegistros - 1) * this.pageSizeRegistros;
-    return this.registros.slice(inicio, inicio + this.pageSizeRegistros);
-  }
-
-  get totalRegistros(): number {
-    return this.registros.length;
-  }
-
-  get totalPaginasRegistros(): number {
-    return Math.max(1, Math.ceil(this.totalRegistros / this.pageSizeRegistros));
   }
 
   get registrosPaginados(): FasecoldaRegistro[] {
@@ -396,15 +384,7 @@ export class FasecoldaImportComponent implements OnInit {
     this.currentPageRegistros = page;
     this.cancelarEdicionRegistro();
   }
-
-  onPageChangeRegistros(page: number): void {
-    if (page < 1 || page > this.totalPaginasRegistros || page === this.currentPageRegistros) {
-      return;
-    }
-
-    this.currentPageRegistros = page;
-    this.cancelarEdicionRegistro();
-  }
+ 
 
   formatDate(value: string | null): string {
     if (!value) {

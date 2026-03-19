@@ -30,9 +30,10 @@ class IngresoController extends Controller
     // Obtener listado paginado con búsqueda
 public function index(Request $request)
 {
+    
+            
     $query = Ingreso::query()
-        ->select('ingresos.*')
-        ->with($this->buildIndexRelations($request->tipo));
+        ->select('ingresos.*');
 
     // Si el usuario NO es admin, filtrar por user_id en avaluo o inspeccion
     if (!auth()->user()->hasRole('admin') && !auth()->user()->hasRole('Super Administrador')) {
@@ -55,6 +56,13 @@ public function index(Request $request)
             $query->where('tiposervicio', 'Sec Bogota');
         } else {
             $query->whereIn('tiposervicio', [$tipo, 'Avaluo e Inspección']);
+        }
+
+         if ($tipo === 'Inspección') {
+            $query->with(['inspeccion']);
+        }
+        if ($tipo === 'Avaluo' || $tipo == 'Sec Bogota') {
+            $query->with(['avaluo']);
         }
     }
 

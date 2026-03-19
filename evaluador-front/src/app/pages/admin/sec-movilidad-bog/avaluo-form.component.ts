@@ -706,14 +706,14 @@ private fusionarConValoresPorDefectoIngreso(avaluoData: any): any {
       color:'',
       cilindraje:'',
       modelo:'',
-      kilometraje:'',
-      caja_cambios:'',
-      cantidad_ejes:'',
+      kilometraje:'0',
+      cantidad_ejes:'2',
       peso_bruto:'',
       peso_mermado:'',
       numeroVin:'',
-      tipo_servicio_vehiculo:'',
-      id:''
+      tipo_servicio_vehiculo:'Particular',
+      id:'',
+      caja_cambios:'Manual'
 
   };
 

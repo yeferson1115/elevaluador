@@ -428,6 +428,7 @@ public function show($id)
         $inspeccionupdate=Inspeccion::find($inspeccion->id);
         $inspeccionupdate->file=$nombreArchivo;
         $inspeccionupdate->save();
+        
 
         return response()->json([
             'message' => 'Inspección actualizada correctamente.',

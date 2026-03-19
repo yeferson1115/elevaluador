@@ -56,6 +56,7 @@
         <td>{{ a.informacionBien?.linea }}</td>
         <td>{{ a.informacionBien?.modelo }}</td>
         <td>
+          
         <ng-container *ngIf="a.inspeccion.file; else sinArchivo">
           <a style="font-size: 25px;" [href]="getDocumentoUrl(a.inspeccion.file)" target="_blank">
             <i class="fa-solid fa-file-pdf"></i>
