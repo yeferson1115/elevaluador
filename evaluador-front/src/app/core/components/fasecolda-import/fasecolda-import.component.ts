@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { FasecoldaService, FasecoldaMemoria, FasecoldaRegistro } from '../../../core/services/fasecolda.service';
@@ -11,7 +11,7 @@ import { AlertService } from '../../../core/services/alert.service';
   templateUrl: './fasecolda-import.component.html',
   styleUrls: ['./fasecolda-import.component.css']
 })
-export class FasecoldaImportComponent {
+export class FasecoldaImportComponent implements OnInit {
   importForm: FormGroup;
   selectedFile: File | null = null;
   loading = false;
@@ -23,10 +23,13 @@ export class FasecoldaImportComponent {
   totalItems = 0;
   totalPages = 0;
   filtroCodigo = '';
+  codigoFiltroAplicado = '';
 
   codigoSeleccionado = '';
   registros: FasecoldaRegistro[] = [];
   loadingRegistros = false;
+  currentPageRegistros = 1;
+  pageSizeRegistros = 10;
 
   editandoMemoriaCodigoOriginal: string | null = null;
   editandoMemoriaCodigoNuevo = '';
@@ -51,8 +54,36 @@ export class FasecoldaImportComponent {
       codigo_fasecolda: ['', Validators.required],
       peso_vacio: ['']
     });
+  }
 
+  ngOnInit(): void {
+    this.reiniciarVistaMemorias();
+  }
+
+
+  reiniciarVistaMemorias(): void {
+    this.currentPage = 1;
+    this.filtroCodigo = '';
+    this.codigoFiltroAplicado = '';
+    this.codigoSeleccionado = '';
+    this.registros = [];
+    this.currentPageRegistros = 1;
+    this.cancelarEdicionMemoria();
+    this.cancelarEdicionRegistro();
     this.cargarMemorias();
+  }
+
+  get registrosPaginados(): FasecoldaRegistro[] {
+    const inicio = (this.currentPageRegistros - 1) * this.pageSizeRegistros;
+    return this.registros.slice(inicio, inicio + this.pageSizeRegistros);
+  }
+
+  get totalRegistros(): number {
+    return this.registros.length;
+  }
+
+  get totalPaginasRegistros(): number {
+    return Math.max(1, Math.ceil(this.totalRegistros / this.pageSizeRegistros));
   }
 
   onFileSelected(event: any) {
@@ -103,7 +134,7 @@ export class FasecoldaImportComponent {
     this.fasecoldaService.getMemorias({
       page: this.currentPage,
       per_page: this.pageSize,
-      codigo: this.filtroCodigo.trim() || undefined
+      codigo: this.codigoFiltroAplicado || undefined
     }).subscribe({
       next: (response) => {
         this.memorias = response.data || [];
@@ -122,6 +153,7 @@ export class FasecoldaImportComponent {
 
   verRegistros(codigo: string): void {
     this.codigoSeleccionado = codigo;
+    this.currentPageRegistros = 1;
     this.cancelarEdicionMemoria();
     this.cancelarEdicionRegistro();
     this.cargarRegistros();
@@ -136,6 +168,7 @@ export class FasecoldaImportComponent {
     this.fasecoldaService.getRegistros(this.codigoSeleccionado).subscribe({
       next: (response) => {
         this.registros = response.data || [];
+        this.currentPageRegistros = 1;
         this.loadingRegistros = false;
       },
       error: () => {
@@ -183,6 +216,10 @@ export class FasecoldaImportComponent {
         if (this.codigoSeleccionado === memoria.codigo_fasecolda) {
           this.codigoSeleccionado = nuevoCodigo;
           this.cargarRegistros();
+        }
+        if (this.codigoFiltroAplicado === memoria.codigo_fasecolda) {
+          this.codigoFiltroAplicado = nuevoCodigo;
+          this.filtroCodigo = nuevoCodigo;
         }
         this.cancelarEdicionMemoria();
         this.cargarMemorias();
@@ -259,20 +296,23 @@ export class FasecoldaImportComponent {
     });
   }
 
-
   aplicarFiltroCodigo(): void {
     this.currentPage = 1;
+    this.codigoFiltroAplicado = this.filtroCodigo.trim();
     this.cancelarEdicionMemoria();
     this.cargarMemorias();
   }
 
   limpiarFiltroCodigo(): void {
-    if (!this.filtroCodigo) {
+    if (!this.filtroCodigo && !this.codigoFiltroAplicado) {
       return;
     }
 
     this.filtroCodigo = '';
-    this.aplicarFiltroCodigo();
+    this.codigoFiltroAplicado = '';
+    this.currentPage = 1;
+    this.cancelarEdicionMemoria();
+    this.cargarMemorias();
   }
 
   eliminarMemoria(memoria: FasecoldaMemoria): void {
@@ -295,6 +335,12 @@ export class FasecoldaImportComponent {
           if (this.codigoSeleccionado === memoria.codigo_fasecolda) {
             this.codigoSeleccionado = '';
             this.registros = [];
+            this.currentPageRegistros = 1;
+          }
+          if (this.codigoFiltroAplicado === memoria.codigo_fasecolda) {
+            this.filtroCodigo = '';
+            this.codigoFiltroAplicado = '';
+            this.currentPage = 1;
           }
           this.cargarMemorias();
         },
@@ -312,6 +358,15 @@ export class FasecoldaImportComponent {
 
     this.currentPage = page;
     this.cargarMemorias();
+  }
+
+  onPageChangeRegistros(page: number): void {
+    if (page < 1 || page > this.totalPaginasRegistros || page === this.currentPageRegistros) {
+      return;
+    }
+
+    this.currentPageRegistros = page;
+    this.cancelarEdicionRegistro();
   }
 
   formatDate(value: string | null): string {
