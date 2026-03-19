@@ -24,7 +24,7 @@ class GenerateCertificadosZipJob implements ShouldQueue
 
     public function __construct(
         private readonly int $userId,
-        private readonly string $filtro = '',
+        private readonly ?string $filtro = '',
         private readonly array $ids = [],
         private readonly bool $exportaTodosFiltrados = false,
     ) {
@@ -33,6 +33,8 @@ class GenerateCertificadosZipJob implements ShouldQueue
 
     public function handle(): void
     {
+        $filtro = trim((string) ($this->filtro ?? ''));
+
         $user = User::find($this->userId);
 
         if (! $user || empty($user->email)) {
@@ -56,7 +58,7 @@ class GenerateCertificadosZipJob implements ShouldQueue
             'images',
         ]);
 
-        $this->aplicarFiltroExportacion($query, 'Sec Bogota', $this->filtro, $this->ids);
+        $this->aplicarFiltroExportacion($query, 'Sec Bogota', $filtro, $this->ids);
         $ingresos = $query->get();
 
         if ($ingresos->isEmpty()) {
@@ -66,7 +68,7 @@ class GenerateCertificadosZipJob implements ShouldQueue
                 downloadUrl: null,
                 zipFileName: null,
                 exportaTodosFiltrados: $this->exportaTodosFiltrados,
-                filtro: $this->filtro,
+                filtro: $filtro,
                 errores: ['No hay certificados con PDF disponible para el filtro solicitado.'],
             ));
             return;
@@ -139,7 +141,7 @@ class GenerateCertificadosZipJob implements ShouldQueue
                 downloadUrl: null,
                 zipFileName: null,
                 exportaTodosFiltrados: $this->exportaTodosFiltrados,
-                filtro: $this->filtro,
+                filtro: $filtro,
                 errores: $errores,
             ));
             return;
@@ -153,7 +155,7 @@ class GenerateCertificadosZipJob implements ShouldQueue
             downloadUrl: $downloadUrl,
             zipFileName: $zipFileName,
             exportaTodosFiltrados: $this->exportaTodosFiltrados,
-            filtro: $this->filtro,
+            filtro: $filtro,
             errores: array_slice($errores, 0, 10),
         ));
     }

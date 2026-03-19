@@ -1586,7 +1586,7 @@ public function exportCertificadosZipBackground(Request $request)
         ], 422);
     }
 
-    $filtro = $request->get('filtro', '');
+    $filtro = trim((string) ($request->get('filtro', '') ?? ''));
     $ids = $this->obtenerIdsSeleccionados($request);
     $exportaTodosFiltrados = empty($ids);
 
