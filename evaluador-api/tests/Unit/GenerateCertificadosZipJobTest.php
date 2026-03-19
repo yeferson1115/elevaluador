@@ -12,5 +12,7 @@ class GenerateCertificadosZipJobTest extends TestCase
         $job = new GenerateCertificadosZipJob(123, null, [1, 2, 3], true);
 
         $this->assertInstanceOf(GenerateCertificadosZipJob::class, $job);
+        $this->assertSame('database', $job->connection);
+        $this->assertSame('exports', $job->queue);
     }
 }

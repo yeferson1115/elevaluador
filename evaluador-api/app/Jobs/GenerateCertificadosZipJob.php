@@ -28,6 +28,7 @@ class GenerateCertificadosZipJob implements ShouldQueue
         private readonly array $ids = [],
         private readonly bool $exportaTodosFiltrados = false,
     ) {
+        $this->onConnection('database');
         $this->onQueue('exports');
     }
 
