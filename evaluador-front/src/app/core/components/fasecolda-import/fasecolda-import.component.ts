@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { FasecoldaService, FasecoldaMemoria, FasecoldaRegistro } from '../../../core/services/fasecolda.service';
@@ -11,7 +11,7 @@ import { AlertService } from '../../../core/services/alert.service';
   templateUrl: './fasecolda-import.component.html',
   styleUrls: ['./fasecolda-import.component.css']
 })
-export class FasecoldaImportComponent {
+export class FasecoldaImportComponent implements OnInit {
   importForm: FormGroup;
   selectedFile: File | null = null;
   loading = false;
@@ -23,10 +23,13 @@ export class FasecoldaImportComponent {
   totalItems = 0;
   totalPages = 0;
   filtroCodigo = '';
+  buscandoPorCodigo = false;
 
   codigoSeleccionado = '';
   registros: FasecoldaRegistro[] = [];
   loadingRegistros = false;
+  currentPageRegistros = 1;
+  pageSizeRegistros = 10;
 
   editandoMemoriaCodigoOriginal: string | null = null;
   editandoMemoriaCodigoNuevo = '';
@@ -51,8 +54,23 @@ export class FasecoldaImportComponent {
       codigo_fasecolda: ['', Validators.required],
       peso_vacio: ['']
     });
+  }
 
-    this.cargarMemorias();
+  ngOnInit(): void {
+    this.cargarVistaInicial();
+  }
+
+  get registrosPaginados(): FasecoldaRegistro[] {
+    const inicio = (this.currentPageRegistros - 1) * this.pageSizeRegistros;
+    return this.registros.slice(inicio, inicio + this.pageSizeRegistros);
+  }
+
+  get totalRegistros(): number {
+    return this.registros.length;
+  }
+
+  get totalPaginasRegistros(): number {
+    return Math.max(1, Math.ceil(this.totalRegistros / this.pageSizeRegistros));
   }
 
   onFileSelected(event: any) {
@@ -88,7 +106,7 @@ export class FasecoldaImportComponent {
         this.selectedFile = null;
         const fileInput = document.getElementById('fileInput') as HTMLInputElement;
         if (fileInput) fileInput.value = '';
-        this.cargarMemorias();
+        this.cargarVistaInicial();
       },
       error: (error) => {
         this.loading = false;
@@ -97,13 +115,21 @@ export class FasecoldaImportComponent {
     });
   }
 
-  cargarMemorias(): void {
+  cargarVistaInicial(): void {
+    this.currentPage = 1;
+    this.filtroCodigo = '';
+    this.buscandoPorCodigo = false;
+    this.cancelarEdicionMemoria();
+    this.cargarMemorias();
+  }
+
+  cargarMemorias(page: number = this.currentPage): void {
     this.loadingMemorias = true;
+    this.currentPage = page;
 
     this.fasecoldaService.getMemorias({
       page: this.currentPage,
-      per_page: this.pageSize,
-      codigo: this.filtroCodigo.trim() || undefined
+      per_page: this.pageSize
     }).subscribe({
       next: (response) => {
         this.memorias = response.data || [];
@@ -120,8 +146,42 @@ export class FasecoldaImportComponent {
     });
   }
 
+  buscarMemoriasPorCodigo(): void {
+    const codigo = this.filtroCodigo.trim();
+
+    if (!codigo) {
+      this.cargarVistaInicial();
+      return;
+    }
+
+    this.loadingMemorias = true;
+    this.currentPage = 1;
+    this.buscandoPorCodigo = true;
+    this.cancelarEdicionMemoria();
+
+    this.fasecoldaService.getMemorias({
+      page: 1,
+      per_page: this.pageSize,
+      codigo
+    }).subscribe({
+      next: (response) => {
+        this.memorias = response.data || [];
+        this.currentPage = response.current_page || 1;
+        this.totalPages = response.last_page || 1;
+        this.totalItems = response.total || 0;
+        this.loadingMemorias = false;
+      },
+      error: () => {
+        this.loadingMemorias = false;
+        this.memorias = [];
+        this.alert.error('No fue posible buscar memorias por código');
+      }
+    });
+  }
+
   verRegistros(codigo: string): void {
     this.codigoSeleccionado = codigo;
+    this.currentPageRegistros = 1;
     this.cancelarEdicionMemoria();
     this.cancelarEdicionRegistro();
     this.cargarRegistros();
@@ -136,6 +196,7 @@ export class FasecoldaImportComponent {
     this.fasecoldaService.getRegistros(this.codigoSeleccionado).subscribe({
       next: (response) => {
         this.registros = response.data || [];
+        this.currentPageRegistros = 1;
         this.loadingRegistros = false;
       },
       error: () => {
@@ -185,7 +246,7 @@ export class FasecoldaImportComponent {
           this.cargarRegistros();
         }
         this.cancelarEdicionMemoria();
-        this.cargarMemorias();
+        this.cargarVistaInicial();
       },
       error: (error) => {
         this.guardandoMemoria = false;
@@ -259,20 +320,16 @@ export class FasecoldaImportComponent {
     });
   }
 
-
   aplicarFiltroCodigo(): void {
-    this.currentPage = 1;
-    this.cancelarEdicionMemoria();
-    this.cargarMemorias();
+    this.buscarMemoriasPorCodigo();
   }
 
   limpiarFiltroCodigo(): void {
-    if (!this.filtroCodigo) {
+    if (!this.filtroCodigo && !this.buscandoPorCodigo) {
       return;
     }
 
-    this.filtroCodigo = '';
-    this.aplicarFiltroCodigo();
+    this.cargarVistaInicial();
   }
 
   eliminarMemoria(memoria: FasecoldaMemoria): void {
@@ -289,14 +346,15 @@ export class FasecoldaImportComponent {
       this.fasecoldaService.eliminarMemoria(memoria.codigo_fasecolda).subscribe({
         next: () => {
           this.alert.success('Memoria eliminada correctamente');
-          if (this.currentPage > 1 && this.memorias.length === 1) {
+          if (this.currentPage > 1 && this.memorias.length === 1 && !this.buscandoPorCodigo) {
             this.currentPage -= 1;
           }
           if (this.codigoSeleccionado === memoria.codigo_fasecolda) {
             this.codigoSeleccionado = '';
             this.registros = [];
+            this.currentPageRegistros = 1;
           }
-          this.cargarMemorias();
+          this.cargarVistaInicial();
         },
         error: (error) => {
           this.alert.error(error?.error?.message || 'No fue posible eliminar la memoria');
@@ -306,12 +364,20 @@ export class FasecoldaImportComponent {
   }
 
   onPageChange(page: number): void {
-    if (page < 1 || page > this.totalPages || page === this.currentPage) {
+    if (this.buscandoPorCodigo || page < 1 || page > this.totalPages || page === this.currentPage) {
       return;
     }
 
-    this.currentPage = page;
-    this.cargarMemorias();
+    this.cargarMemorias(page);
+  }
+
+  onPageChangeRegistros(page: number): void {
+    if (page < 1 || page > this.totalPaginasRegistros || page === this.currentPageRegistros) {
+      return;
+    }
+
+    this.currentPageRegistros = page;
+    this.cancelarEdicionRegistro();
   }
 
   formatDate(value: string | null): string {
