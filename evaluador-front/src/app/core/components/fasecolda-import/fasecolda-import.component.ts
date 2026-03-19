@@ -73,6 +73,19 @@ export class FasecoldaImportComponent implements OnInit {
     return Math.max(1, Math.ceil(this.totalRegistros / this.pageSizeRegistros));
   }
 
+  get registrosPaginados(): FasecoldaRegistro[] {
+    const inicio = (this.currentPageRegistros - 1) * this.pageSizeRegistros;
+    return this.registros.slice(inicio, inicio + this.pageSizeRegistros);
+  }
+
+  get totalRegistros(): number {
+    return this.registros.length;
+  }
+
+  get totalPaginasRegistros(): number {
+    return Math.max(1, Math.ceil(this.totalRegistros / this.pageSizeRegistros));
+  }
+
   onFileSelected(event: any) {
     this.selectedFile = event.target.files[0];
   }
@@ -245,6 +258,10 @@ export class FasecoldaImportComponent implements OnInit {
           this.codigoSeleccionado = nuevoCodigo;
           this.cargarRegistros();
         }
+        if (this.codigoFiltroAplicado === memoria.codigo_fasecolda) {
+          this.codigoFiltroAplicado = nuevoCodigo;
+          this.filtroCodigo = nuevoCodigo;
+        }
         this.cancelarEdicionMemoria();
         this.cargarVistaInicial();
       },
@@ -369,6 +386,15 @@ export class FasecoldaImportComponent implements OnInit {
     }
 
     this.cargarMemorias(page);
+  }
+
+  onPageChangeRegistros(page: number): void {
+    if (page < 1 || page > this.totalPaginasRegistros || page === this.currentPageRegistros) {
+      return;
+    }
+
+    this.currentPageRegistros = page;
+    this.cancelarEdicionRegistro();
   }
 
   onPageChangeRegistros(page: number): void {
