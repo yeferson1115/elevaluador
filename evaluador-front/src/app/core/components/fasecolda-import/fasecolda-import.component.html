@@ -96,7 +96,7 @@
         <button class="btn btn-primary me-2" (click)="aplicarFiltroCodigo()" [disabled]="loadingMemorias">
           Buscar
         </button>
-        <button class="btn btn-outline-secondary" (click)="limpiarFiltroCodigo()" [disabled]="loadingMemorias || !filtroCodigo">
+        <button class="btn btn-outline-secondary" (click)="limpiarFiltroCodigo()" [disabled]="loadingMemorias || (!filtroCodigo && !codigoFiltroAplicado)">
           Limpiar
         </button>
       </div>
@@ -157,7 +157,7 @@
           </tr>
 
           <tr *ngIf="!loadingMemorias && memorias.length === 0">
-            <td colspan="5" class="text-center py-4">{{ filtroCodigo ? 'No se encontraron memorias para el código buscado' : 'No hay memorias cargadas' }}</td>
+            <td colspan="5" class="text-center py-4">{{ codigoFiltroAplicado ? 'No se encontraron memorias para el código buscado' : 'No hay memorias cargadas' }}</td>
           </tr>
 
           <tr *ngIf="loadingMemorias">
@@ -171,9 +171,9 @@
       </table>
     </div>
 
-    <div class="d-flex justify-content-between align-items-center" *ngIf="totalPages > 1">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2" *ngIf="totalPages > 1">
       <span>Total memorias: {{ totalItems }}</span>
-      <ul class="pagination mb-0">
+      <ul class="pagination mb-0 flex-wrap">
         <li class="page-item" [class.disabled]="currentPage === 1">
           <a class="page-link" href="javascript:void(0)" (click)="onPageChange(currentPage - 1)">Anterior</a>
         </li>
@@ -207,7 +207,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let registro of registros">
+          <tr *ngFor="let registro of registrosPaginados">
             <td>
               <ng-container *ngIf="editandoRegistroId === registro.id; else tipoRegistroNormal">
                 <select class="form-select form-select-sm" [(ngModel)]="registroDraft.tipo">
@@ -273,15 +273,15 @@
       </table>
     </div>
 
-    <div class="d-flex justify-content-between align-items-center" *ngIf="totalPages > 1">
-      <span>Total memorias: {{ totalItems }}</span>
-      <ul class="pagination mb-0">
-        <li class="page-item" [class.disabled]="currentPage === 1">
-          <a class="page-link" href="javascript:void(0)" (click)="onPageChange(currentPage - 1)">Anterior</a>
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2" *ngIf="totalPaginasRegistros > 1">
+      <span>Total registros: {{ totalRegistros }}</span>
+      <ul class="pagination mb-0 flex-wrap">
+        <li class="page-item" [class.disabled]="currentPageRegistros === 1">
+          <a class="page-link" href="javascript:void(0)" (click)="onPageChangeRegistros(currentPageRegistros - 1)">Anterior</a>
         </li>
-        <li class="page-item disabled"><span class="page-link">Página {{ currentPage }} de {{ totalPages }}</span></li>
-        <li class="page-item" [class.disabled]="currentPage === totalPages">
-          <a class="page-link" href="javascript:void(0)" (click)="onPageChange(currentPage + 1)">Siguiente</a>
+        <li class="page-item disabled"><span class="page-link">Página {{ currentPageRegistros }} de {{ totalPaginasRegistros }}</span></li>
+        <li class="page-item" [class.disabled]="currentPageRegistros === totalPaginasRegistros">
+          <a class="page-link" href="javascript:void(0)" (click)="onPageChangeRegistros(currentPageRegistros + 1)">Siguiente</a>
         </li>
       </ul>
     </div>
