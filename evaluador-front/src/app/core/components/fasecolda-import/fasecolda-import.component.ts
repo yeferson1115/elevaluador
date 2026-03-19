@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { FasecoldaService, FasecoldaMemoria, FasecoldaRegistro } from '../../../core/services/fasecolda.service';
@@ -11,7 +11,7 @@ import { AlertService } from '../../../core/services/alert.service';
   templateUrl: './fasecolda-import.component.html',
   styleUrls: ['./fasecolda-import.component.css']
 })
-export class FasecoldaImportComponent {
+export class FasecoldaImportComponent implements OnInit {
   importForm: FormGroup;
   selectedFile: File | null = null;
   loading = false;
@@ -54,7 +54,22 @@ export class FasecoldaImportComponent {
       codigo_fasecolda: ['', Validators.required],
       peso_vacio: ['']
     });
+  }
 
+  ngOnInit(): void {
+    this.reiniciarVistaMemorias();
+  }
+
+
+  reiniciarVistaMemorias(): void {
+    this.currentPage = 1;
+    this.filtroCodigo = '';
+    this.codigoFiltroAplicado = '';
+    this.codigoSeleccionado = '';
+    this.registros = [];
+    this.currentPageRegistros = 1;
+    this.cancelarEdicionMemoria();
+    this.cancelarEdicionRegistro();
     this.cargarMemorias();
   }
 
