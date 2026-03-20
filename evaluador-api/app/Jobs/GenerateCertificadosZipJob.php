@@ -108,7 +108,6 @@ class GenerateCertificadosZipJob implements ShouldQueue
                     $errores[] = 'No fue posible generar el PDF para la placa ' . ($ingreso->placa ?? 'sin placa') . '.';
                     continue;
                 }
-
                 $pdfContent = $pdf->output();
                 if (! $pdfContent) {
                     $errores[] = 'El PDF de la placa ' . ($ingreso->placa ?? 'sin placa') . ' quedó vacío.';
