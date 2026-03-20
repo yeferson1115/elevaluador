@@ -8,6 +8,8 @@ use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -53,9 +55,6 @@ class GenerateCertificadosZipJob implements ShouldQueue
                 $query->whereNotNull('file')
                     ->where('file', '!=', '');
             },
-            'avaluo.clasificados',
-            'avaluo.corregidos',
-            'avaluo.limitaciones',
             'images',
         ]);
 
@@ -118,6 +117,9 @@ class GenerateCertificadosZipJob implements ShouldQueue
                 if ($zip->addFromString($this->generarNombreArchivoZip($ingreso), $pdfContent)) {
                     $archivosAgregados++;
                 }
+
+                unset($pdf, $pdfContent);
+                gc_collect_cycles();
             } catch (\Throwable $e) {
                 Log::error('Error generando ZIP de certificados en segundo plano.', [
                     'ingreso_id' => $ingreso->id,
@@ -159,6 +161,17 @@ class GenerateCertificadosZipJob implements ShouldQueue
             filtro: $filtro,
             errores: array_slice($errores, 0, 10),
         ));
+    }
+
+    public function failed(\Throwable $exception): void
+    {
+        Log::error('Falló definitivamente la generación del ZIP de certificados.', [
+            'user_id' => $this->userId,
+            'filtro' => $this->filtro,
+            'ids_count' => count($this->ids),
+            'exporta_todos_filtrados' => $this->exportaTodosFiltrados,
+            'error' => $exception->getMessage(),
+        ]);
     }
 
     private function aplicarFiltroExportacion($query, string $tiposervicio, ?string $filtro = '', array $ids = [])
@@ -240,9 +253,15 @@ class GenerateCertificadosZipJob implements ShouldQueue
             return null;
         }
 
+        $avaluo->loadMissing(['clasificados', 'corregidos', 'limitaciones']);
+
         $user = User::find($avaluo->user_id);
         $graficaPath = null;
         $resultado = null;
+
+        if (in_array($avaluo->tipo, ['comercial', 'jans'], true)) {
+            $graficaPath = $this->generarGraficaDispercionOptimizada($avaluo);
+        }
 
         if (in_array($avaluo->tipo, ['comercial', 'jans'], true) && $avaluo->corregidos && $avaluo->corregidos->isNotEmpty()) {
             $corregidos = collect($avaluo->corregidos)->map(fn ($c) => [
@@ -262,6 +281,201 @@ class GenerateCertificadosZipJob implements ShouldQueue
         }
 
         return Pdf::loadView('pdf.avaluo', compact('ingreso', 'avaluo', 'graficaPath', 'resultado', 'user'));
+    }
+
+    private function generarGraficaDispercionOptimizada($avaluo): ?string
+    {
+        $cacheKey = "grafica_avaluo_{$avaluo->id}_" . md5(json_encode([
+            'clasificados_count' => $avaluo->clasificados?->count() ?? 0,
+            'corregidos_count' => $avaluo->corregidos?->count() ?? 0,
+            'ultima_actualizacion' => (string) $avaluo->updated_at,
+        ]));
+
+        $cachedFilename = Cache::get($cacheKey);
+        if ($cachedFilename) {
+            $cachedPath = public_path("graficas/{$cachedFilename}");
+            if (file_exists($cachedPath)) {
+                return $cachedFilename;
+            }
+        }
+
+        $clasificados = collect($avaluo->clasificados)->take(30)->map(function ($item) {
+            return [
+                'x' => is_numeric($item->modelo) ? (float) $item->modelo : 0.0,
+                'y' => is_numeric($item->valor) ? (float) $item->valor : 0.0,
+            ];
+        })->filter(fn ($punto) => $punto['y'] > 0)->values()->all();
+
+        $corregidos = collect($avaluo->corregidos)->take(30)->map(function ($item) {
+            return [
+                'x' => is_numeric($item->modelo) ? (float) $item->modelo : 0.0,
+                'y' => is_numeric($item->valor) ? (float) $item->valor : 0.0,
+            ];
+        })->filter(fn ($punto) => $punto['y'] > 0)->values()->all();
+
+        if (empty($clasificados) && empty($corregidos)) {
+            return null;
+        }
+
+        $datasets = [];
+
+        if (! empty($clasificados)) {
+            $datasets[] = [
+                'label' => 'Clasificados',
+                'data' => $clasificados,
+                'backgroundColor' => 'rgba(54,162,235,0.8)',
+                'borderColor' => 'rgba(54,162,235,1)',
+                'showLine' => false,
+                'pointRadius' => 3,
+            ];
+        }
+
+        if (! empty($corregidos)) {
+            $datasets[] = [
+                'label' => 'Corregidos',
+                'data' => $corregidos,
+                'backgroundColor' => 'rgba(255,99,132,0.8)',
+                'borderColor' => 'rgba(255,99,132,1)',
+                'showLine' => false,
+                'pointRadius' => 3,
+            ];
+        }
+
+        $regresionClasificados = $this->calcularRegresionRapida($clasificados);
+        if ($regresionClasificados) {
+            $datasets[] = [
+                'label' => 'f(x) Clasificados',
+                'data' => $regresionClasificados['curve'],
+                'type' => 'line',
+                'borderColor' => 'rgba(54,162,235,1)',
+                'borderDash' => [5, 5],
+                'fill' => false,
+                'pointRadius' => 0,
+                'borderWidth' => 1,
+            ];
+        }
+
+        $regresionCorregidos = $this->calcularRegresionRapida($corregidos);
+        if ($regresionCorregidos) {
+            $datasets[] = [
+                'label' => 'f(x) Corregidos',
+                'data' => $regresionCorregidos['curve'],
+                'type' => 'line',
+                'borderColor' => 'rgba(255,99,132,1)',
+                'borderDash' => [5, 5],
+                'fill' => false,
+                'pointRadius' => 0,
+                'borderWidth' => 1,
+            ];
+        }
+
+        try {
+            $response = Http::withoutVerifying()
+                ->timeout(8)
+                ->connectTimeout(5)
+                ->post('https://quickchart.io/chart', [
+                    'chart' => [
+                        'type' => 'scatter',
+                        'data' => ['datasets' => $datasets],
+                        'options' => [
+                            'plugins' => [
+                                'legend' => ['display' => true, 'position' => 'top'],
+                                'title' => ['display' => false],
+                            ],
+                            'scales' => [
+                                'x' => ['title' => ['display' => true, 'text' => 'Modelo']],
+                                'y' => ['title' => ['display' => true, 'text' => 'Valor']],
+                            ],
+                            'responsive' => false,
+                        ],
+                    ],
+                    'width' => 600,
+                    'height' => 400,
+                    'format' => 'png',
+                    'version' => '4',
+                ]);
+
+            if (! $response->successful()) {
+                return null;
+            }
+
+            $filename = "avaluo_{$avaluo->id}.png";
+            $filepath = public_path("graficas/{$filename}");
+            if (! is_dir(dirname($filepath))) {
+                mkdir(dirname($filepath), 0777, true);
+            }
+
+            file_put_contents($filepath, $response->body());
+            Cache::put($cacheKey, $filename, now()->addHours(24));
+
+            return $filename;
+        } catch (\Throwable $exception) {
+            Log::warning('No fue posible generar la gráfica para el ZIP.', [
+                'avaluo_id' => $avaluo->id,
+                'error' => $exception->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
+    private function calcularRegresionRapida(array $puntos): ?array
+    {
+        if (count($puntos) < 2) {
+            return null;
+        }
+
+        $puntosValidos = array_values(array_filter($puntos, fn ($punto) => ($punto['y'] ?? 0) > 0));
+        if (count($puntosValidos) < 2) {
+            return null;
+        }
+
+        $n = count($puntosValidos);
+        $sumX = 0.0;
+        $sumLnY = 0.0;
+        $sumX2 = 0.0;
+        $sumXlnY = 0.0;
+
+        foreach ($puntosValidos as $punto) {
+            $x = (float) $punto['x'];
+            $lnY = log((float) $punto['y']);
+            $sumX += $x;
+            $sumLnY += $lnY;
+            $sumX2 += $x * $x;
+            $sumXlnY += $x * $lnY;
+        }
+
+        $denominador = ($n * $sumX2) - ($sumX * $sumX);
+        if (abs($denominador) < 1e-12) {
+            return null;
+        }
+
+        $b = (($n * $sumXlnY) - ($sumX * $sumLnY)) / $denominador;
+        $lnA = ($sumLnY - ($b * $sumX)) / $n;
+        $a = exp($lnA);
+
+        $xs = array_column($puntosValidos, 'x');
+        sort($xs);
+        $minX = (float) reset($xs);
+        $maxX = (float) end($xs);
+
+        if ($minX === $maxX) {
+            return null;
+        }
+
+        $curve = [];
+        $steps = min(25, max(10, count($xs)));
+        $step = ($maxX - $minX) / ($steps - 1);
+
+        for ($i = 0; $i < $steps; $i++) {
+            $x = $minX + ($step * $i);
+            $curve[] = [
+                'x' => round($x, 2),
+                'y' => round($a * exp($b * $x), 2),
+            ];
+        }
+
+        return ['curve' => $curve];
     }
 
     private function calcularExponencial(array $puntos, int $modeloConsultar): ?array

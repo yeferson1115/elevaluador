@@ -477,15 +477,11 @@
 
     <!-- Recuadro grande -->
     <div style="border: 1px solid #c00; height: 350px; margin: 15px 0;">
-         @php
-            $path = public_path('graficas/' . $graficaPath);
-            $type = pathinfo($path, PATHINFO_EXTENSION);
-            $data = file_get_contents($path);
-            $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
-        @endphp
+        @if($graficaPath && file_exists(public_path('graficas/' . $graficaPath)))
         <div style="text-align: center;">
-        <img src="{{ $base64 }}" alt="Logo" style="height: 100%;display: block; margin: 0 auto;">
+        <img src="{{ public_path('graficas/' . $graficaPath) }}" alt="Gráfica" style="height: 100%;display: block; margin: 0 auto;">
     </div>
+        @endif
         
     </div>
 
