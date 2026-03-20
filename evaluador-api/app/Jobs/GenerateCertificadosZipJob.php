@@ -160,6 +160,17 @@ class GenerateCertificadosZipJob implements ShouldQueue
         ));
     }
 
+    public function failed(\Throwable $exception): void
+    {
+        Log::error('Falló definitivamente la generación del ZIP de certificados.', [
+            'user_id' => $this->userId,
+            'filtro' => $this->filtro,
+            'ids_count' => count($this->ids),
+            'exporta_todos_filtrados' => $this->exportaTodosFiltrados,
+            'error' => $exception->getMessage(),
+        ]);
+    }
+
     private function aplicarFiltroExportacion($query, string $tiposervicio, ?string $filtro = '', array $ids = [])
     {
         $filtro = trim((string) ($filtro ?? ''));
