@@ -1600,7 +1600,8 @@ public function exportCertificadosZipBackground(Request $request)
         ], 404);
     }
 
-    GenerateCertificadosZipJob::dispatch($user->id, $filtro, $ids, $exportaTodosFiltrados);
+    GenerateCertificadosZipJob::dispatch($user->id, $filtro, $ids, $exportaTodosFiltrados)
+        ->onQueue(config('queue.connections.database.queue', 'default'));
 
     return response()->json([
         'message' => 'La generación del ZIP quedó en segundo plano. Recibirás un correo con la ruta de descarga cuando esté listo.',
