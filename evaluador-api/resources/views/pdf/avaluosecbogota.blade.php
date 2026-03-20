@@ -436,16 +436,9 @@
             <tr>
                 <td style="width: 50%; vertical-align: top;">
                     @if($graficaPath && file_exists(public_path('graficas/' . $graficaPath)))
-                    @php
-                        $path = public_path('graficas/' . $graficaPath);
-                        $type = pathinfo($path, PATHINFO_EXTENSION);
-                        $data = file_get_contents($path);
-                        $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
-                    @endphp
-
                     <div class="grafica-wrapper">
                         <div class="grafica-container">
-                            <img src="{{ $base64 }}" alt="Gráfica">
+                            <img src="{{ public_path('graficas/' . $graficaPath) }}" alt="Gráfica">
                         </div>
                     </div>
                     @endif
