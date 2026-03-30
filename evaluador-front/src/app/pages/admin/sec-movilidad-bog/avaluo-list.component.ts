@@ -29,6 +29,28 @@ export class AvaluoListComponent {
   lastPage = 1;
   selectedIds = new Set<number>();
   selectionMode: 'manual' | 'allFiltered' = 'manual';
+  mostrarEdicionMasiva = false;
+  bulkEditLoading = false;
+  ubicaciones: string[] = [
+    'PATIOS',
+    'ALAMOS 200',
+    'ALAMOS 201',
+    'FONTIBÓN 1',
+    'FONTIBÓN 2',
+    'PATIO SUR',
+    'PATIO 50',
+    'SUBA',
+    'TRANSITORIO'
+  ];
+  bulkChanges: any = {
+    codigo_fasecolda: '',
+    valor_chatarra_kg: null,
+    ubicacion: '',
+    tipo: '',
+    chatarra: '',
+    peso_chatarra_kg: null,
+    observaciones: '',
+  };
 
   constructor(private service: IngresoService, private router: Router,private alert: AlertService) {
     this.cargarAvaluos();
@@ -272,6 +294,48 @@ exportarCertificadosZip(): void {
       }
 
       this.loading = false;
+    }
+  });
+}
+
+aplicarEdicionMasiva(): void {
+  if (!this.haySeleccionExportable) {
+    this.alert.warning('Selecciona al menos un registro (o todos los filtrados) para edición masiva.');
+    return;
+  }
+
+  const changes: Record<string, any> = {};
+  Object.entries(this.bulkChanges).forEach(([key, value]) => {
+    if (value !== null && value !== undefined && `${value}`.trim() !== '') {
+      changes[key] = value;
+    }
+  });
+
+  if (Object.keys(changes).length === 0) {
+    this.alert.warning('Debes diligenciar al menos un campo para aplicar en bloque.');
+    return;
+  }
+
+  this.bulkEditLoading = true;
+  const ids = this.exportaTodosFiltrados ? [] : Array.from(this.selectedIds);
+
+  this.service.bulkUpdateCompact({
+    ids,
+    filtro: this.filtro,
+    all_filtered: this.exportaTodosFiltrados,
+    changes
+  }).subscribe({
+    next: (zipBlob: Blob) => {
+      const nombre = `avaluos-compact-edicion-masiva-${new Date().toISOString().slice(0, 10)}.zip`;
+      this.descargarArchivo(zipBlob, nombre);
+      this.alert.success('Edición masiva aplicada. Se descargó el ZIP con los PDFs actualizados.');
+      this.bulkEditLoading = false;
+      this.cargarAvaluos(this.currentPage);
+    },
+    error: (error) => {
+      console.error('Error en edición masiva:', error);
+      this.alert.error('No fue posible completar la edición masiva.');
+      this.bulkEditLoading = false;
     }
   });
 }

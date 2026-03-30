@@ -5,6 +5,8 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Ingreso;
 use App\Models\Avaluo;
+use App\Models\FasecoldaValor;
+use App\Models\ValoresRepuesto;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -13,9 +15,19 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use ZipArchive;
 
 class AvaluoController extends Controller
 {
+    private const CAMPOS_MASIVOS_PERMITIDOS = [
+        'codigo_fasecolda',
+        'valor_chatarra_kg',
+        'ubicacion',
+        'tipo',
+        'chatarra',
+        'peso_chatarra_kg',
+        'observaciones',
+    ];
     // Obtener listado paginado con búsqueda
     public function index(Request $request)
     {
@@ -1320,8 +1332,8 @@ public function reprocesarIndividual($id)
  * @param int $id
  * @return \Illuminate\Http\Response
  */
-public function generarPdf($id, Request $request)
-{
+    public function generarPdf($id, Request $request)
+    {
     
     try {
         $avaluo = Avaluo::with(['ingreso', 'clasificados', 'corregidos', 'limitaciones'])->find($id);
@@ -1396,5 +1408,188 @@ public function generarPdf($id, Request $request)
     }
 }
 
+    public function bulkUpdateCompact(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => 'array',
+            'ids.*' => 'integer|exists:ingresos,id',
+            'filtro' => 'nullable|string',
+            'all_filtered' => 'nullable|boolean',
+            'changes' => 'required|array|min:1',
+            'changes.codigo_fasecolda' => 'nullable|string',
+            'changes.valor_chatarra_kg' => 'nullable|numeric',
+            'changes.ubicacion' => 'nullable|string',
+            'changes.tipo' => 'nullable|string',
+            'changes.chatarra' => 'nullable|string|in:Si,No',
+            'changes.peso_chatarra_kg' => 'nullable|numeric',
+            'changes.observaciones' => 'nullable|string',
+        ]);
 
+        $changes = collect($validated['changes'])
+            ->only(self::CAMPOS_MASIVOS_PERMITIDOS)
+            ->filter(fn ($value) => $value !== null && $value !== '')
+            ->toArray();
+
+        if (empty($changes)) {
+            return response()->json(['message' => 'No se recibieron cambios válidos para aplicar'], 422);
+        }
+
+        $allFiltered = (bool) ($validated['all_filtered'] ?? false);
+        $ids = $validated['ids'] ?? [];
+        $filtro = trim((string) ($validated['filtro'] ?? ''));
+
+        $query = Ingreso::query()
+            ->where('tiposervicio', 'Sec Bogota')
+            ->with(['avaluo', 'avaluo.clasificados', 'avaluo.corregidos', 'avaluo.limitaciones']);
+
+        if ($allFiltered) {
+            if ($filtro !== '') {
+                $query->where(function ($q) use ($filtro) {
+                    $q->where('placa', 'like', '%' . $filtro . '%')
+                        ->orWhere('solicitante', 'like', '%' . $filtro . '%')
+                        ->orWhere('documento_solicitante', 'like', '%' . $filtro . '%')
+                        ->orWhere('ubicacion_activo', 'like', '%' . $filtro . '%')
+                        ->orWhereHas('avaluo', function ($subQuery) use ($filtro) {
+                            $subQuery->where('evaluador', 'like', '%' . $filtro . '%');
+                        });
+                });
+            }
+        } else {
+            if (empty($ids)) {
+                return response()->json(['message' => 'Debes enviar al menos un registro seleccionado'], 422);
+            }
+            $query->whereIn('id', $ids);
+        }
+
+        $ingresos = $query->get();
+        if ($ingresos->isEmpty()) {
+            return response()->json(['message' => 'No se encontraron registros para edición masiva'], 404);
+        }
+
+        $zipFileName = 'avaluos-compact-edicion-masiva-' . now()->format('Y-m-d-H-i-s') . '.zip';
+        $zipPath = storage_path('app/temp/' . $zipFileName);
+        if (!file_exists(dirname($zipPath))) {
+            mkdir(dirname($zipPath), 0755, true);
+        }
+
+        $zip = new ZipArchive();
+        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+            return response()->json(['message' => 'No fue posible crear el archivo ZIP de salida'], 500);
+        }
+
+        $procesados = 0;
+        $errores = [];
+
+        foreach ($ingresos as $ingreso) {
+            try {
+                $avaluo = $ingreso->avaluo;
+                if (!$avaluo) {
+                    $errores[] = ['ingreso_id' => $ingreso->id, 'error' => 'El ingreso no tiene avalúo asociado'];
+                    continue;
+                }
+
+                $changesToApply = $changes;
+
+                if (!empty($changesToApply['codigo_fasecolda'])) {
+                    $fasecoldaRow = FasecoldaValor::where('codigo_fasecolda', $changesToApply['codigo_fasecolda'])
+                        ->where('modelo', $ingreso->modelo)
+                        ->first();
+
+                    if ($fasecoldaRow) {
+                        $changesToApply['valor_razonable'] = $fasecoldaRow->valor;
+                        $changesToApply['valor_resonable'] = $fasecoldaRow->valor;
+                        if (!empty($fasecoldaRow->peso_vacio) && empty($ingreso->peso_bruto)) {
+                            $ingreso->update(['peso_bruto' => $fasecoldaRow->peso_vacio]);
+                        }
+                    }
+                }
+
+                if (!empty($ingreso->clase) && !empty($ingreso->cilindraje)) {
+                    $repuesto = ValoresRepuesto::where('tipo', $ingreso->clase)
+                        ->where('cilindraje_from', '<=', $ingreso->cilindraje)
+                        ->where('cilindraje_to', '>=', $ingreso->cilindraje)
+                        ->where('especial', false)
+                        ->first();
+
+                    if ($repuesto) {
+                        $changesToApply = array_merge($changesToApply, [
+                            'latoneria_valor' => $repuesto->latoneria,
+                            'valor_RTM' => $repuesto->rtm,
+                            'valor_SOAT' => $repuesto->soat,
+                            'valor_llantas' => $repuesto->llantas,
+                            'motor_valor' => $repuesto->motor_mantenimiento,
+                            'chasis_valor' => $repuesto->chasis,
+                            'frenos_valor' => $repuesto->frenos,
+                            'tanque_valor' => $repuesto->tanque_combustible,
+                            'bateria_valor' => $repuesto->bateria,
+                            'llave_valor' => $repuesto->llave,
+                            'electrico_valor' => $repuesto->sis_electrico,
+                            'valor_pintura' => $repuesto->pintura,
+                            'tapiceria_valor' => $repuesto->tapiceria,
+                            'transmision_valor' => $repuesto->kit_arrastre,
+                        ]);
+                    }
+                }
+
+                $requestSimulado = Request::create('/api/avaluo/' . $avaluo->id, 'PUT', [
+                    'id' => $ingreso->id,
+                    'placa' => $ingreso->placa,
+                    'marca' => $ingreso->marca,
+                    'linea' => $ingreso->linea,
+                    'fecha_matricula' => $ingreso->fecha_matricula,
+                    'clase' => $ingreso->clase,
+                    'tipo_carroceria' => $ingreso->tipo_carroceria,
+                    'color' => $ingreso->color,
+                    'cilindraje' => $ingreso->cilindraje,
+                    'modelo' => $ingreso->modelo,
+                    'kilometraje' => $ingreso->kilometraje,
+                    'caja_cambios' => $ingreso->caja_cambios,
+                    'numero_chasis' => $ingreso->numero_chasis,
+                    'numero_serie' => $ingreso->numero_serie,
+                    'numero_motor' => $ingreso->numero_motor,
+                    'numeroVin' => $ingreso->numeroVin,
+                    'tipo_servicio_vehiculo' => $ingreso->tipo_servicio_vehiculo,
+                    'cantidad_ejes' => $ingreso->cantidad_ejes,
+                    'peso_bruto' => $ingreso->peso_bruto,
+                    'peso_mermado' => $ingreso->peso_mermado,
+                    'numero_pasajeros' => $ingreso->numero_pasajeros,
+                    'estado_registro_runt' => $ingreso->estado_registro_runt,
+                    'capacidad_ton' => $ingreso->capacidad_ton,
+                    'fecha_inspeccion' => $ingreso->fecha_inspeccion,
+                    'fecha_solicitud' => $ingreso->fecha_solicitud,
+                    'avaluo' => array_merge(
+                        $avaluo->toArray(),
+                        ['ingreso_id' => $ingreso->id],
+                        $changesToApply
+                    ),
+                ]);
+                $requestSimulado->setUserResolver(fn () => auth()->user());
+
+                $this->update($requestSimulado, $avaluo);
+                $pdfResponse = $this->generarPdf($avaluo->id, new Request(['action' => 'download']));
+                $pdfContent = $pdfResponse->getContent();
+                $pdfName = ($ingreso->placa ?: 'ingreso-' . $ingreso->id) . '.pdf';
+                $zip->addFromString($pdfName, $pdfContent);
+                $procesados++;
+            } catch (\Throwable $e) {
+                $errores[] = [
+                    'ingreso_id' => $ingreso->id,
+                    'avaluo_id' => $ingreso->avaluo?->id,
+                    'error' => $e->getMessage(),
+                ];
+            }
+        }
+
+        $zip->close();
+
+        if ($procesados === 0) {
+            @unlink($zipPath);
+            return response()->json([
+                'message' => 'No fue posible procesar registros',
+                'errores' => $errores,
+            ], 500);
+        }
+
+        return response()->download($zipPath, $zipFileName)->deleteFileAfterSend(true);
+    }
 }
