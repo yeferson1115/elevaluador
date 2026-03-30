@@ -239,6 +239,17 @@ import(file: File): Observable<any> {
     });
   }
 
+  bulkUpdateCompact(payload: {
+    ids: number[];
+    filtro: string;
+    all_filtered: boolean;
+    changes: Record<string, any>;
+  }): Observable<Blob> {
+    return this.http.post(`${this.baseUrl}/avaluos/bulk-update-compact`, payload, {
+      responseType: 'blob'
+    });
+  }
+
 // En tu IngresoService (Angular)
 // En tu servicio
 generarPdf(id: number): Observable<HttpResponse<Blob>> {
@@ -289,5 +300,4 @@ verPdfEnNavegador(id: number): Observable<any> {
     });
   }
 }
-
 

@@ -72,6 +72,59 @@
   </div>
 </div>
 
+<div class="card mb-3">
+  <div class="card-body">
+    <h6 class="mb-3">Edición masiva (Avaluo Compact)</h6>
+    <div class="row g-2">
+      <div class="col-md-3">
+        <label class="form-label">Código Fasecolda</label>
+        <input class="form-control" [(ngModel)]="bulkChanges.codigo_fasecolda" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Valor chatarra/Kg</label>
+        <input class="form-control" type="number" [(ngModel)]="bulkChanges.valor_chatarra_kg" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Ubicación</label>
+        <input class="form-control" [(ngModel)]="bulkChanges.ubicacion" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Método</label>
+        <select class="form-select" [(ngModel)]="bulkChanges.tipo">
+          <option value="">-- Sin cambio --</option>
+          <option value="comercial">Comercial</option>
+          <option value="jans">Jans</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Indicador chatarra</label>
+        <select class="form-select" [(ngModel)]="bulkChanges.chatarra">
+          <option value="">-- Sin cambio --</option>
+          <option value="Si">Sí</option>
+          <option value="No">No</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Peso chatarra (Kg)</label>
+        <input class="form-control" type="number" [(ngModel)]="bulkChanges.peso_chatarra_kg" />
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Diagnóstico</label>
+        <input class="form-control" [(ngModel)]="bulkChanges.observaciones" />
+      </div>
+      <div class="col-12 d-flex justify-content-end">
+        <button class="btn btn-primary" (click)="aplicarEdicionMasiva()" [disabled]="loading || bulkEditLoading">
+          <i class="fa-solid fa-pen-to-square"></i>
+          {{ bulkEditLoading ? 'Procesando...' : 'Aplicar cambios + generar ZIP' }}
+        </button>
+      </div>
+    </div>
+    <small class="text-muted">
+      Aplica sobre los seleccionados o sobre todos los filtrados; se recalculan valores automáticos en backend y se descarga un ZIP con PDFs por registro.
+    </small>
+  </div>
+</div>
+
 <div class="mb-2 d-flex justify-content-end gap-2">
   <input
     type="text"
