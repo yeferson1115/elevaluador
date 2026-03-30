@@ -15,10 +15,16 @@ class IngresoImageController extends Controller
 {
     public function index($avaluoId)
     {
-        $imagenes = IngresoImage::where('avaluo_id', $avaluoId)->get()
+        $imagenes = IngresoImage::where('avaluo_id', $avaluoId)
+            ->orderBy('categoria')
+            ->orderBy('orden')
+            ->orderBy('id')
+            ->get()
             ->map(fn($img) => [
                 'id' => $img->id,
                 'categoria' => $img->categoria,
+                'orden' => $img->orden,
+                'rotacion' => $img->rotacion ?? 0,
                 // Construimos la URL accesible desde public/
                 'url' => asset($img->path),
             ]);
@@ -66,12 +72,18 @@ class IngresoImageController extends Controller
             'avaluo_id' => $avaluoId,
             'categoria' => $request->categoria,
             'path' => $relativePath,
+            'orden' => IngresoImage::where('avaluo_id', $avaluoId)
+                ->where('categoria', $request->categoria)
+                ->max('orden') + 1,
+            'rotacion' => 0,
         ]);
 
         $imagenes[] = [
             'id' => $img->id,
             'categoria' => $img->categoria,
             'url' => asset($relativePath),
+            'orden' => $img->orden,
+            'rotacion' => $img->rotacion,
             'peso_original' => $this->formatearBytes($file->getSize()),
             'peso_optimizado' => $this->formatearBytes(filesize($rutaCompleta)),
         ];
@@ -112,6 +124,8 @@ private function optimizarImagenGD($rutaTemporal, $extension, $maxWidth, $maxHei
     if (!$imagen) {
         return null;
     }
+
+    $imagen = $this->normalizarOrientacionExif($imagen, $rutaTemporal, $extension);
     
     // Obtener dimensiones originales
     $anchoOriginal = imagesx($imagen);
@@ -148,6 +162,56 @@ private function optimizarImagenGD($rutaTemporal, $extension, $maxWidth, $maxHei
     imagedestroy($imagen);
     
     return $imagenOptimizada;
+}
+
+private function normalizarOrientacionExif($imagen, $rutaTemporal, $extension)
+{
+    if (!in_array($extension, ['jpg', 'jpeg'], true)) {
+        return $imagen;
+    }
+
+    if (!function_exists('exif_read_data')) {
+        return $imagen;
+    }
+
+    $exif = @exif_read_data($rutaTemporal);
+    $orientation = $exif['Orientation'] ?? 1;
+
+    switch ($orientation) {
+        case 2:
+            if (function_exists('imageflip')) {
+                imageflip($imagen, IMG_FLIP_HORIZONTAL);
+            }
+            break;
+        case 3:
+            $imagen = imagerotate($imagen, 180, 0);
+            break;
+        case 4:
+            if (function_exists('imageflip')) {
+                imageflip($imagen, IMG_FLIP_VERTICAL);
+            }
+            break;
+        case 5:
+            if (function_exists('imageflip')) {
+                imageflip($imagen, IMG_FLIP_VERTICAL);
+            }
+            $imagen = imagerotate($imagen, -90, 0);
+            break;
+        case 6:
+            $imagen = imagerotate($imagen, -90, 0);
+            break;
+        case 7:
+            if (function_exists('imageflip')) {
+                imageflip($imagen, IMG_FLIP_HORIZONTAL);
+            }
+            $imagen = imagerotate($imagen, -90, 0);
+            break;
+        case 8:
+            $imagen = imagerotate($imagen, 90, 0);
+            break;
+    }
+
+    return $imagen;
 }
 
 private function calcularRedimension($ancho, $alto, $maxAncho, $maxAlto)
@@ -276,8 +340,7 @@ private function formatearBytes($bytes, $precision = 2)
         ]);
 
         // Extraemos la ruta relativa quitando el asset() y dominio
-        $baseUrl = asset('');
-        $relativePath = str_replace($baseUrl, '', $request->url);
+        $relativePath = $this->resolveRelativePathFromUrl($request->url);
 
         $image = IngresoImage::where('avaluo_id', $avaluoId)
             ->where('categoria', $request->categoria)
@@ -293,6 +356,103 @@ private function formatearBytes($bytes, $precision = 2)
         }
 
         return response()->json(['success' => true]);
+    }
+
+    public function reorder(Request $request, $avaluoId)
+    {
+        $request->validate([
+            'categoria' => 'required|string',
+            'orden' => 'required|array|min:1',
+            'orden.*' => 'required|integer',
+        ]);
+
+        $imagenes = IngresoImage::where('avaluo_id', $avaluoId)
+            ->where('categoria', $request->categoria)
+            ->whereIn('id', $request->orden)
+            ->get()
+            ->keyBy('id');
+
+        foreach ($request->orden as $indice => $imageId) {
+            if (isset($imagenes[$imageId])) {
+                $imagenes[$imageId]->update(['orden' => $indice + 1]);
+            }
+        }
+
+        return response()->json(['success' => true]);
+    }
+
+    public function rotate(Request $request, $avaluoId)
+    {
+        $request->validate([
+            'categoria' => 'required|string',
+            'url' => 'required|string',
+            'grados' => 'required|integer|in:-90,90,180',
+        ]);
+
+        $relativePath = $this->resolveRelativePathFromUrl($request->url);
+
+        $image = IngresoImage::where('avaluo_id', $avaluoId)
+            ->where('categoria', $request->categoria)
+            ->where('path', $relativePath)
+            ->first();
+
+        if (!$image) {
+            return response()->json(['message' => 'Imagen no encontrada'], 404);
+        }
+
+        $rutaCompleta = public_path($image->path);
+        if (!File::exists($rutaCompleta)) {
+            return response()->json(['message' => 'Archivo no encontrado'], 404);
+        }
+
+        $extension = strtolower(pathinfo($rutaCompleta, PATHINFO_EXTENSION));
+        $gdImage = match ($extension) {
+            'jpg', 'jpeg' => @imagecreatefromjpeg($rutaCompleta),
+            'png' => @imagecreatefrompng($rutaCompleta),
+            'gif' => @imagecreatefromgif($rutaCompleta),
+            'webp' => function_exists('imagecreatefromwebp') ? @imagecreatefromwebp($rutaCompleta) : null,
+            default => null,
+        };
+
+        if (!$gdImage) {
+            return response()->json(['message' => 'Formato no soportado para rotación'], 422);
+        }
+
+        $rotada = imagerotate($gdImage, -1 * (int) $request->grados, 0);
+        imagedestroy($gdImage);
+
+        if (!$rotada) {
+            return response()->json(['message' => 'No fue posible rotar la imagen'], 422);
+        }
+
+        if ($extension === 'png') {
+            imagealphablending($rotada, false);
+            imagesavealpha($rotada, true);
+        }
+
+        $this->guardarImagenOptimizada($rotada, $rutaCompleta, basename($rutaCompleta));
+        $image->update([
+            'rotacion' => (($image->rotacion ?? 0) + (int) $request->grados + 360) % 360,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'url' => asset($image->path) . '?v=' . time(),
+            'rotacion' => $image->rotacion,
+        ]);
+    }
+
+    private function resolveRelativePathFromUrl(string $url): string
+    {
+        $parsedPath = parse_url($url, PHP_URL_PATH) ?? '';
+        $cleanPath = ltrim($parsedPath, '/');
+
+        if ($cleanPath !== '') {
+            return $cleanPath;
+        }
+
+        $baseUrl = asset('');
+        return str_replace($baseUrl, '', $url);
     }
 
 private function generarGraficaDispercion(Avaluo $avaluo)

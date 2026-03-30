@@ -115,7 +115,9 @@ class Ingreso extends Model
     
     public function images()
     {
-        return $this->hasMany(IngresoImage::class,'avaluo_id');
+        return $this->hasMany(IngresoImage::class, 'avaluo_id')
+            ->orderBy('orden')
+            ->orderBy('id');
     }
 
 	public function historicoPropietarios()
