@@ -266,7 +266,7 @@
                 <td><strong>Cilindraje:</strong></td>
                 <td>{{ $ingreso->cilindraje ?? '' }}</td>
                 <td><strong>Caja:</strong></td>
-                <td>{{ $ingreso->caja_cambios ?? '' }}</td>                
+                <td>{{ strtoupper($ingreso->caja_cambios ?? '') }}</td>                
             </tr>
             <tr>
                 <td><strong>Clase:</strong></td>
@@ -282,7 +282,7 @@
                 <td><strong>N° Chasis:</strong></td>
                 <td>{{ $ingreso->numero_chasis ?? '' }}</td>
                 <td><strong>Peso vacío:</strong></td>
-                <td>{{ $ingreso->peso_bruto ?? '' }}</td>
+                <td>{{ $ingreso->peso_bruto !== null ? number_format((float) $ingreso->peso_bruto, 0, '.', '') : '' }}</td>
             </tr>
             <tr>
                 <td><strong>Línea:</strong></td>
@@ -302,15 +302,15 @@
             </tr>
             <tr>
                 <td><strong>Color:</strong></td>
-                <td>{{ $ingreso->color ?? '' }}</td>
+                <td>{{ strtoupper($ingreso->color ?? '') }}</td>
                 <td><strong>Capacidad Psj:</strong></td>
                 <td>{{ $ingreso->numero_pasajeros ?? '' }}</td>
                 <td><strong>Estado Runt:</strong></td>
-                <td>{{ $ingreso->estado_registro_runt ?? '' }}</td>                
+                <td>{{ strtoupper($ingreso->estado_registro_runt ?? '') }}</td>                
             </tr>
             <tr>
                 <td><strong>Servicio:</strong></td>
-                <td>{{ $ingreso->tipo_servicio_vehiculo ?? '' }}</td>
+                <td>{{ strtoupper($ingreso->tipo_servicio_vehiculo ?? '') }}</td>
                 <td><strong>Capacidad ton.:</strong></td>
                 <td>{{ $ingreso->capacidad_ton ?? '' }}</td> 
                 <td><strong>Diagnóstico:</strong></td>

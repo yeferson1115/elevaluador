@@ -90,7 +90,8 @@ class Avaluo extends Model
         'code_movilidad',
         'evaluador',
         'consecutivo',
-        'inicial'
+        'inicial',
+        'cerrado'
     ];
 
 
