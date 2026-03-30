@@ -1,14 +1,12 @@
 .image-container {
-  position: relative;
   width: 175px;
   max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
 }
 .image-actions {
-  position: absolute;
-  bottom: 4px;
-  left: 4px;
-  z-index: 3;
-  right: 4px;
+  width: 100%;
 }
 .image-thumb {
   width: 175px;
@@ -22,11 +20,8 @@
   max-width: 100%;
   height: 100px;
 }
-.image-actions {
-  position: absolute;
-  bottom: 4px;
-  left: 4px;
-  z-index: 3;
+.image-preview {
+  position: relative;
 }
 
 .overlay {
@@ -43,15 +38,11 @@
   transition: opacity 0.3s ease;
   cursor: pointer;
   border-radius: 0.25rem;
-  z-index: 1; /* debajo del botón eliminar */
+  z-index: 1;
 }
 
 .image-container:hover .overlay {
   opacity: 1;
-}
-
-button.btn-danger {
-  z-index: 2; /* por encima del overlay */
 }
 
 /* Estilos para Drag & Drop */
@@ -90,7 +81,6 @@ button.btn-danger {
 
 /* Responsive */
 @media (max-width: 768px) {
-  .image-container,
   .empty-slot,
   .image-thumb {
     width: 100%;
@@ -107,15 +97,9 @@ button.btn-danger {
 }
 
 @media (max-width: 576px) {
-  .image-container,
   .empty-slot,
   .image-thumb {
     height: 160px;
-  }
-
-  .image-actions {
-    left: 6px;
-    right: 6px;
   }
 
   .image-actions .btn {
