@@ -29,7 +29,19 @@ export class AvaluoListComponent {
   lastPage = 1;
   selectedIds = new Set<number>();
   selectionMode: 'manual' | 'allFiltered' = 'manual';
+  mostrarEdicionMasiva = false;
   bulkEditLoading = false;
+  ubicaciones: string[] = [
+    'PATIOS',
+    'ALAMOS 200',
+    'ALAMOS 201',
+    'FONTIBÓN 1',
+    'FONTIBÓN 2',
+    'PATIO SUR',
+    'PATIO 50',
+    'SUBA',
+    'TRANSITORIO'
+  ];
   bulkChanges: any = {
     codigo_fasecolda: '',
     valor_chatarra_kg: null,

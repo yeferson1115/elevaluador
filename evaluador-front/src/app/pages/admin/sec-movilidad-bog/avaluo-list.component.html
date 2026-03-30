@@ -73,8 +73,14 @@
 </div>
 
 <div class="card mb-3">
-  <div class="card-body">
-    <h6 class="mb-3">Edición masiva (Avaluo Compact)</h6>
+  <div class="card-header d-flex justify-content-between align-items-center py-2">
+    <button class="btn btn-sm btn-outline-primary" type="button" (click)="mostrarEdicionMasiva = !mostrarEdicionMasiva">
+      <i class="fa-solid" [ngClass]="mostrarEdicionMasiva ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+      {{ mostrarEdicionMasiva ? 'Ocultar edición masiva' : 'Mostrar edición masiva' }}
+    </button>
+    <small class="text-muted">Edición masiva (Avaluo Compact)</small>
+  </div>
+  <div class="card-body" *ngIf="mostrarEdicionMasiva">
     <div class="row g-2">
       <div class="col-md-3">
         <label class="form-label">Código Fasecolda</label>
@@ -86,7 +92,10 @@
       </div>
       <div class="col-md-3">
         <label class="form-label">Ubicación</label>
-        <input class="form-control" [(ngModel)]="bulkChanges.ubicacion" />
+        <select class="form-select" [(ngModel)]="bulkChanges.ubicacion">
+          <option value="">-- Sin cambio --</option>
+          <option *ngFor="let ubicacion of ubicaciones" [value]="ubicacion">{{ ubicacion }}</option>
+        </select>
       </div>
       <div class="col-md-3">
         <label class="form-label">Método</label>
