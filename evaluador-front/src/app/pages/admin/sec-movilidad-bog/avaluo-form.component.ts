@@ -650,8 +650,7 @@ private fusionarConValoresPorDefecto(avaluoData: any): any {
     chatarra: '',
     codigo_fasecolda: '',
     observaciones: '',
-    x: '',
-    factor_demerito: 1
+    x: ''
   };
 
   const resultado: any = {};
