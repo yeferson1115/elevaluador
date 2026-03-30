@@ -9,6 +9,7 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
 import { Permissions } from '../../../core/constants/permissions.const';
 import { AlertService } from '../../../core/services/alert.service';
 import { environment } from '../../../../environments/environment';
+import { AvaluoService } from '../../../core/services/avaluo.service';
 
 @Component({
   selector: 'app-avaluo-list',
@@ -52,7 +53,12 @@ export class AvaluoListComponent {
     observaciones: '',
   };
 
-  constructor(private service: IngresoService, private router: Router,private alert: AlertService) {
+  constructor(
+    private service: IngresoService,
+    private router: Router,
+    private alert: AlertService,
+    private avaluoService: AvaluoService
+  ) {
     this.cargarAvaluos();
     console.log(Permissions.VIEW_INGRESO);
   }
@@ -80,6 +86,24 @@ export class AvaluoListComponent {
 
   editar(id: number): void {
     this.router.navigate([`/admin/avaluo-sec-bgta/${id}/edit`]);
+  }
+
+  toggleCierreDesdeTabla(avaluoId: number | null | undefined, cerradoActual: boolean | null | undefined): void {
+    if (!avaluoId) {
+      this.alert.warning('Este registro aún no tiene avalúo para cambiar de estado.');
+      return;
+    }
+
+    const nuevoEstado = !Boolean(cerradoActual);
+    this.avaluoService.actualizarCierre(avaluoId, nuevoEstado).subscribe({
+      next: (response) => {
+        this.alert.success(response.message);
+        this.cargarAvaluos(this.currentPage);
+      },
+      error: () => {
+        this.alert.error('No se pudo actualizar el estado de cierre del avalúo.');
+      }
+    });
   }
 
   eliminar(id: number): void {

@@ -44,6 +44,7 @@ Route::middleware(['auth:api'])->group(function () {
     // Rutas principales
     Route::apiResource('ingreso', IngresoController::class);
     Route::apiResource('avaluo', AvaluoController::class);
+    Route::patch('avaluo/{avaluo}/cierre', [AvaluoController::class, 'actualizarCierre']);
     Route::apiResource('inspeccion', InspeccionController::class);
     
     // CRUD completo para ValoresRepuesto

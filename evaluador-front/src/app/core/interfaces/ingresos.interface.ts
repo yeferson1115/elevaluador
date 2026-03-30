@@ -157,6 +157,7 @@ export interface Avaluo {
   file:string|null; 
   evaluador :string|null; 
   ubicacion :string|null; 
+  cerrado?: boolean | null;
 }
 
 

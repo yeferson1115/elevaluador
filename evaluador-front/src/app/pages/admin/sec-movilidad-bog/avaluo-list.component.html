@@ -196,6 +196,14 @@
         </td>
         <td class="text-nowrap">
           <button class="btn btn-primary btn-sm me-1" *hasPermission="Permissions.EDIT_INGRESO" (click)="editar(a.id)">Editar</button>
+          <button
+            class="btn btn-sm me-1"
+            [ngClass]="a.avaluo?.cerrado ? 'btn-success' : 'btn-secondary'"
+            [disabled]="!a.avaluo?.id"
+            (click)="toggleCierreDesdeTabla(a.avaluo?.id, a.avaluo?.cerrado)"
+          >
+            {{ a.avaluo?.cerrado ? 'Abrir' : 'Cerrar' }}
+          </button>
           <button class="btn btn-danger btn-sm me-1" *hasPermission="Permissions.DELETE_INGRESO" (click)="eliminar(a.id)">Eliminar</button>
           <button class="btn btn-warning btn-sm" (click)="irAImagenes(a.id)">
             <i class="fa-solid fa-camera"></i> Imágenes
