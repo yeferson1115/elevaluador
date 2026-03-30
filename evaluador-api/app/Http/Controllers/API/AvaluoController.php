@@ -1524,6 +1524,13 @@ public function reprocesarIndividual($id)
                 $changesToApply = $changes;
 
                 if (!empty($changesToApply['codigo_fasecolda'])) {
+                    $fasecoldaQuery = FasecoldaValor::where('codigo_fasecolda', $changesToApply['codigo_fasecolda']);
+                    $fasecoldaPesoVacio = $fasecoldaQuery->value('peso_vacio');
+
+                    if (!empty($fasecoldaPesoVacio)) {
+                        $changesToApply['peso_chatarra_kg'] = $fasecoldaPesoVacio;
+                    }
+
                     $fasecoldaRow = FasecoldaValor::where('codigo_fasecolda', $changesToApply['codigo_fasecolda'])
                         ->where('modelo', $ingreso->modelo)
                         ->first();
