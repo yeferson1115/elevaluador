@@ -10,6 +10,7 @@ import { Permissions } from '../../../core/constants/permissions.const';
 import { AlertService } from '../../../core/services/alert.service';
 import { environment } from '../../../../environments/environment';
 import { AvaluoService } from '../../../core/services/avaluo.service';
+import { FasecoldaService } from '../../../core/services/fasecolda.service';
 
 @Component({
   selector: 'app-avaluo-list',
@@ -57,7 +58,8 @@ export class AvaluoListComponent {
     private service: IngresoService,
     private router: Router,
     private alert: AlertService,
-    private avaluoService: AvaluoService
+    private avaluoService: AvaluoService,
+    private fasecoldaService: FasecoldaService
   ) {
     this.cargarAvaluos();
     console.log(Permissions.VIEW_INGRESO);
@@ -322,7 +324,7 @@ exportarCertificadosZip(): void {
   });
 }
 
-aplicarEdicionMasiva(): void {
+  aplicarEdicionMasiva(): void {
   if (!this.haySeleccionExportable) {
     this.alert.warning('Selecciona al menos un registro (o todos los filtrados) para edición masiva.');
     return;
@@ -366,7 +368,7 @@ aplicarEdicionMasiva(): void {
 
 // En tu AvaluoListComponent
 
-verPdf(id: number | null | undefined, action: 'view' | 'download' = 'view'): void {
+  verPdf(id: number | null | undefined, action: 'view' | 'download' = 'view'): void {
     // Validar que el id sea un número válido
     if (id === null || id === undefined || isNaN(id)) {
       this.alert.error('ID de avalúo no válido');
@@ -401,6 +403,25 @@ verPdf(id: number | null | undefined, action: 'view' | 'download' = 'view'): voi
         }
       });
     }
+  }
+
+  onCodigoFasecoldaMasivoChange(codigo: string): void {
+    const codigoNormalizado = (codigo || '').trim();
+
+    if (!codigoNormalizado) {
+      this.bulkChanges.peso_chatarra_kg = null;
+      return;
+    }
+
+    this.fasecoldaService.getValores(codigoNormalizado).subscribe({
+      next: (response) => {
+        this.bulkChanges.peso_chatarra_kg = response?.peso_vacio ?? null;
+      },
+      error: () => {
+        this.bulkChanges.peso_chatarra_kg = null;
+        this.alert.warning('No fue posible consultar el peso del código Fasecolda ingresado.');
+      }
+    });
   }
 
   private descargarArchivo(blob: Blob, nombre: string): void {

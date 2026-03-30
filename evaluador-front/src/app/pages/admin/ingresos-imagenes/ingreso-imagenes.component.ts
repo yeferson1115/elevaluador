@@ -32,7 +32,7 @@ declare var bootstrap: any;
 export class IngresoImagenesComponent implements OnInit {
   id!: number;
   infoIngreso: any = null;
-  categorias: Categoria[] = [
+  private readonly categoriasBase: Categoria[] = [
     { key: 'matricula', nombre: 'Foto Matricula', max: 1, imagenes: [], isDragging: false },
     { key: 'firma_evaluador', nombre: 'Firma Evaluador', max: 1, imagenes: [], isDragging: false },
     { key: 'firma_inspector', nombre: 'Firma Inspector', max: 1, imagenes: [], isDragging: false },
@@ -51,6 +51,7 @@ export class IngresoImagenesComponent implements OnInit {
     { key: 'parte_baja', nombre: 'Foto parte baja', max: 3, imagenes: [], isDragging: false },
     { key: 'extra', nombre: 'Foto extra', max: 10, imagenes: [], isDragging: false },
   ];
+  categorias: Categoria[] = this.crearCategorias(this.categoriasBase);
   imagenSeleccionada: string | null = null;
 
   constructor(
@@ -68,6 +69,9 @@ export class IngresoImagenesComponent implements OnInit {
   cargarImagenes() {
     this.service.getImagenes(this.id).subscribe({
       next: (response: GetImagenesResponse) => {
+        this.infoIngreso = response.ingreso;
+        this.configurarCategorias();
+
         this.categorias.forEach(cat => cat.imagenes = []);
 
         for (const img of response.imagenes) {
@@ -86,10 +90,29 @@ export class IngresoImagenesComponent implements OnInit {
           cat.imagenes.sort((a, b) => a.orden - b.orden || a.id - b.id);
         });
 
-        this.infoIngreso = response.ingreso;
       },
       error: (err) => this.alertService.error('Error cargando imágenes', err.message)
     });
+  }
+
+  private configurarCategorias(): void {
+    const categoriasVisibles = this.esAvaluoCompact()
+      ? this.categoriasBase.filter((cat) => cat.key === 'extra')
+      : this.categoriasBase;
+
+    this.categorias = this.crearCategorias(categoriasVisibles);
+  }
+
+  private esAvaluoCompact(): boolean {
+    return this.infoIngreso?.tiposervicio === 'Sec Bogota';
+  }
+
+  private crearCategorias(categorias: Categoria[]): Categoria[] {
+    return categorias.map((cat) => ({
+      ...cat,
+      imagenes: [],
+      isDragging: false,
+    }));
   }
 
   onDragOver(event: DragEvent, categoria: Categoria) {

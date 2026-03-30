@@ -84,7 +84,11 @@
     <div class="row g-2">
       <div class="col-md-3">
         <label class="form-label">Código Fasecolda</label>
-        <input class="form-control" [(ngModel)]="bulkChanges.codigo_fasecolda" />
+        <input
+          class="form-control"
+          [(ngModel)]="bulkChanges.codigo_fasecolda"
+          (blur)="onCodigoFasecoldaMasivoChange(bulkChanges.codigo_fasecolda)"
+        />
       </div>
       <div class="col-md-3">
         <label class="form-label">Valor chatarra/Kg</label>
@@ -119,7 +123,11 @@
       </div>
       <div class="col-md-6">
         <label class="form-label">Diagnóstico</label>
-        <input class="form-control" [(ngModel)]="bulkChanges.observaciones" />
+        <select class="form-select" [(ngModel)]="bulkChanges.observaciones">
+          <option value="">-- Sin cambio --</option>
+          <option value="Chatarra">Chatarra</option>
+          <option value="uso">uso</option>
+        </select>
       </div>
       <div class="col-12 d-flex justify-content-end">
         <button class="btn btn-primary" (click)="aplicarEdicionMasiva()" [disabled]="loading || bulkEditLoading">
