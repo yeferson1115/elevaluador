@@ -340,8 +340,7 @@ private function formatearBytes($bytes, $precision = 2)
         ]);
 
         // Extraemos la ruta relativa quitando el asset() y dominio
-        $baseUrl = asset('');
-        $relativePath = str_replace($baseUrl, '', $request->url);
+        $relativePath = $this->resolveRelativePathFromUrl($request->url);
 
         $image = IngresoImage::where('avaluo_id', $avaluoId)
             ->where('categoria', $request->categoria)
@@ -390,8 +389,7 @@ private function formatearBytes($bytes, $precision = 2)
             'grados' => 'required|integer|in:-90,90,180',
         ]);
 
-        $baseUrl = asset('');
-        $relativePath = str_replace($baseUrl, '', $request->url);
+        $relativePath = $this->resolveRelativePathFromUrl($request->url);
 
         $image = IngresoImage::where('avaluo_id', $avaluoId)
             ->where('categoria', $request->categoria)
@@ -442,6 +440,19 @@ private function formatearBytes($bytes, $precision = 2)
             'url' => asset($image->path) . '?v=' . time(),
             'rotacion' => $image->rotacion,
         ]);
+    }
+
+    private function resolveRelativePathFromUrl(string $url): string
+    {
+        $parsedPath = parse_url($url, PHP_URL_PATH) ?? '';
+        $cleanPath = ltrim($parsedPath, '/');
+
+        if ($cleanPath !== '') {
+            return $cleanPath;
+        }
+
+        $baseUrl = asset('');
+        return str_replace($baseUrl, '', $url);
     }
 
 private function generarGraficaDispercion(Avaluo $avaluo)
