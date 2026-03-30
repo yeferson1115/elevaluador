@@ -13,6 +13,8 @@ class IngresoImage extends Model
         'avaluo_id',
         'categoria',
         'path',
+        'orden',
+        'rotacion',
     ];
 
     public function getUrlAttribute()

@@ -1,5 +1,5 @@
 <div class="container mt-4">
-  <h3 class="text-center text-danger">CARGAR FOTOS {{ infoIngreso.placa }}</h3>
+  <h3 class="text-center text-danger">CARGAR FOTOS {{ infoIngreso?.placa }}</h3>
 
   <div class="row">
     <div class="col-md-3 mb-3" *ngFor="let c of categorias">
@@ -9,22 +9,20 @@
            (dragover)="onDragOver($event, c)"
            (dragleave)="onDragLeave($event, c)"
            (drop)="onDrop($event, c)">
-        
+
         <div>
           <i class="fa-solid fa-cloud-arrow-up fa-2x mb-2"></i>
-          
-          <!-- Contador de imágenes -->
+
           <div class="mb-2">
-            <span class="badge" 
+            <span class="badge"
                   [ngClass]="c.imagenes.length >= c.max ? 'bg-danger' : 'bg-success'">
               {{ c.imagenes.length }}/{{ c.max }}
             </span>
           </div>
-          
+
           <p class="mb-1">{{ c.nombre }}</p>
           <small class="text-muted">Máximo: {{ c.max }}</small>
 
-          <!-- Input file tradicional -->
           <input type="file"
                  accept="image/*"
                  [multiple]="c.max > 1"
@@ -33,7 +31,6 @@
                  [disabled]="c.imagenes.length >= c.max"
                  (change)="onFileChange($event, c)">
 
-          <!-- Mensaje de drag & drop -->
           <div class="drag-drop-zone" *ngIf="c.imagenes.length < c.max">
             <small class="text-muted">
               <i class="fa-solid fa-arrow-up-from-bracket me-1"></i>
@@ -41,37 +38,45 @@
             </small>
           </div>
 
-          <!-- Mensaje cuando se alcanza el límite -->
-          <div class="alert alert-warning p-1 mt-2 mb-2" 
+          <div class="alert alert-warning p-1 mt-2 mb-2"
                *ngIf="c.imagenes.length >= c.max">
             <small><i class="fa-solid fa-triangle-exclamation me-1"></i> Límite alcanzado</small>
           </div>
         </div>
 
-        <!-- Mostrar imágenes ya cargadas -->
         <div class="d-flex flex-wrap justify-content-center gap-2 mt-2">
-          <div *ngFor="let img of c.imagenes" class="position-relative image-container">
-            
-            <!-- Imagen -->
-            <img [src]="img"
+          <div *ngFor="let img of c.imagenes; let i = index" class="position-relative image-container">
+            <img [src]="img.url"
                  class="img-thumbnail"
                  style="width:175px;height:100px;object-fit:cover;cursor:pointer"
-                 (click)="abrirModal(img)">
-            
-            <!-- Botón eliminar CORREGIDO -->
+                 (click)="abrirModal(img.url)">
+
             <button class="btn btn-sm btn-danger position-absolute top-0 end-0"
                     (click)="eliminarImagen(c, img)">
               <i class="fa-solid fa-trash"></i>
             </button>
 
-            <!-- Overlay con icono de ver -->
-            <div class="overlay" (click)="abrirModal(img)">
+            <div class="image-actions d-flex gap-1">
+              <button class="btn btn-sm btn-light" title="Subir en el orden" [disabled]="i === 0" (click)="moverImagen(c, i, 'up')">
+                <i class="fa-solid fa-arrow-up"></i>
+              </button>
+              <button class="btn btn-sm btn-light" title="Bajar en el orden" [disabled]="i === c.imagenes.length - 1" (click)="moverImagen(c, i, 'down')">
+                <i class="fa-solid fa-arrow-down"></i>
+              </button>
+              <button class="btn btn-sm btn-light" title="Girar izquierda" (click)="rotarImagen(c, img, -90)">
+                <i class="fa-solid fa-rotate-left"></i>
+              </button>
+              <button class="btn btn-sm btn-light" title="Girar derecha" (click)="rotarImagen(c, img, 90)">
+                <i class="fa-solid fa-rotate-right"></i>
+              </button>
+            </div>
+
+            <div class="overlay" (click)="abrirModal(img.url)">
               <i class="fa fa-eye fa-2x text-white"></i>
             </div>
           </div>
 
-          <!-- Espacio vacío para mostrar cuántas imágenes faltan -->
-          <div *ngFor="let i of getEmptySlots(c)" 
+          <div *ngFor="let i of getEmptySlots(c)"
                class="empty-slot border border-dashed rounded d-flex align-items-center justify-content-center"
                style="width:175px;height:100px;">
             <small class="text-muted">Vacío</small>
@@ -83,7 +88,6 @@
   </div>
 </div>
 
-<!-- Modal para ver imagen -->
 <div class="modal fade" id="modalImagen" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
