@@ -45,17 +45,18 @@
         </div>
 
         <div class="image-grid d-flex flex-wrap justify-content-center gap-2 mt-2">
-          <div *ngFor="let img of c.imagenes; let i = index" class="position-relative image-container">
-            <img [src]="img.url"
-                 class="img-thumbnail image-thumb"
-                 (click)="abrirModal(img.url)">
+          <div *ngFor="let img of c.imagenes; let i = index" class="image-container">
+            <div class="image-preview position-relative">
+              <img [src]="img.url"
+                   class="img-thumbnail image-thumb"
+                   (click)="abrirModal(img.url)">
 
-            <button class="btn btn-sm btn-danger position-absolute top-0 end-0"
-                    (click)="eliminarImagen(c, img)">
-              <i class="fa-solid fa-trash"></i>
-            </button>
+              <div class="overlay" (click)="abrirModal(img.url)">
+                <i class="fa fa-eye fa-2x text-white"></i>
+              </div>
+            </div>
 
-            <div class="image-actions d-flex flex-wrap gap-1">
+            <div class="image-actions d-flex flex-wrap gap-1 justify-content-center">
               <button class="btn btn-sm btn-light" title="Subir en el orden" [disabled]="i === 0" (click)="moverImagen(c, i, 'up')">
                 <i class="fa-solid fa-arrow-up"></i>
               </button>
@@ -68,10 +69,9 @@
               <button class="btn btn-sm btn-light" title="Girar derecha" (click)="rotarImagen(c, img, 90)">
                 <i class="fa-solid fa-rotate-right"></i>
               </button>
-            </div>
-
-            <div class="overlay" (click)="abrirModal(img.url)">
-              <i class="fa fa-eye fa-2x text-white"></i>
+              <button class="btn btn-sm btn-danger" title="Eliminar imagen" (click)="eliminarImagen(c, img)">
+                <i class="fa-solid fa-trash"></i>
+              </button>
             </div>
           </div>
 
