@@ -147,7 +147,7 @@
     type="text"
     class="form-control"
     style="max-width: 300px;"
-    placeholder="Buscar por placa, solicitante o avaluador"
+    placeholder="Buscar por placa(s), marca, solicitante o avaluador"
     [(ngModel)]="filtro"
     (keydown.enter)="onBuscar()" 
     #searchInput
@@ -155,6 +155,11 @@
   <button class="btn btn-outline-primary" (click)="onBuscar()">
     Buscar
   </button>
+</div>
+<div class="mb-3 text-end">
+  <small class="text-muted">
+    Puedes buscar varias placas separándolas por coma, espacio o salto de línea (ej: ABC123, DEF456).
+  </small>
 </div>
 
 <div *ngIf="loading" class="text-center my-3">

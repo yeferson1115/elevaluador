@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Models\Ingreso;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
@@ -20,6 +21,11 @@ class AvaluosSecBogotaExport implements FromQuery, WithHeadings, WithMapping
 
     public function query()
     {
+        $filtro = trim((string) ($this->filtro ?? ''));
+        $normalizedFilter = mb_strtoupper($filtro);
+        $plateTerms = $this->extractPlateTerms($filtro);
+        $allTermsArePlates = $this->allTermsArePlates($filtro);
+
         $query = Ingreso::with('avaluo')
             ->where('tiposervicio', $this->tiposervicio)
             ->whereHas('avaluo', function ($q) {
@@ -27,15 +33,43 @@ class AvaluosSecBogotaExport implements FromQuery, WithHeadings, WithMapping
                   ->where('file', '!=', '');
             });
 
-        if ($this->filtro) {
-            $query->where(function ($q) {
-                $q->where('placa', 'like', '%' . $this->filtro . '%')
-                  ->orWhere('solicitante', 'like', '%' . $this->filtro . '%')
-                  ->orWhere('ubicacion_activo', 'like', '%' . $this->filtro . '%');
+        if ($filtro) {
+            if ($allTermsArePlates && count($plateTerms) > 1) {
+                $query->whereIn(DB::raw('UPPER(placa)'), $plateTerms);
+                return $query;
+            }
+
+            $query->where(function ($q) use ($filtro, $normalizedFilter) {
+                $q->whereRaw('UPPER(placa) LIKE ?', ['%' . $normalizedFilter . '%'])
+                  ->orWhereRaw('UPPER(marca) LIKE ?', ['%' . $normalizedFilter . '%'])
+                  ->orWhere('solicitante', 'like', '%' . $filtro . '%')
+                  ->orWhere('ubicacion_activo', 'like', '%' . $filtro . '%');
             });
         }
 
         return $query;
+    }
+
+    private function extractPlateTerms(string $search): array
+    {
+        return collect(preg_split('/[\s,;]+/u', mb_strtoupper($search)) ?: [])
+            ->map(fn ($term) => trim($term))
+            ->filter(fn ($term) => $term !== '')
+            ->filter(fn ($term) => preg_match('/^[A-Z0-9-]{5,10}$/', $term))
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private function allTermsArePlates(string $search): bool
+    {
+        $terms = collect(preg_split('/[\s,;]+/u', mb_strtoupper($search)) ?: [])
+            ->map(fn ($term) => trim($term))
+            ->filter(fn ($term) => $term !== '')
+            ->values();
+
+        return $terms->isNotEmpty()
+            && $terms->every(fn ($term) => preg_match('/^[A-Z0-9-]{5,10}$/', $term));
     }
 
     public function headings(): array
