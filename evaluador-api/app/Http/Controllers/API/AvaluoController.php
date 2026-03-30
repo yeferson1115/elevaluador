@@ -292,6 +292,7 @@ class AvaluoController extends Controller
             'avaluo.ubicacion'=>'nullable',
             'avaluo.evaluador'=>'nullable',
             'avaluo.code_movilidad' => 'nullable|numeric',
+            'avaluo.cerrado' => 'nullable|boolean',
             
 
         ]);
@@ -446,9 +447,26 @@ class AvaluoController extends Controller
             'avaluo.porc_reposicion'=>'nullable',
             'avaluo.ubicacion'=>'nullable',
             'avaluo.evaluador'=>'nullable',
+            'avaluo.cerrado' => 'nullable|boolean',
         ]);
 
         $data = $validated['avaluo'];
+
+        if ($avaluo->cerrado && !array_key_exists('cerrado', $data)) {
+            return response()->json([
+                'message' => 'El avalúo está cerrado y no se puede modificar.'
+            ], Response::HTTP_LOCKED);
+        }
+
+        if (
+            $avaluo->cerrado &&
+            array_key_exists('cerrado', $data) &&
+            filter_var($data['cerrado'], FILTER_VALIDATE_BOOLEAN) === true
+        ) {
+            return response()->json([
+                'message' => 'El avalúo está cerrado y no se puede modificar.'
+            ], Response::HTTP_LOCKED);
+        }
 
         
         //return response()->json(['message' => $validated]);

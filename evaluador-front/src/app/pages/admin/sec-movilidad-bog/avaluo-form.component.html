@@ -1,5 +1,10 @@
 
 <h2 class="mb-3">{{ editMode ? 'Editar Avaluo' : 'Nuevo Avaluo' }}</h2>
+<div *ngIf="isEdit" class="mb-3">
+  <span class="badge" [ngClass]="avaluoCerrado ? 'text-bg-danger' : 'text-bg-success'">
+    {{ avaluoCerrado ? 'AVALÚO CERRADO' : 'AVALÚO ABIERTO' }}
+  </span>
+</div>
 
 <form [formGroup]="form" (ngSubmit)="guardar()" class="needs-validation" novalidate>
   <!-- DATOS GENERALES -->
@@ -907,12 +912,14 @@
 
   <!-- ===================== ACCIONES ===================== -->
   <div class="d-flex gap-2">
-    <button class="btn btn-primary" (click)="guardar()" type="button">
+    <button *ngIf="isEdit" class="btn" [ngClass]="avaluoCerrado ? 'btn-warning' : 'btn-outline-danger'" (click)="toggleCierreAvaluo()" type="button">
+      {{ avaluoCerrado ? 'Abrir avalúo' : 'Cerrar avalúo' }}
+    </button>
+    <button class="btn btn-primary" (click)="guardar()" type="button" [disabled]="avaluoCerrado">
       {{ isEdit ? 'Actualizar Avalúo' : 'Crear Avalúo' }}
     </button>
    
   </div>
 
 </form>
-
 

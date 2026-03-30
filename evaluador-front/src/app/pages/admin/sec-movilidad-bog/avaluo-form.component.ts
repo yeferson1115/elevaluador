@@ -33,6 +33,9 @@ export class AvaluoFormComponent implements OnInit {
   private valoresInicialesCargados = false;
   private claseOriginal: string = '';
   private cilindrajeOriginal: number = 0;
+  get avaluoCerrado(): boolean {
+    return !!this.form?.get('avaluo.cerrado')?.value;
+  }
   
 
   // Agregar este array en la clase
@@ -416,6 +419,7 @@ calcularPesoMermado(pesoVacio: number | null): void {
       // Subgrupo editable (avaluo)
       avaluo: this.fb.group({
         id: [null],
+        cerrado: [false],
         tipo: [''],
         formato: ['Sec Bogota'],
         ubicacion: [''],
@@ -524,6 +528,12 @@ calcularPesoMermado(pesoVacio: number | null): void {
   
         // Aplicar los datos fusionados al formulario
         avaluoForm?.patchValue(avaluoDataFusionado);
+        if (this.avaluoCerrado) {
+          this.form.disable({ emitEvent: false });
+          this.form.get('avaluo.cerrado')?.enable({ emitEvent: false });
+        } else {
+          this.form.enable({ emitEvent: false });
+        }
 
         // Clasificados
         if (resp.avaluo.clasificados?.length) {
@@ -850,6 +860,9 @@ private agregarLimitacionesPorDefecto(): void {
 }
 
   private calcularFormulas(): void {
+    if (this.avaluoCerrado) {
+      return;
+    }
     const avaluoForm = this.form.get('avaluo') as FormGroup;
     const values = avaluoForm.getRawValue();
 
@@ -975,6 +988,11 @@ private agregarLimitacionesPorDefecto(): void {
   }
 
   guardar() {
+    if (this.avaluoCerrado) {
+      this.alert.info('Este avalúo está cerrado. Ábralo para poder editarlo.');
+      return;
+    }
+
     const payload = this.form.getRawValue();
 
     // Asegurarse de que el formato sea 'Sec Bogota'
@@ -999,6 +1017,34 @@ private agregarLimitacionesPorDefecto(): void {
         error: () => this.alert.error('Error al crear avalúo'),
       });
     }
+  }
+
+  toggleCierreAvaluo() {
+    if (!this.isEdit || !this.form.get('avaluo.id')?.value) {
+      this.alert.info('Primero debe guardar el avalúo para poder cerrarlo.');
+      return;
+    }
+
+    const payload = this.form.getRawValue();
+    const nuevoEstado = !this.avaluoCerrado;
+    payload.avaluo.cerrado = nuevoEstado;
+
+    this.service.update(payload.avaluo.id, payload).subscribe({
+      next: () => {
+        this.form.get('avaluo.cerrado')?.setValue(nuevoEstado, { emitEvent: false });
+        if (nuevoEstado) {
+          this.form.disable({ emitEvent: false });
+          this.form.get('avaluo.cerrado')?.enable({ emitEvent: false });
+          this.alert.success('Avalúo cerrado correctamente.');
+        } else {
+          this.form.enable({ emitEvent: false });
+          this.alert.success('Avalúo reabierto correctamente.');
+        }
+      },
+      error: () => {
+        this.alert.error('No se pudo actualizar el estado de cierre del avalúo.');
+      }
+    });
   }
 
   // =====================================================
@@ -1131,6 +1177,10 @@ calcularValorChatarra() {
 }
 
 cargarValoresFasecolda() {
+  if (this.avaluoCerrado) {
+    return;
+  }
+
   const codigoFasecolda = this.form.get('avaluo.codigo_fasecolda')?.value;
   
   if (codigoFasecolda) {
@@ -1176,7 +1226,7 @@ private cargarDatosEnFormulario(data: any, pesoVacio: number | null = null) {
   }
   
   if (pesoVacio !== null && pesoVacio !== undefined) {
-    this.form.get('peso_bruto')?.setValue(pesoVacio);
+    this.form.get('peso_bruto')?.setValue(Math.round(Number(pesoVacio)));
   }
 
   // Buscar valor para el modelo actual del vehículo
@@ -1193,7 +1243,7 @@ buscarValorPorModelo() {
         if (response.success && response.data) {
           const pesoVacio = response.data.peso_vacio;
           if (pesoVacio !== null && pesoVacio !== undefined) {
-            this.form.get('peso_bruto')?.setValue(pesoVacio);
+            this.form.get('peso_bruto')?.setValue(Math.round(Number(pesoVacio)));
           }
           this.sugerirValorReposicion(response.data);
         }
