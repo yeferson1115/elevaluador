@@ -103,6 +103,14 @@ private function applyCompactSearch(Builder $query, string $search): void
         return;
     }
 
+    $plateTerms = $this->extractPlateTerms($search);
+    $allTermsArePlates = $this->allTermsArePlates($search);
+
+    if ($allTermsArePlates && count($plateTerms) > 1) {
+        $query->whereIn(DB::raw('UPPER(placa)'), $plateTerms);
+        return;
+    }
+
     $normalizedSearch = mb_strtoupper($search);
     $plateLooksSpecific = preg_match('/^[A-Z0-9-]{5,10}$/', $normalizedSearch) === 1;
 
@@ -114,11 +122,34 @@ private function applyCompactSearch(Builder $query, string $search): void
         }
 
         $q->orWhere('solicitante', 'like', "%{$search}%")
+            ->orWhereRaw('UPPER(marca) LIKE ?', ['%' . $normalizedSearch . '%'])
             ->orWhere('documento_solicitante', 'like', "%{$search}%")
             ->orWhereHas('avaluo', function (Builder $subQuery) use ($search) {
                 $subQuery->where('evaluador', 'like', "%{$search}%");
             });
     });
+}
+
+private function extractPlateTerms(string $search): array
+{
+    return collect(preg_split('/[\s,;]+/u', mb_strtoupper($search)) ?: [])
+        ->map(fn ($term) => trim($term))
+        ->filter(fn ($term) => $term !== '')
+        ->filter(fn ($term) => preg_match('/^[A-Z0-9-]{5,10}$/', $term))
+        ->unique()
+        ->values()
+        ->all();
+}
+
+private function allTermsArePlates(string $search): bool
+{
+    $terms = collect(preg_split('/[\s,;]+/u', mb_strtoupper($search)) ?: [])
+        ->map(fn ($term) => trim($term))
+        ->filter(fn ($term) => $term !== '')
+        ->values();
+
+    return $terms->isNotEmpty()
+        && $terms->every(fn ($term) => preg_match('/^[A-Z0-9-]{5,10}$/', $term));
 }
 
 
@@ -540,6 +571,9 @@ private function obtenerIdsSeleccionados(Request $request): array
 private function aplicarFiltroExportacion($query, string $tiposervicio, ?string $filtro = '', array $ids = [])
 {
     $filtro = trim((string) ($filtro ?? ''));
+    $normalizedFilter = mb_strtoupper($filtro);
+    $plateTerms = $this->extractPlateTerms($filtro);
+    $allTermsArePlates = $this->allTermsArePlates($filtro);
 
     $query->where('tiposervicio', $tiposervicio)
           ->whereHas('avaluo', function($q) {
@@ -552,9 +586,15 @@ private function aplicarFiltroExportacion($query, string $tiposervicio, ?string 
     }
 
     if ($filtro) {
-        $query->where(function ($q) use ($filtro) {
-            $q->where('placa', 'like', '%' . $filtro . '%')
+        if ($allTermsArePlates && count($plateTerms) > 1) {
+            $query->whereIn(DB::raw('UPPER(placa)'), $plateTerms);
+            return $query;
+        }
+
+        $query->where(function ($q) use ($filtro, $normalizedFilter) {
+            $q->whereRaw('UPPER(placa) like ?', ['%' . $normalizedFilter . '%'])
               ->orWhere('solicitante', 'like', '%' . $filtro . '%')
+              ->orWhereRaw('UPPER(marca) LIKE ?', ['%' . $normalizedFilter . '%'])
               ->orWhere('ubicacion_activo', 'like', '%' . $filtro . '%')
               ->orWhereHas('avaluo', function ($subQuery) use ($filtro) {
                   $subQuery->where('evaluador', 'like', '%' . $filtro . '%');
