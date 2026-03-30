@@ -23,6 +23,7 @@ export class AvaluoListComponent {
   Permissions = Permissions;
   
   filtro = '';
+  filtroCierre: 'todos' | 'abiertos' | 'cerrados' = 'todos';
   loading = false;
   error: string | null = null;
 
@@ -124,7 +125,12 @@ export class AvaluoListComponent {
   }
 
   onBuscar(): void {
+    this.limpiarSeleccion();
     this.cargarAvaluos(1);
+  }
+
+  onCambioFiltroCierre(): void {
+    this.limpiarSeleccion();
   }
 
   toggleSeleccion(id: number | undefined, checked: boolean): void {
@@ -146,7 +152,7 @@ export class AvaluoListComponent {
 
     const checked = (event.target as HTMLInputElement).checked;
 
-    this.avaluos.forEach((avaluo) => {
+    this.avaluosFiltradosPorCierre.forEach((avaluo) => {
       if (!avaluo.id) {
         return;
       }
@@ -162,7 +168,7 @@ export class AvaluoListComponent {
   seleccionarVisibles(): void {
     this.selectionMode = 'manual';
 
-    this.avaluos.forEach((avaluo) => {
+    this.avaluosFiltradosPorCierre.forEach((avaluo) => {
       if (avaluo.id) {
         this.selectedIds.add(avaluo.id);
       }
@@ -188,7 +194,7 @@ export class AvaluoListComponent {
   }
 
   get haySeleccionParcialPagina(): boolean {
-    const idsPagina = this.avaluos
+    const idsPagina = this.avaluosFiltradosPorCierre
       .map((avaluo) => avaluo.id)
       .filter((id): id is number => !!id);
 
@@ -198,7 +204,7 @@ export class AvaluoListComponent {
   }
 
   get todosVisiblesSeleccionados(): boolean {
-    const idsPagina = this.avaluos
+    const idsPagina = this.avaluosFiltradosPorCierre
       .map((avaluo) => avaluo.id)
       .filter((id): id is number => !!id);
 
@@ -212,6 +218,17 @@ export class AvaluoListComponent {
 
   get exportaTodosFiltrados(): boolean {
     return this.selectionMode === 'allFiltered';
+  }
+
+  get avaluosFiltradosPorCierre(): Ingreso[] {
+    if (this.filtroCierre === 'todos') {
+      return this.avaluos;
+    }
+
+    return this.avaluos.filter((avaluo) => {
+      const cerrado = Boolean(avaluo.avaluo?.cerrado);
+      return this.filtroCierre === 'cerrados' ? cerrado : !cerrado;
+    });
   }
 
   private sincronizarSeleccionPagina(): void {
