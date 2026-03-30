@@ -66,6 +66,10 @@ update(id: number, avaluo: Partial<Ingresos>): Observable<Ingresos> {
   return this.http.put<Ingresos>(`${this.baseUrl}/avaluo/${id}`, avaluo);
 }
 
+actualizarCierre(id: number, cerrado: boolean): Observable<{ message: string; cerrado: boolean }> {
+  return this.http.patch<{ message: string; cerrado: boolean }>(`${this.baseUrl}/avaluo/${id}/cierre`, { cerrado });
+}
+
   /**
    * Eliminar un avalúo por ID
    */

@@ -630,6 +630,21 @@ class AvaluoController extends Controller
 
         return response()->json($avaluo);
     }
+
+    public function actualizarCierre(Request $request, Avaluo $avaluo)
+    {
+        $data = $request->validate([
+            'cerrado' => 'required|boolean',
+        ]);
+
+        $avaluo->cerrado = $data['cerrado'];
+        $avaluo->save();
+
+        return response()->json([
+            'message' => $avaluo->cerrado ? 'Avalúo cerrado correctamente.' : 'Avalúo abierto correctamente.',
+            'cerrado' => (bool) $avaluo->cerrado,
+        ]);
+    }
     // Eliminar un avalúo
     public function destroy($id)
     {
