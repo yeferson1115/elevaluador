@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { LoaderComponent } from './core/components/loader/loader.component';
+import { OfflineSyncService } from './core/services/offline-sync.service';
 
 @Component({
   selector: 'app-root',
@@ -10,4 +11,9 @@ import { LoaderComponent } from './core/components/loader/loader.component';
 })
 export class AppComponent {
   title = 'homeprop-front';
+  private readonly offlineSyncService = inject(OfflineSyncService);
+
+  constructor() {
+    void this.offlineSyncService.syncPendingRequests().subscribe();
+  }
 }
