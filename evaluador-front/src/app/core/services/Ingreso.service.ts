@@ -4,7 +4,7 @@ import { HttpClient,HttpParams,HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { GetImagenesResponse } from '../models/ingresoimagenes.model';
+import { GetImagenesResponse, ImagenResponse } from '../models/ingresoimagenes.model';
 
 @Injectable({ providedIn: 'root' })
 export class IngresoService {
@@ -192,11 +192,22 @@ getImagenes(avaluoId: number): Observable<GetImagenesResponse> {
   return this.http.get<GetImagenesResponse>(`${this.baseUrl}/ingresos-imagenes/${avaluoId}/imagenes`);
 }
 uploadImagen(avaluoId: number, data: FormData) {
-  return this.http.post<{imagenes: string[]}>(`${this.baseUrl}/ingresos-imagenes/${avaluoId}/imagenes`, data);
+  return this.http.post<{imagenes: ImagenResponse[]}>(`${this.baseUrl}/ingresos-imagenes/${avaluoId}/imagenes`, data);
 }
 
 deleteImagen(avaluoId: number, categoria: string, url: string) {
   return this.http.post(`${this.baseUrl}/ingresos-imagenes/${avaluoId}/imagenes/delete`, { categoria, url });
+}
+
+reordenarImagenes(avaluoId: number, categoria: string, orden: number[]) {
+  return this.http.post(`${this.baseUrl}/ingresos-imagenes/${avaluoId}/imagenes/reorder`, { categoria, orden });
+}
+
+rotarImagen(avaluoId: number, categoria: string, url: string, grados: number) {
+  return this.http.post<{success: boolean; url: string; rotacion: number}>(
+    `${this.baseUrl}/ingresos-imagenes/${avaluoId}/imagenes/rotate`,
+    { categoria, url, grados }
+  );
 }
 
 import(file: File): Observable<any> {
@@ -300,4 +311,3 @@ verPdfEnNavegador(id: number): Observable<any> {
     });
   }
 }
-

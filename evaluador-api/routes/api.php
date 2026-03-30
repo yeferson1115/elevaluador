@@ -62,6 +62,8 @@ Route::middleware(['auth:api'])->group(function () {
         Route::get('/imagenes', [IngresoImageController::class, 'index']);
         Route::post('/imagenes', [IngresoImageController::class, 'store']);
         Route::post('/imagenes/delete', [IngresoImageController::class, 'delete']);
+        Route::post('/imagenes/reorder', [IngresoImageController::class, 'reorder']);
+        Route::post('/imagenes/rotate', [IngresoImageController::class, 'rotate']);
     });
     
     // Importaciones

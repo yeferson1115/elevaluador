@@ -2,14 +2,21 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { IngresoService } from '../../../core/services/Ingreso.service';
-import { AlertService } from '../../../core/services/alert.service'; 
-import { GetImagenesResponse } from '../../../core/models/ingresoimagenes.model';
+import { AlertService } from '../../../core/services/alert.service';
+import { GetImagenesResponse, ImagenResponse } from '../../../core/models/ingresoimagenes.model';
+
+interface ImagenItem {
+  id: number;
+  url: string;
+  orden: number;
+  rotacion: number;
+}
 
 interface Categoria {
   key: string;
   nombre: string;
   max: number;
-  imagenes: string[];
+  imagenes: ImagenItem[];
   isDragging: boolean;
 }
 
@@ -58,30 +65,33 @@ export class IngresoImagenesComponent implements OnInit {
     this.cargarImagenes();
   }
 
-  // En el componente
-cargarImagenes() {
-  this.service.getImagenes(this.id).subscribe({
-    next: (response: GetImagenesResponse) => { // Tipar la respuesta
-      // Limpiar imágenes existentes
-      this.categorias.forEach(cat => cat.imagenes = []);
-      
-      // Asignar imágenes a categorías
-      const imagenes = response.imagenes;
-      for (let img of imagenes) {
-        const cat = this.categorias.find(c => c.key === img.categoria);
-        if (cat && cat.imagenes.length < cat.max) {
-          cat.imagenes.push(img.url);
-        }
-      }
-      
-      // Opcional: guardar info del ingreso
-      this.infoIngreso = response.ingreso;
-    },
-    error: (err) => this.alertService.error('Error cargando imágenes', err.message)
-  });
-}
+  cargarImagenes() {
+    this.service.getImagenes(this.id).subscribe({
+      next: (response: GetImagenesResponse) => {
+        this.categorias.forEach(cat => cat.imagenes = []);
 
-  // Métodos para Drag & Drop
+        for (const img of response.imagenes) {
+          const cat = this.categorias.find(c => c.key === img.categoria);
+          if (cat && cat.imagenes.length < cat.max) {
+            cat.imagenes.push({
+              id: img.id,
+              url: img.url,
+              orden: img.orden ?? cat.imagenes.length + 1,
+              rotacion: img.rotacion ?? 0,
+            });
+          }
+        }
+
+        this.categorias.forEach(cat => {
+          cat.imagenes.sort((a, b) => a.orden - b.orden || a.id - b.id);
+        });
+
+        this.infoIngreso = response.ingreso;
+      },
+      error: (err) => this.alertService.error('Error cargando imágenes', err.message)
+    });
+  }
+
   onDragOver(event: DragEvent, categoria: Categoria) {
     event.preventDefault();
     event.stopPropagation();
@@ -102,17 +112,13 @@ cargarImagenes() {
     categoria.isDragging = false;
 
     if (!this.puedeSubirMasImagenes(categoria)) {
-      this.alertService.warning(
-        'Límite alcanzado',
-        `Esta categoría solo permite ${categoria.max} imagen(es).`
-      );
+      this.alertService.warning('Límite alcanzado', `Esta categoría solo permite ${categoria.max} imagen(es).`);
       return;
     }
 
     const files = event.dataTransfer?.files;
     if (!files || files.length === 0) return;
 
-    // Convertir FileList a Array de Files explícitamente
     const imageFiles: File[] = [];
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
@@ -126,56 +132,50 @@ cargarImagenes() {
       return;
     }
 
-    // Verificar límite de imágenes
     const totalDespuesDeSubir = categoria.imagenes.length + imageFiles.length;
     if (totalDespuesDeSubir > categoria.max) {
       const disponibles = categoria.max - categoria.imagenes.length;
-      this.alertService.warning(
-        'Demasiadas imágenes',
-        `Solo puedes subir ${disponibles} imagen(es) más para esta categoría.`
-      );
+      this.alertService.warning('Demasiadas imágenes', `Solo puedes subir ${disponibles} imagen(es) más para esta categoría.`);
       return;
     }
 
     this.subirArchivos(imageFiles, categoria);
   }
 
-  // Método para subir archivos
- // Método para subir archivos
-subirArchivos(files: File[], categoria: Categoria) {
-  const formData = new FormData();
-  
-  // Agregar cada archivo al FormData
-  files.forEach(file => {
-    formData.append('imagenes[]', file);
-  });
-  
-  formData.append('categoria', categoria.key);
+  subirArchivos(files: File[], categoria: Categoria) {
+    const formData = new FormData();
 
-  this.service.uploadImagen(this.id, formData).subscribe({
-    next: (res) => {
-      // Agregar las nuevas imágenes a las existentes
-      // res.imagenes contiene las URLs de las imágenes recién subidas
-      categoria.imagenes = [...categoria.imagenes, ...res.imagenes];
-      
-      // Asegurarse de no exceder el límite (por si acaso)
-      if (categoria.imagenes.length > categoria.max) {
-        categoria.imagenes = categoria.imagenes.slice(0, categoria.max);
+    files.forEach(file => {
+      formData.append('imagenes[]', file);
+    });
+
+    formData.append('categoria', categoria.key);
+
+    this.service.uploadImagen(this.id, formData).subscribe({
+      next: (res: { imagenes: ImagenResponse[] }) => {
+        const nuevas = (res.imagenes || []).map((img, idx) => ({
+          id: img.id,
+          url: img.url,
+          orden: img.orden ?? categoria.imagenes.length + idx + 1,
+          rotacion: img.rotacion ?? 0,
+        }));
+
+        categoria.imagenes = [...categoria.imagenes, ...nuevas]
+          .sort((a, b) => a.orden - b.orden || a.id - b.id)
+          .slice(0, categoria.max);
+
+        this.alertService.success('Imágenes subidas correctamente');
+      },
+      error: (err) => {
+        this.alertService.error('Error al subir las imágenes', err.message || '');
       }
-      
-      this.alertService.success('Imágenes subidas correctamente');
-    },
-    error: (err) => {
-      this.alertService.error('Error al subir las imágenes', err.message || '');
-    }
-  });
-}
+    });
+  }
 
   onFileChange(event: any, categoria: Categoria) {
     const files = event.target.files;
     if (!files || files.length === 0) return;
 
-    // Convertir FileList a Array de Files
     const imageFiles: File[] = [];
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
@@ -189,24 +189,18 @@ subirArchivos(files: File[], categoria: Categoria) {
       return;
     }
 
-    // Verificar límite
     const totalDespuesDeSubir = categoria.imagenes.length + imageFiles.length;
     if (totalDespuesDeSubir > categoria.max) {
       const disponibles = categoria.max - categoria.imagenes.length;
-      this.alertService.warning(
-        'Demasiadas imágenes',
-        `Solo puedes subir ${disponibles} imagen(es) más para esta categoría.`
-      );
+      this.alertService.warning('Demasiadas imágenes', `Solo puedes subir ${disponibles} imagen(es) más para esta categoría.`);
       return;
     }
 
     this.subirArchivos(imageFiles, categoria);
-
-    // Resetear el input file
     event.target.value = '';
   }
 
-  eliminarImagen(categoria: Categoria, url: string) {
+  eliminarImagen(categoria: Categoria, imagen: ImagenItem) {
     this.alertService.confirm({
       title: '¿Eliminar imagen?',
       text: 'Esta acción no se puede deshacer.',
@@ -215,13 +209,35 @@ subirArchivos(files: File[], categoria: Categoria) {
       cancelButtonText: 'Cancelar'
     }).then((result) => {
       if (result.isConfirmed) {
-        this.service.deleteImagen(this.id, categoria.key, url).subscribe({
+        this.service.deleteImagen(this.id, categoria.key, imagen.url).subscribe({
           next: () => {
-            categoria.imagenes = categoria.imagenes.filter(i => i !== url);
+            categoria.imagenes = categoria.imagenes.filter(i => i.id !== imagen.id);
+            this.sincronizarOrden(categoria, false);
             this.alertService.success('Imagen eliminada');
           },
           error: () => this.alertService.error('No se pudo eliminar la imagen')
         });
+      }
+    });
+  }
+
+  moverImagen(categoria: Categoria, index: number, direction: 'up' | 'down') {
+    const target = direction === 'up' ? index - 1 : index + 1;
+    if (target < 0 || target >= categoria.imagenes.length) return;
+
+    [categoria.imagenes[index], categoria.imagenes[target]] = [categoria.imagenes[target], categoria.imagenes[index]];
+    this.sincronizarOrden(categoria, true);
+  }
+
+  rotarImagen(categoria: Categoria, imagen: ImagenItem, grados: number) {
+    this.service.rotarImagen(this.id, categoria.key, imagen.url, grados).subscribe({
+      next: (res) => {
+        imagen.url = res.url || imagen.url;
+        imagen.rotacion = res.rotacion ?? ((imagen.rotacion + grados + 360) % 360);
+        this.alertService.success('Imagen rotada correctamente');
+      },
+      error: (err) => {
+        this.alertService.error('No se pudo rotar la imagen', err?.message || '');
       }
     });
   }
@@ -232,12 +248,28 @@ subirArchivos(files: File[], categoria: Categoria) {
     modal.show();
   }
 
-  // Método auxiliar para verificar si se pueden subir más imágenes
+  private sincronizarOrden(categoria: Categoria, mostrarMensajeExito = false) {
+    const orden = categoria.imagenes.map((img, index) => {
+      img.orden = index + 1;
+      return img.id;
+    });
+
+    this.service.reordenarImagenes(this.id, categoria.key, orden).subscribe({
+      next: () => {
+        if (mostrarMensajeExito) {
+          this.alertService.success('Orden actualizado. Este orden se respeta en el PDF.');
+        }
+      },
+      error: (err) => {
+        this.alertService.error('No se pudo actualizar el orden', err?.message || '');
+      }
+    });
+  }
+
   private puedeSubirMasImagenes(categoria: Categoria): boolean {
     return categoria.imagenes.length < categoria.max;
   }
 
-  // Método para mostrar slots vacíos
   getEmptySlots(categoria: Categoria): number[] {
     const emptySlots = categoria.max - categoria.imagenes.length;
     return emptySlots > 0 ? Array(emptySlots).fill(0) : [];
