@@ -184,7 +184,7 @@ class AvaluosSecBogotaExport implements FromQuery, WithHeadings, WithMapping
             $ingreso->placa ?? '',
             
             // FECHA (usar fecha solicitud)
-            $ingreso->avaluo->fecha_inspeccion ?? '',
+            $ingreso->fecha_inspeccion ?? '',
             
             // VIGENTES (¿días vigentes?)
             '', // Dejar vacío por ahora
