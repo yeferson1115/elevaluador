@@ -32,6 +32,7 @@ declare var bootstrap: any;
 export class IngresoImagenesComponent implements OnInit {
   id!: number;
   infoIngreso: any = null;
+  isMobileDevice = false;
   private readonly categoriasBase: Categoria[] = [
     { key: 'matricula', nombre: 'Foto Matricula', max: 1, imagenes: [], isDragging: false },
     { key: 'firma_evaluador', nombre: 'Firma Evaluador', max: 1, imagenes: [], isDragging: false },
@@ -63,7 +64,20 @@ export class IngresoImagenesComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.isMobileDevice = this.detectarDispositivoMovil();
     this.cargarImagenes();
+  }
+
+  private detectarDispositivoMovil(): boolean {
+    if (typeof navigator === 'undefined') {
+      return false;
+    }
+
+    const userAgent = navigator.userAgent.toLowerCase();
+    const mobileRegex = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i;
+    const isTouchDevice = (typeof window !== 'undefined' && 'ontouchstart' in window) || navigator.maxTouchPoints > 0;
+
+    return mobileRegex.test(userAgent) && isTouchDevice;
   }
 
   cargarImagenes() {
