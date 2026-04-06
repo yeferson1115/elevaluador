@@ -26,10 +26,14 @@
           <input type="file"
                  accept="image/*"
                  [multiple]="c.max > 1"
-                 capture="environment"
+                 [attr.capture]="isMobileDevice ? 'environment' : null"
                  class="form-control mb-2 mt-2"
                  [disabled]="c.imagenes.length >= c.max"
                  (change)="onFileChange($event, c)">
+
+          <small class="text-muted d-block" *ngIf="isMobileDevice">
+            Se abrirá la cámara del celular para tomar la foto.
+          </small>
 
           <div class="drag-drop-zone" *ngIf="c.imagenes.length < c.max">
             <small class="text-muted">
