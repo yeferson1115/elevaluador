@@ -25,6 +25,24 @@ use ZipArchive;
 
 class AvaluoController extends Controller
 {
+
+    private const ESTADOS_COMPONENTES_POR_DEFECTO = [
+        'latoneria_estado' => 'Regular',
+        'pintura_estado' => 'Regular',
+        'tapiceria_estado' => 'Malo',
+        'motor_estado' => 'Inoperativo',
+        'chasis_estado' => 'Regular',
+        'transmision_estado' => 'Malo',
+        'frenos_estado' => 'Malo',
+        'refrigeracion_estado' => 'No Aplica',
+        'electrico_estado' => 'Regular',
+        'tanque_estado' => 'Regular',
+        'bateria_estado' => 'No Sirve',
+        'llantas_estado' => 'Malas',
+        'llave_estado' => 'No Presenta',
+        'vidrios_estado' => 'No Aplica',
+    ];
+
     private const CAMPOS_MASIVOS_PERMITIDOS = [
         'codigo_fasecolda',
         'valor_chatarra_kg',
@@ -1530,25 +1548,31 @@ public function reprocesarIndividual($id)
                 $changesToApply = $changes;
 
                 if (!empty($changesToApply['codigo_fasecolda'])) {
-                    $fasecoldaQuery = FasecoldaValor::where('codigo_fasecolda', $changesToApply['codigo_fasecolda']);
-                    $fasecoldaPesoVacio = $fasecoldaQuery->value('peso_vacio');
+                    $this->sincronizarMemoriasFasecolda($avaluo, $changesToApply['codigo_fasecolda']);
+
+                    $fasecoldaPesoVacio = FasecoldaValor::where('codigo_fasecolda', $changesToApply['codigo_fasecolda'])
+                        ->value('peso_vacio');
 
                     if (!empty($fasecoldaPesoVacio)) {
                         $changesToApply['peso_chatarra_kg'] = $fasecoldaPesoVacio;
+                        if (empty($ingreso->peso_bruto)) {
+                            $ingreso->update(['peso_bruto' => $fasecoldaPesoVacio]);
+                        }
                     }
 
                     $fasecoldaRow = FasecoldaValor::where('codigo_fasecolda', $changesToApply['codigo_fasecolda'])
+                        ->whereIn('tipo', ['corregido', 'clasificado'])
                         ->where('modelo', $ingreso->modelo)
+                        ->orderByRaw("FIELD(tipo, 'corregido', 'clasificado')")
                         ->first();
 
                     if ($fasecoldaRow) {
                         $changesToApply['valor_razonable'] = $fasecoldaRow->valor;
                         $changesToApply['valor_resonable'] = $fasecoldaRow->valor;
-                        if (!empty($fasecoldaRow->peso_vacio) && empty($ingreso->peso_bruto)) {
-                            $ingreso->update(['peso_bruto' => $fasecoldaRow->peso_vacio]);
-                        }
                     }
                 }
+
+                $changesToApply = $this->aplicarEstadosPorDefecto($changesToApply, $avaluo->toArray());
 
                 if (!empty($ingreso->clase) && !empty($ingreso->cilindraje)) {
                     $repuesto = ValoresRepuesto::where('tipo', $ingreso->clase)
@@ -1760,8 +1784,26 @@ public function reprocesarIndividual($id)
                         'llave_valor' => $this->normalizeNumeric($this->value($row, 'llaves')),
                         'vidrios_valor' => $this->normalizeNumeric($this->value($row, 'vidrios')),
                         'valor_reparaciones' => $this->normalizeNumeric($this->value($row, 'valor_reparaciones')),
+                        'latoneria_estado' => self::ESTADOS_COMPONENTES_POR_DEFECTO['latoneria_estado'],
+                        'pintura_estado' => self::ESTADOS_COMPONENTES_POR_DEFECTO['pintura_estado'],
+                        'tapiceria_estado' => self::ESTADOS_COMPONENTES_POR_DEFECTO['tapiceria_estado'],
+                        'motor_estado' => self::ESTADOS_COMPONENTES_POR_DEFECTO['motor_estado'],
+                        'chasis_estado' => self::ESTADOS_COMPONENTES_POR_DEFECTO['chasis_estado'],
+                        'transmision_estado' => self::ESTADOS_COMPONENTES_POR_DEFECTO['transmision_estado'],
+                        'frenos_estado' => self::ESTADOS_COMPONENTES_POR_DEFECTO['frenos_estado'],
+                        'refrigeracion_estado' => self::ESTADOS_COMPONENTES_POR_DEFECTO['refrigeracion_estado'],
+                        'electrico_estado' => self::ESTADOS_COMPONENTES_POR_DEFECTO['electrico_estado'],
+                        'tanque_estado' => self::ESTADOS_COMPONENTES_POR_DEFECTO['tanque_estado'],
+                        'bateria_estado' => self::ESTADOS_COMPONENTES_POR_DEFECTO['bateria_estado'],
+                        'llantas_estado' => self::ESTADOS_COMPONENTES_POR_DEFECTO['llantas_estado'],
+                        'llave_estado' => self::ESTADOS_COMPONENTES_POR_DEFECTO['llave_estado'],
+                        'vidrios_estado' => self::ESTADOS_COMPONENTES_POR_DEFECTO['vidrios_estado'],
                     ]);
                     $avaluo->save();
+
+                    if (!empty($avaluo->codigo_fasecolda)) {
+                        $this->sincronizarMemoriasFasecolda($avaluo, $avaluo->codigo_fasecolda);
+                    }
 
                     $limitaciones = $this->buildLimitacionesPayload($row);
 
@@ -1980,6 +2022,56 @@ public function reprocesarIndividual($id)
         }
 
         return $limitaciones;
+    }
+
+
+    private function aplicarEstadosPorDefecto(array $changes, array $base = []): array
+    {
+        foreach (self::ESTADOS_COMPONENTES_POR_DEFECTO as $campo => $valorPorDefecto) {
+            if (
+                (!array_key_exists($campo, $changes) || $changes[$campo] === null || $changes[$campo] === '')
+                && empty($base[$campo])
+            ) {
+                $changes[$campo] = $valorPorDefecto;
+            }
+        }
+
+        return $changes;
+    }
+
+    private function sincronizarMemoriasFasecolda(Avaluo $avaluo, string $codigoFasecolda): void
+    {
+        $codigo = trim($codigoFasecolda);
+        if ($codigo === '') {
+            return;
+        }
+
+        $registros = FasecoldaValor::where('codigo_fasecolda', $codigo)
+            ->whereIn('tipo', ['clasificado', 'corregido'])
+            ->orderBy('modelo')
+            ->get(['tipo', 'modelo', 'valor']);
+
+        if ($registros->isEmpty()) {
+            return;
+        }
+
+        $avaluo->clasificados()->delete();
+        $avaluo->corregidos()->delete();
+
+        foreach ($registros as $registro) {
+            $payload = [
+                'modelo' => $registro->modelo,
+                'valor' => $registro->valor,
+            ];
+
+            if ($registro->tipo === 'clasificado') {
+                $avaluo->clasificados()->create($payload);
+            }
+
+            if ($registro->tipo === 'corregido') {
+                $avaluo->corregidos()->create($payload);
+            }
+        }
     }
 
     private function formatPersonName(?string $name): ?string

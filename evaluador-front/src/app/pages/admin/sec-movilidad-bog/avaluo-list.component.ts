@@ -33,6 +33,9 @@ export class AvaluoListComponent {
   selectedIds = new Set<number>();
   selectionMode: 'manual' | 'allFiltered' = 'manual';
   mostrarEdicionMasiva = false;
+  // Compatibilidad temporal para plantillas antiguas
+  mostrarAcordeonArchivos = false;
+  mostrarImportacionMasiva = false;
   bulkEditLoading = false;
   bulkImportLoading = false;
   bulkImportMetodo: 'comercial' | 'jans' | '' = '';
