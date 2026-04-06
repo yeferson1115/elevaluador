@@ -33,6 +33,7 @@ export class AvaluoListComponent {
   selectedIds = new Set<number>();
   selectionMode: 'manual' | 'allFiltered' = 'manual';
   mostrarEdicionMasiva = false;
+  mostrarAcordeonArchivos = false;
   bulkEditLoading = false;
   bulkImportLoading = false;
   bulkImportMetodo: 'comercial' | 'jans' | '' = '';
