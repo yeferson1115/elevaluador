@@ -130,6 +130,11 @@
         </select>
       </div>
       <div class="col-12 d-flex justify-content-end">
+        <select class="form-select me-2" style="max-width: 220px;" [(ngModel)]="bulkImportMetodo">
+          <option value="">Método para importar</option>
+          <option value="comercial">Comercial</option>
+          <option value="jans">Jans</option>
+        </select>
         <input
           type="file"
           #compactBulkInput
@@ -137,7 +142,7 @@
           (change)="onBulkCompactFileSelected($event)"
           accept=".xlsx,.xls,.csv"
         />
-        <button class="btn btn-outline-secondary me-2" type="button" (click)="compactBulkInput.click()" [disabled]="loading || bulkImportLoading">
+        <button class="btn btn-outline-secondary me-2" type="button" (click)="compactBulkInput.click()" [disabled]="loading || bulkImportLoading || !bulkImportMetodo">
           <i class="fa-solid fa-file-arrow-up"></i>
           {{ bulkImportLoading ? 'Importando...' : 'Importar Excel + generar ZIP' }}
         </button>

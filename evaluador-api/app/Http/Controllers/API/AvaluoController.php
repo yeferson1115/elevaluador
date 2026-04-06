@@ -9,7 +9,6 @@ use App\Models\FasecoldaValor;
 use App\Models\ValoresRepuesto;
 use App\Models\User;
 use App\Models\IngresoImage;
-use App\Models\AvaluoLimitaciones;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Carbon;
@@ -1644,6 +1643,7 @@ public function reprocesarIndividual($id)
     {
         $validated = $request->validate([
             'file' => 'required|file|mimes:xlsx,xls,csv',
+            'metodo' => 'required|string|in:comercial,jans',
         ]);
 
         $sheet = IOFactory::load($validated['file']->getRealPath())->getActiveSheet();
@@ -1677,7 +1677,7 @@ public function reprocesarIndividual($id)
                     throw new \RuntimeException('La columna PLACAS es obligatoria');
                 }
 
-                DB::transaction(function () use ($row, $placa, &$procesados, $zip) {
+                DB::transaction(function () use ($row, $placa, &$procesados, $zip, $validated) {
                     $ingresoData = [
                         'tiposervicio' => 'Sec Bogota',
                         'placa' => $placa,
@@ -1714,7 +1714,7 @@ public function reprocesarIndividual($id)
                     $ingreso->fill($ingresoData);
                     $ingreso->save();
 
-                    $evaluadorNombre = $this->value($row, 'avaluador');
+                    $evaluadorNombre = $this->formatPersonName($this->value($row, 'avaluador'));
                     $evaluador = $evaluadorNombre
                         ? User::where('name', 'like', '%' . trim($evaluadorNombre) . '%')->first()
                         : null;
@@ -1729,11 +1729,12 @@ public function reprocesarIndividual($id)
 
                     $avaluo->fill([
                         'ingreso_id' => $ingreso->id,
+                        'tipo' => $validated['metodo'],
                         'formato' => 'Sec. Movilidad Bogotá',
                         'fecha_inspeccion' => $this->parseExcelDate($this->value($row, 'fecha_avaluo')),
                         'evaluador' => $evaluadorNombre,
                         'user_id' => $evaluador?->id,
-                        'consecutivo' => $this->normalizeNumeric($this->value($row, 'consecutivo')),
+                        'consecutivo' => $this->normalizeInteger($this->value($row, 'consecutivo')),
                         'codigo_fasecolda' => $this->value($row, 'codigo_fasecolda'),
                         'observaciones' => $this->value($row, 'diagnostico'),
                         'valor_razonable' => $this->normalizeNumeric($this->value($row, 'valor_razonable')),
@@ -1762,7 +1763,43 @@ public function reprocesarIndividual($id)
                     ]);
                     $avaluo->save();
 
-                    $this->syncLimitaciones($avaluo, $row);
+                    $limitaciones = $this->buildLimitacionesPayload($row);
+
+                    $requestSimulado = Request::create('/api/avaluo/' . $avaluo->id, 'PUT', [
+                        'id' => $ingreso->id,
+                        'placa' => $ingreso->placa,
+                        'marca' => $ingreso->marca,
+                        'linea' => $ingreso->linea,
+                        'fecha_matricula' => $ingreso->fecha_matricula,
+                        'clase' => $ingreso->clase,
+                        'tipo_carroceria' => $ingreso->tipo_carroceria,
+                        'color' => $ingreso->color,
+                        'cilindraje' => $ingreso->cilindraje,
+                        'modelo' => $ingreso->modelo,
+                        'kilometraje' => $ingreso->kilometraje,
+                        'caja_cambios' => $ingreso->caja_cambios,
+                        'numero_chasis' => $ingreso->numero_chasis,
+                        'numero_serie' => $ingreso->numero_serie,
+                        'numero_motor' => $ingreso->numero_motor,
+                        'numeroVin' => $ingreso->numeroVin,
+                        'tipo_servicio_vehiculo' => $ingreso->tipo_servicio_vehiculo,
+                        'cantidad_ejes' => $ingreso->cantidad_ejes,
+                        'peso_bruto' => $ingreso->peso_bruto,
+                        'peso_mermado' => $ingreso->peso_mermado,
+                        'numero_pasajeros' => $ingreso->numero_pasajeros,
+                        'estado_registro_runt' => $ingreso->estado_registro_runt,
+                        'capacidad_ton' => $ingreso->capacidad_ton,
+                        'fecha_inspeccion' => $ingreso->fecha_inspeccion,
+                        'fecha_solicitud' => $ingreso->fecha_solicitud,
+                        'avaluo' => array_merge(
+                            $avaluo->toArray(),
+                            ['ingreso_id' => $ingreso->id],
+                            ['limitaciones' => $limitaciones]
+                        ),
+                    ]);
+                    $requestSimulado->setUserResolver(fn () => auth()->user());
+                    $this->update($requestSimulado, $avaluo);
+
                     $this->importDrivePhotos($avaluo->id, $this->value($row, 'enlace_fotos'));
 
                     $pdfResponse = $this->generarPdf($avaluo->id, new Request(['action' => 'download']));
@@ -1878,9 +1915,38 @@ public function reprocesarIndividual($id)
             return (float) $value;
         }
 
-        $normalized = str_replace(['$', ' ', '.'], '', (string) $value);
-        $normalized = str_replace(',', '.', $normalized);
+        $normalized = preg_replace('/[^\d,.\-]/', '', (string) $value);
+        if ($normalized === null || $normalized === '') {
+            return null;
+        }
+
+        $lastComma = strrpos($normalized, ',');
+        $lastDot = strrpos($normalized, '.');
+
+        if ($lastComma !== false && $lastDot !== false) {
+            if ($lastComma > $lastDot) {
+                $normalized = str_replace('.', '', $normalized);
+                $normalized = str_replace(',', '.', $normalized);
+            } else {
+                $normalized = str_replace(',', '', $normalized);
+            }
+        } elseif ($lastComma !== false) {
+            $normalized = preg_match('/,\d{1,2}$/', $normalized)
+                ? str_replace(',', '.', $normalized)
+                : str_replace(',', '', $normalized);
+        } elseif ($lastDot !== false) {
+            $normalized = preg_match('/\.\d{1,2}$/', $normalized)
+                ? $normalized
+                : str_replace('.', '', $normalized);
+        }
+
         return is_numeric($normalized) ? (float) $normalized : null;
+    }
+
+    private function normalizeInteger($value): ?int
+    {
+        $numeric = $this->normalizeNumeric($value);
+        return $numeric === null ? null : (int) round($numeric);
     }
 
     private function parseExcelDate($value): ?string
@@ -1900,9 +1966,9 @@ public function reprocesarIndividual($id)
         }
     }
 
-    private function syncLimitaciones(Avaluo $avaluo, array $row): void
+    private function buildLimitacionesPayload(array $row): array
     {
-        AvaluoLimitaciones::where('avaluo_id', $avaluo->id)->delete();
+        $limitaciones = [];
 
         for ($i = 1; $i <= 7; $i++) {
             $texto = $this->value($row, "limitacion_{$i}");
@@ -1910,11 +1976,22 @@ public function reprocesarIndividual($id)
                 continue;
             }
 
-            AvaluoLimitaciones::create([
-                'avaluo_id' => $avaluo->id,
-                'texto' => $texto,
-            ]);
+            $limitaciones[] = ['texto' => $texto];
         }
+
+        return $limitaciones;
+    }
+
+    private function formatPersonName(?string $name): ?string
+    {
+        if (!$name) {
+            return null;
+        }
+
+        return collect(preg_split('/\s+/', trim($name)) ?: [])
+            ->filter(fn ($part) => $part !== '')
+            ->map(fn ($part) => mb_convert_case($part, MB_CASE_TITLE, 'UTF-8'))
+            ->implode(' ');
     }
 
     private function importDrivePhotos(int $avaluoId, ?string $driveLink): void

@@ -35,6 +35,7 @@ export class AvaluoListComponent {
   mostrarEdicionMasiva = false;
   bulkEditLoading = false;
   bulkImportLoading = false;
+  bulkImportMetodo: 'comercial' | 'jans' | '' = '';
   ubicaciones: string[] = [
     'PATIOS',
     'ALAMOS 200',
@@ -390,10 +391,16 @@ exportarCertificadosZip(): void {
       return;
     }
 
+    if (!this.bulkImportMetodo) {
+      this.alert.warning('Antes de importar debes seleccionar el método (Comercial o Jans).');
+      input.value = '';
+      return;
+    }
+
     const file = input.files[0];
     this.bulkImportLoading = true;
 
-    this.service.bulkImportCompact(file).subscribe({
+    this.service.bulkImportCompact(file, this.bulkImportMetodo).subscribe({
       next: (zipBlob: Blob) => {
         const nombre = `avaluos-compact-importacion-${new Date().toISOString().slice(0, 10)}.zip`;
         this.descargarArchivo(zipBlob, nombre);

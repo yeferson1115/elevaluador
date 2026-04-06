@@ -261,9 +261,10 @@ import(file: File): Observable<any> {
     });
   }
 
-  bulkImportCompact(file: File): Observable<Blob> {
+  bulkImportCompact(file: File, metodo: 'comercial' | 'jans'): Observable<Blob> {
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('metodo', metodo);
 
     return this.http.post(`${this.baseUrl}/avaluos/bulk-import-compact`, formData, {
       responseType: 'blob'
