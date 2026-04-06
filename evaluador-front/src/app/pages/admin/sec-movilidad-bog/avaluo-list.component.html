@@ -5,47 +5,8 @@
 
   <div class="mb-3">
   <div class="card border-0 shadow-sm">
-    <div class="card-header bg-light d-flex justify-content-between align-items-center">
-      <strong><i class="fa-solid fa-folder-open me-2"></i>Herramientas de archivo (Excel / ZIP)</strong>
-      <button class="btn btn-sm btn-outline-primary" type="button" (click)="mostrarAcordeonArchivos = !mostrarAcordeonArchivos">
-        <i class="fa-solid" [ngClass]="mostrarAcordeonArchivos ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-        {{ mostrarAcordeonArchivos ? 'Ocultar' : 'Mostrar' }}
-      </button>
-    </div>
-
-    <div class="card-body" *ngIf="mostrarAcordeonArchivos">
-      <div class="d-flex flex-column align-items-end mb-3">
-        <div class="d-flex gap-2 flex-wrap justify-content-end">
-          <button class="btn btn-info" (click)="fileInput.click()">
-            <i class="fa-solid fa-file-import"></i> Importar Ingresos
-          </button>
-          <button class="btn btn-secondary" (click)="exportarExcel()" [disabled]="loading">
-            <i class="fa-solid fa-file-excel"></i>
-            {{ loading ? 'Exportando...' : 'Exportar a Excel' }}
-          </button>
-          <button class="btn btn-warning" (click)="exportarCertificadosZip()" [disabled]="loading">
-            <i class="fa-solid fa-file-zipper"></i>
-            {{ loading ? 'Exportando...' : (exportaTodosFiltrados ? 'Exportar todos filtrados (ZIP)' : (totalSeleccionados > 0 ? 'Exportar seleccionados (ZIP)' : 'Exportar todos filtrados (ZIP)')) }}
-          </button>
-        </div>
-
-        <a class="btn btn-link p-0 mt-2 text-decoration-none text-secondary"
-          href="assets/plantillamovilidadbog.xlsx"
-          download
-        >
-          <i class="fa-solid fa-download"></i> Descargar Plantilla
-        </a>
-
-        <input
-          type="file"
-          #fileInput
-          style="display: none;"
-          (change)="onFileSelected($event)"
-          accept=".xlsx,.xls,.csv"
-        />
-      </div>
-
-      <div style="padding: 15px;" class="alert alert-light border d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-2 mb-0">
+  
+    <div style="padding: 15px;" class="alert alert-light border d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-2 mb-0">
         <div>
           <strong>Exportación de certificados:</strong>
           <span *ngIf="exportaTodosFiltrados; else seleccionManual">
@@ -78,117 +39,293 @@
           </button>
         </div>
       </div>
+    <!-- Crear acordeon Importacion, exportar y edicion masiva -->
+<div class="accordion shadow-sm mb-4" id="acordeonGestionMasiva">
+  <!-- Panel 1: Importación de Ingresos -->
+  <div class="accordion-item">
+    <h2 class="accordion-header">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseImportacion" aria-expanded="false" aria-controls="collapseImportacion">
+        <div class="d-flex align-items-center gap-3">
+          <i class="fa-solid fa-file-import fs-5 text-primary"></i>
+          <div>
+            <span class="fw-semibold">Importación de Ingresos</span>
+            <div class="small text-muted">Importar datos desde archivo Excel/CSV</div>
+          </div>
+        </div>
+      </button>
+    </h2>
+    <div id="collapseImportacion" class="accordion-collapse collapse" data-bs-parent="#acordeonGestionMasiva">
+      <div class="accordion-body">
+        <div class="row g-3">
+          <!-- Importación estándar -->
+          <div class="col-md-6">
+            <div class="card border-0 bg-light h-100">
+              <div class="card-body">
+                <h6 class="card-title mb-3">
+                  <i class="fa-solid fa-file-import text-primary me-2"></i>Importación estándar
+                </h6>
+                <div class="d-flex flex-column gap-3">
+                  <button class="btn btn-primary" (click)="fileInput.click()">
+                    <i class="fa-solid fa-cloud-upload-alt me-2"></i>Seleccionar archivo
+                  </button>
+                  <a class="btn btn-outline-secondary" href="assets/plantillamovilidadbog.xlsx" download>
+                    <i class="fa-solid fa-download me-2"></i>Descargar plantilla
+                  </a>
+                  <small class="text-muted">
+                    <i class="fa-solid fa-info-circle"></i> Formatos: .xlsx, .xls, .csv
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Importación por método (Comercial/Jans) -->
+          <div class="col-md-6">
+            <div class="card border-0 bg-gradient h-100" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+              <div class="card-body">
+                <h6 class="card-title mb-3">
+                  <i class="fa-solid fa-flask text-success me-2"></i>Importar y generar
+                </h6>
+                <div class="d-flex flex-column gap-3">
+                  <select class="form-select" [(ngModel)]="bulkImportMetodo" [disabled]="bulkImportLoading">
+                    <option value="">Selecciona método de avalúo</option>
+                    <option value="comercial">📊 Comercial</option>
+                    <option value="jans">🔬 Jans</option>
+                  </select>
+                  <div class="d-flex gap-2">
+                    <input
+                      type="file"
+                      #compactBulkInput
+                      style="display: none;"
+                      (change)="onBulkCompactFileSelected($event)"
+                      accept=".xlsx,.xls,.csv"
+                    />
+                    <button 
+                      class="btn btn-success flex-grow-1" 
+                      (click)="compactBulkInput.click()" 
+                      [disabled]="bulkImportLoading || !bulkImportMetodo">
+                      <i class="fa-solid fa-file-arrow-up me-2"></i>
+                      {{ bulkImportLoading ? 'Importando...' : 'Importar y generar ZIP' }}
+                    </button>
+                  </div>
+                  <small class="text-muted">
+                    <i class="fa-solid fa-magic"></i> Aplica el método seleccionado y genera PDFs automáticamente
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <input type="file" #fileInput style="display: none;" (change)="onFileSelected($event)" accept=".xlsx,.xls,.csv" />
+      </div>
     </div>
+  </div>
+
+  <!-- Panel 2: Exportación de Datos -->
+  <div class="accordion-item">
+    <h2 class="accordion-header">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExportacion" aria-expanded="false" aria-controls="collapseExportacion">
+        <div class="d-flex align-items-center gap-3">
+          <i class="fa-solid fa-file-export fs-5 text-success"></i>
+          <div>
+            <span class="fw-semibold">Exportación de Datos</span>
+            <div class="small text-muted">Exportar a Excel o generar certificados en ZIP</div>
+          </div>
+        </div>
+      </button>
+    </h2>
+    <div id="collapseExportacion" class="accordion-collapse collapse" data-bs-parent="#acordeonGestionMasiva">
+      <div class="accordion-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="card border-0 bg-light h-100">
+              <div class="card-body">
+                <h6 class="card-title mb-3">
+                  <i class="fa-solid fa-file-excel text-success me-2"></i>Exportar a Excel
+                </h6>
+                <button class="btn btn-success w-100" (click)="exportarExcel()" [disabled]="loading">
+                  <i class="fa-solid fa-download me-2"></i>
+                  {{ loading ? 'Exportando...' : 'Exportar registros a Excel' }}
+                </button>
+                <small class="text-muted d-block mt-2">
+                  <i class="fa-solid fa-filter"></i> Respeta los filtros aplicados
+                </small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card border-0 bg-light h-100">
+              <div class="card-body">
+                <h6 class="card-title mb-3">
+                  <i class="fa-solid fa-file-zipper text-warning me-2"></i>Certificados en ZIP
+                </h6>
+                <div class="alert alert-info py-2 px-3 small mb-3">
+                  <i class="fa-solid fa-info-circle me-1"></i>
+                  <span *ngIf="exportaTodosFiltrados; else seleccionManual">
+                    📦 Se exportarán TODOS los registros filtrados
+                  </span>
+                  <ng-template #seleccionManual>
+                    <span *ngIf="totalSeleccionados > 0; else sinSeleccion">
+                      📄 Se exportarán {{ totalSeleccionados }} registro(s) seleccionado(s)
+                    </span>
+                    <ng-template #sinSeleccion>
+                      ⚠️ Seleccione registros para exportar
+                    </ng-template>
+                  </ng-template>
+                </div>
+                <button class="btn btn-warning w-100" (click)="exportarCertificadosZip()" [disabled]="loading || !haySeleccionExportable">
+                  <i class="fa-solid fa-file-zipper me-2"></i>
+                  {{ loading ? 'Procesando...' : 'Generar y exportar certificados (ZIP)' }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel 3: Edición Masiva -->
+  <div class="accordion-item">
+    <h2 class="accordion-header">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEdicionMasiva" aria-expanded="false" aria-controls="collapseEdicionMasiva">
+        <div class="d-flex align-items-center gap-3">
+          <i class="fa-solid fa-pen-to-square fs-5 text-warning"></i>
+          <div>
+            <span class="fw-semibold">Edición Masiva</span>
+            <div class="small text-muted">Modificar múltiples registros en bloque</div>
+          </div>
+        </div>
+      </button>
+    </h2>
+    <div id="collapseEdicionMasiva" class="accordion-collapse collapse" data-bs-parent="#acordeonGestionMasiva">
+      <div class="accordion-body">
+        <div class="alert alert-secondary mb-3 py-2 px-3">
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+              <i class="fa-solid fa-check-circle text-success"></i>
+              <strong>Destino de la edición:</strong>
+            </div>
+            <div class="d-flex gap-2">
+              <span class="badge bg-primary" *ngIf="exportaTodosFiltrados">
+                <i class="fa-solid fa-layer-group me-1"></i>Todos los filtrados
+              </span>
+              <span class="badge bg-info" *ngIf="!exportaTodosFiltrados && totalSeleccionados > 0">
+                <i class="fa-solid fa-list-check me-1"></i>{{ totalSeleccionados }} seleccionados
+              </span>
+              <span class="badge bg-secondary" *ngIf="!exportaTodosFiltrados && totalSeleccionados === 0">
+                <i class="fa-solid fa-circle-info me-1"></i>Sin selección
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <!-- Datos del vehículo -->
+          <div class="col-md-4">
+            <div class="card border-0 bg-light h-100">
+              <div class="card-body">
+                <h6 class="card-title mb-3">
+                  <i class="fa-solid fa-car text-primary me-2"></i>Datos del vehículo
+                </h6>
+                <div class="mb-3">
+                  <label class="form-label small fw-semibold">Código Fasecolda</label>
+                  <input
+                    class="form-control form-control-sm"
+                    [(ngModel)]="bulkChanges.codigo_fasecolda"
+                    (blur)="onCodigoFasecoldaMasivoChange(bulkChanges.codigo_fasecolda)"
+                    placeholder="Ej: 12345"
+                  />
+                </div>
+                <div class="mb-3">
+                  <label class="form-label small fw-semibold">Método de avalúo</label>
+                  <select class="form-select form-select-sm" [(ngModel)]="bulkChanges.tipo">
+                    <option value="">-- Sin cambio --</option>
+                    <option value="comercial">📊 Comercial</option>
+                    <option value="jans">🔬 Jans</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label small fw-semibold">Ubicación</label>
+                  <select class="form-select form-select-sm" [(ngModel)]="bulkChanges.ubicacion">
+                    <option value="">-- Sin cambio --</option>
+                    <option *ngFor="let ubicacion of ubicaciones" [value]="ubicacion">{{ ubicacion }}</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Datos de chatarra -->
+          <div class="col-md-4">
+            <div class="card border-0 bg-light h-100">
+              <div class="card-body">
+                <h6 class="card-title mb-3">
+                  <i class="fa-solid fa-recycle text-warning me-2"></i>Configuración chatarra
+                </h6>
+                <div class="mb-3">
+                  <label class="form-label small fw-semibold">Indicador chatarra</label>
+                  <select class="form-select form-select-sm" [(ngModel)]="bulkChanges.chatarra">
+                    <option value="">-- Sin cambio --</option>
+                    <option value="Si">✅ Sí</option>
+                    <option value="No">❌ No</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label small fw-semibold">Valor chatarra (Kg)</label>
+                  <input class="form-control form-control-sm" type="number" [(ngModel)]="bulkChanges.valor_chatarra_kg" placeholder="$ COP" />
+                </div>
+                <div>
+                  <label class="form-label small fw-semibold">Peso chatarra (Kg)</label>
+                  <input class="form-control form-control-sm" type="number" [(ngModel)]="bulkChanges.peso_chatarra_kg" placeholder="Kg" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Diagnóstico y acciones -->
+          <div class="col-md-4">
+            <div class="card border-0 bg-light h-100">
+              <div class="card-body">
+                <h6 class="card-title mb-3">
+                  <i class="fa-solid fa-stethoscope text-info me-2"></i>Diagnóstico
+                </h6>
+                <div class="mb-3">
+                  <label class="form-label small fw-semibold">Diagnóstico</label>
+                  <select class="form-select form-select-sm" [(ngModel)]="bulkChanges.observaciones">
+                    <option value="">-- Sin cambio --</option>
+                    <option value="Chatarra">🔧 Chatarra</option>
+                    <option value="uso">📋 Uso</option>
+                  </select>
+                </div>
+                <div class="mt-4">
+                  <button 
+                    class="btn btn-warning w-100" 
+                    (click)="aplicarEdicionMasiva()" 
+                    [disabled]="bulkEditLoading || (!exportaTodosFiltrados && totalSeleccionados === 0)">
+                    <i class="fa-solid fa-pen-to-square me-2"></i>
+                    {{ bulkEditLoading ? 'Aplicando cambios...' : 'Aplicar cambios + generar ZIP' }}
+                  </button>
+                  <small class="text-muted d-block mt-2 text-center">
+                    <i class="fa-solid fa-sync"></i> Se recalcularán valores y se generarán nuevos PDFs
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+
+  
+</div>
+    
   </div>
 </div>
 
-<div class="card mb-3">
-  <div class="card-header d-flex justify-content-between align-items-center py-2">
-    <button class="btn btn-sm btn-outline-primary" type="button" (click)="mostrarEdicionMasiva = !mostrarEdicionMasiva">
-      <i class="fa-solid" [ngClass]="mostrarEdicionMasiva ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-      {{ mostrarEdicionMasiva ? 'Ocultar edición masiva' : 'Mostrar edición masiva' }}
-    </button>
-    <small class="text-muted">Edición masiva (Avaluo Compact)</small>
-  </div>
-  <div class="card-body" *ngIf="mostrarEdicionMasiva">
-    <div class="row g-2">
-      <div class="col-md-3">
-        <label class="form-label">Código Fasecolda</label>
-        <input
-          class="form-control"
-          [(ngModel)]="bulkChanges.codigo_fasecolda"
-          (blur)="onCodigoFasecoldaMasivoChange(bulkChanges.codigo_fasecolda)"
-        />
-      </div>
-      <div class="col-md-3">
-        <label class="form-label">Valor chatarra/Kg</label>
-        <input class="form-control" type="number" [(ngModel)]="bulkChanges.valor_chatarra_kg" />
-      </div>
-      <div class="col-md-3">
-        <label class="form-label">Ubicación</label>
-        <select class="form-select" [(ngModel)]="bulkChanges.ubicacion">
-          <option value="">-- Sin cambio --</option>
-          <option *ngFor="let ubicacion of ubicaciones" [value]="ubicacion">{{ ubicacion }}</option>
-        </select>
-      </div>
-      <div class="col-md-3">
-        <label class="form-label">Método</label>
-        <select class="form-select" [(ngModel)]="bulkChanges.tipo">
-          <option value="">-- Sin cambio --</option>
-          <option value="comercial">Comercial</option>
-          <option value="jans">Jans</option>
-        </select>
-      </div>
-      <div class="col-md-3">
-        <label class="form-label">Indicador chatarra</label>
-        <select class="form-select" [(ngModel)]="bulkChanges.chatarra">
-          <option value="">-- Sin cambio --</option>
-          <option value="Si">Sí</option>
-          <option value="No">No</option>
-        </select>
-      </div>
-      <div class="col-md-3">
-        <label class="form-label">Peso chatarra (Kg)</label>
-        <input class="form-control" type="number" [(ngModel)]="bulkChanges.peso_chatarra_kg" />
-      </div>
-      <div class="col-md-6">
-        <label class="form-label">Diagnóstico</label>
-        <select class="form-select" [(ngModel)]="bulkChanges.observaciones">
-          <option value="">-- Sin cambio --</option>
-          <option value="Chatarra">Chatarra</option>
-          <option value="uso">uso</option>
-        </select>
-      </div>
-      <div class="col-12 d-flex justify-content-end">
-        <button class="btn btn-primary" (click)="aplicarEdicionMasiva()" [disabled]="loading || bulkEditLoading">
-          <i class="fa-solid fa-pen-to-square"></i>
-          {{ bulkEditLoading ? 'Procesando...' : 'Aplicar cambios + generar ZIP' }}
-        </button>
-      </div>
-    </div>
-    <small class="text-muted">
-      Aplica sobre los seleccionados o sobre todos los filtrados; se recalculan valores automáticos en backend y se descarga un ZIP con PDFs por registro.
-    </small>
-  </div>
-</div>
-
-<div class="card mb-3">
-  <div class="card-header d-flex justify-content-between align-items-center py-2">
-    <button class="btn btn-sm btn-outline-primary" type="button" (click)="mostrarImportacionMasiva = !mostrarImportacionMasiva">
-      <i class="fa-solid" [ngClass]="mostrarImportacionMasiva ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-      {{ mostrarImportacionMasiva ? 'Ocultar importación por método' : 'Mostrar importación por método' }}
-    </button>
-    <small class="text-muted">Importación masiva (Avaluo Compact)</small>
-  </div>
-  <div class="card-body" *ngIf="mostrarImportacionMasiva">
-    <div class="row g-2 align-items-end">
-      <div class="col-md-4">
-        <label class="form-label">Método para importar</label>
-        <select class="form-select" [(ngModel)]="bulkImportMetodo">
-          <option value="">Selecciona método</option>
-          <option value="comercial">Comercial</option>
-          <option value="jans">Jans</option>
-        </select>
-      </div>
-      <div class="col-md-8 d-flex justify-content-md-end">
-        <input
-          type="file"
-          #compactBulkInput
-          style="display: none;"
-          (change)="onBulkCompactFileSelected($event)"
-          accept=".xlsx,.xls,.csv"
-        />
-        <button class="btn btn-outline-secondary" type="button" (click)="compactBulkInput.click()" [disabled]="loading || bulkImportLoading || !bulkImportMetodo">
-          <i class="fa-solid fa-file-arrow-up"></i>
-          {{ bulkImportLoading ? 'Importando...' : 'Importar Excel + generar ZIP' }}
-        </button>
-      </div>
-    </div>
-    <small class="text-muted d-block mt-2">
-      Esta opción aplica el método seleccionado (Comercial o Jans), recalcula en backend y descarga un ZIP con los PDFs generados.
-    </small>
-  </div>
-</div>
 
 <div class="mb-2 d-flex justify-content-end gap-2">
   <select

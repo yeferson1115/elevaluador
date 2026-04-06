@@ -42,3 +42,81 @@
   color: #475569;
   border: 1px solid #cbd5e1;
 }
+
+
+/* Estilos profesionales para la sección de gestión */
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.bg-gradient-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(102, 126, 234, 0.2);
+}
+
+/* Mejoras para las tarjetas */
+.card {
+  transition: all 0.2s ease;
+  border-radius: 12px !important;
+}
+
+.card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Badges modernos */
+.badge {
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+/* Botones mejorados */
+.btn-outline-primary,
+.btn-outline-warning,
+.btn-outline-secondary {
+  transition: all 0.2s ease;
+  border-radius: 8px;
+}
+
+.btn-outline-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(13, 110, 253, 0.2);
+}
+
+.btn-outline-warning:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);
+}
+
+/* Alertas más elegantes */
+.alert {
+  border-radius: 12px;
+  border: none;
+}
+
+.alert-info {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  color: #0d47a1;
+}
+
+.alert-light {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef !important;
+}
+
+/* Animaciones suaves */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.accordion-body {
+  animation: fadeInUp 0.3s ease-out;
+}
