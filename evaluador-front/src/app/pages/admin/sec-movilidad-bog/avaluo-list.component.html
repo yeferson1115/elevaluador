@@ -3,72 +3,82 @@
   
 
 
-  <div class="d-flex flex-column align-items-end mb-3">
-    <div class="d-flex gap-2">
-      <button class="btn btn-success " *hasPermission="Permissions.CREATE_INGRESO" (click)="nuevo()">
-        <i class="fa-solid fa-plus"></i> Nuevo Avaluo
-      </button>
-      <button class="btn btn-info " (click)="fileInput.click()">
-        <i class="fa-solid fa-file-import"></i> Importar Ingresos
-      </button>
-       <!-- BOTÓN DE EXPORTAR EXCEL -->
-      <button class="btn btn-secondary" (click)="exportarExcel()" [disabled]="loading">
-        <i class="fa-solid fa-file-excel"></i> 
-        {{ loading ? 'Exportando...' : 'Exportar a Excel' }}
-      </button>
-       <button class="btn btn-warning" (click)="exportarCertificadosZip()" [disabled]="loading">
-        <i class="fa-solid fa-file-zipper"></i> 
-        {{ loading ? 'Exportando...' : (exportaTodosFiltrados ? 'Exportar todos filtrados (ZIP)' : (totalSeleccionados > 0 ? 'Exportar seleccionados (ZIP)' : 'Exportar todos filtrados (ZIP)')) }}
+  <div class="mb-3">
+  <div class="card border-0 shadow-sm">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+      <strong><i class="fa-solid fa-folder-open me-2"></i>Herramientas de archivo (Excel / ZIP)</strong>
+      <button class="btn btn-sm btn-outline-primary" type="button" (click)="mostrarAcordeonArchivos = !mostrarAcordeonArchivos">
+        <i class="fa-solid" [ngClass]="mostrarAcordeonArchivos ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+        {{ mostrarAcordeonArchivos ? 'Ocultar' : 'Mostrar' }}
       </button>
     </div>
-    <a class="btn btn-link p-0 mt-1 text-decoration-none text-secondary" 
-      href="assets/plantillamovilidadbog.xlsx" 
-      download
-    >
-      <i class="fa-solid fa-download"></i> Descargar Plantilla
-    </a>
 
-    
-    <input 
-      type="file" 
-      #fileInput 
-      style="display: none;" 
-      (change)="onFileSelected($event)"
-      accept=".xlsx,.xls,.csv"
-    />
-  </div>
+    <div class="card-body" *ngIf="mostrarAcordeonArchivos">
+      <div class="d-flex flex-column align-items-end mb-3">
+        <div class="d-flex gap-2 flex-wrap justify-content-end">
+          <button class="btn btn-info" (click)="fileInput.click()">
+            <i class="fa-solid fa-file-import"></i> Importar Ingresos
+          </button>
+          <button class="btn btn-secondary" (click)="exportarExcel()" [disabled]="loading">
+            <i class="fa-solid fa-file-excel"></i>
+            {{ loading ? 'Exportando...' : 'Exportar a Excel' }}
+          </button>
+          <button class="btn btn-warning" (click)="exportarCertificadosZip()" [disabled]="loading">
+            <i class="fa-solid fa-file-zipper"></i>
+            {{ loading ? 'Exportando...' : (exportaTodosFiltrados ? 'Exportar todos filtrados (ZIP)' : (totalSeleccionados > 0 ? 'Exportar seleccionados (ZIP)' : 'Exportar todos filtrados (ZIP)')) }}
+          </button>
+        </div>
 
-<div style="padding: 15px;" class="alert alert-light border d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-2 mb-3">
-  <div>
-    <strong>Exportación de certificados:</strong>
-    <span *ngIf="exportaTodosFiltrados; else seleccionManual">
-      se exportarán todos los registros filtrados con certificado disponible, aunque no estén visibles en esta página.
-    </span>
-    <ng-template #seleccionManual>
-      <span *ngIf="totalSeleccionados > 0; else exportarFiltrados">
-        se exportarán {{ totalSeleccionados }} registro(s) seleccionado(s).
-      </span>
-    </ng-template>
-    <ng-template #exportarFiltrados>
-      selecciona registros visibles o usa la selección total filtrada para habilitar la exportación del ZIP.
-    </ng-template>
-    <div class="small text-muted">
-      Si el lote es grande, el ZIP ahora se genera en segundo plano y recibirás por correo la ruta de descarga cuando termine.
+        <a class="btn btn-link p-0 mt-2 text-decoration-none text-secondary"
+          href="assets/plantillamovilidadbog.xlsx"
+          download
+        >
+          <i class="fa-solid fa-download"></i> Descargar Plantilla
+        </a>
+
+        <input
+          type="file"
+          #fileInput
+          style="display: none;"
+          (change)="onFileSelected($event)"
+          accept=".xlsx,.xls,.csv"
+        />
+      </div>
+
+      <div style="padding: 15px;" class="alert alert-light border d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-2 mb-0">
+        <div>
+          <strong>Exportación de certificados:</strong>
+          <span *ngIf="exportaTodosFiltrados; else seleccionManual">
+            se exportarán todos los registros filtrados con certificado disponible, aunque no estén visibles en esta página.
+          </span>
+          <ng-template #seleccionManual>
+            <span *ngIf="totalSeleccionados > 0; else exportarFiltrados">
+              se exportarán {{ totalSeleccionados }} registro(s) seleccionado(s).
+            </span>
+          </ng-template>
+          <ng-template #exportarFiltrados>
+            selecciona registros visibles o usa la selección total filtrada para habilitar la exportación del ZIP.
+          </ng-template>
+          <div class="small text-muted">
+            Si el lote es grande, el ZIP ahora se genera en segundo plano y recibirás por correo la ruta de descarga cuando termine.
+          </div>
+        </div>
+        <div class="selection-actions">
+          <button class="selection-chip selection-chip-primary" type="button" (click)="seleccionarVisibles()" [disabled]="loading || !avaluosFiltradosPorCierre.length || exportaTodosFiltrados">
+            <i class="fa-solid fa-list-check"></i>
+            <span>Seleccionar visibles</span>
+          </button>
+          <button class="selection-chip selection-chip-warning" type="button" (click)="seleccionarTodosFiltrados()" [disabled]="loading || exportaTodosFiltrados">
+            <i class="fa-solid fa-layer-group"></i>
+            <span>Seleccionar todos los filtrados</span>
+          </button>
+          <button class="selection-chip selection-chip-neutral" type="button" (click)="limpiarSeleccion()" [disabled]="loading || (!exportaTodosFiltrados && totalSeleccionados === 0)">
+            <i class="fa-solid fa-eraser"></i>
+            <span>Limpiar</span>
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
-  <div class="selection-actions">
-    <button class="selection-chip selection-chip-primary" type="button" (click)="seleccionarVisibles()" [disabled]="loading || !avaluosFiltradosPorCierre.length || exportaTodosFiltrados">
-      <i class="fa-solid fa-list-check"></i>
-      <span>Seleccionar visibles</span>
-    </button>
-    <button class="selection-chip selection-chip-warning" type="button" (click)="seleccionarTodosFiltrados()" [disabled]="loading || exportaTodosFiltrados">
-      <i class="fa-solid fa-layer-group"></i>
-      <span>Seleccionar todos los filtrados</span>
-    </button>
-    <button class="selection-chip selection-chip-neutral" type="button" (click)="limpiarSeleccion()" [disabled]="loading || (!exportaTodosFiltrados && totalSeleccionados === 0)">
-      <i class="fa-solid fa-eraser"></i>
-      <span>Limpiar</span>
-    </button>
   </div>
 </div>
 
