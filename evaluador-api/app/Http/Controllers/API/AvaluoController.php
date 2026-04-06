@@ -8,13 +8,20 @@ use App\Models\Avaluo;
 use App\Models\FasecoldaValor;
 use App\Models\ValoresRepuesto;
 use App\Models\User;
+use App\Models\IngresoImage;
+use App\Models\AvaluoLimitaciones;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 use Barryvdh\DomPDF\Facade\Pdf;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 use ZipArchive;
 
 class AvaluoController extends Controller
@@ -1631,5 +1638,360 @@ public function reprocesarIndividual($id)
         }
 
         return response()->download($zipPath, $zipFileName)->deleteFileAfterSend(true);
+    }
+
+    public function bulkImportCompact(Request $request)
+    {
+        $validated = $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls,csv',
+        ]);
+
+        $sheet = IOFactory::load($validated['file']->getRealPath())->getActiveSheet();
+        $rows = $sheet->toArray(null, true, true, true);
+
+        if (count($rows) < 2) {
+            return response()->json(['message' => 'El archivo no contiene filas para procesar'], 422);
+        }
+
+        $headers = $this->normalizeHeaders(array_shift($rows));
+        $zipFileName = 'avaluos-compact-importacion-' . now()->format('Y-m-d-H-i-s') . '.zip';
+        $zipPath = storage_path('app/temp/' . $zipFileName);
+        if (!file_exists(dirname($zipPath))) {
+            mkdir(dirname($zipPath), 0755, true);
+        }
+
+        $zip = new ZipArchive();
+        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+            return response()->json(['message' => 'No fue posible crear el archivo ZIP de salida'], 500);
+        }
+
+        $procesados = 0;
+        $errores = [];
+
+        foreach ($rows as $index => $rawRow) {
+            try {
+                $row = $this->mapRowByHeaders($rawRow, $headers);
+                $placa = $this->normalizePlate($this->value($row, 'placas'));
+
+                if (!$placa) {
+                    throw new \RuntimeException('La columna PLACAS es obligatoria');
+                }
+
+                DB::transaction(function () use ($row, $placa, &$procesados, $zip) {
+                    $ingresoData = [
+                        'tiposervicio' => 'Sec Bogota',
+                        'placa' => $placa,
+                        'ubicacion_activo' => $this->value($row, 'ubicacion'),
+                        'fecha_inspeccion' => $this->parseExcelDate($this->value($row, 'fecha_avaluo')),
+                        'fecha_ingreso' => $this->parseExcelDate($this->value($row, 'fecha_ingreso_a_patios')),
+                        'organismo_transito' => $this->value($row, 'organismo_de_transito'),
+                        'estado_registro_runt' => $this->value($row, 'estado_de_registro_en_runt'),
+                        'marca' => $this->value($row, 'marca'),
+                        'clase' => $this->value($row, 'clase'),
+                        'tipo_servicio_vehiculo' => $this->value($row, 'servicio'),
+                        'linea' => $this->value($row, 'linea'),
+                        'modelo' => $this->normalizeNumeric($this->value($row, 'modelo')),
+                        'color' => $this->value($row, 'color'),
+                        'tipo_carroceria' => $this->value($row, 'carroceria'),
+                        'cilindraje' => $this->normalizeNumeric($this->value($row, 'cilindraje')),
+                        'numero_motor' => $this->value($row, 'motor'),
+                        'numero_chasis' => $this->value($row, 'chasis'),
+                        'numero_serie' => $this->value($row, 'serie'),
+                        'numeroVin' => $this->value($row, 'vin'),
+                        'numero_pasajeros' => $this->normalizeNumeric($this->value($row, 'pasajeros')),
+                        'capacidad_ton' => $this->normalizeNumeric($this->value($row, 'capacidad_ton')),
+                        'cantidad_ejes' => $this->normalizeNumeric($this->value($row, 'ejes')),
+                        'caja_cambios' => $this->value($row, 'caja'),
+                        'peso_bruto' => $this->normalizeNumeric($this->value($row, 'peso_vacio')),
+                        'peso_mermado' => $this->normalizeNumeric($this->value($row, 'peso_mermado')),
+                        'estado' => 'En Inspección',
+                    ];
+
+                    $ingreso = Ingreso::firstOrNew([
+                        'placa' => $placa,
+                        'tiposervicio' => 'Sec Bogota',
+                    ]);
+                    $ingreso->fill($ingresoData);
+                    $ingreso->save();
+
+                    $evaluadorNombre = $this->value($row, 'avaluador');
+                    $evaluador = $evaluadorNombre
+                        ? User::where('name', 'like', '%' . trim($evaluadorNombre) . '%')->first()
+                        : null;
+
+                    $avaluo = Avaluo::firstOrNew(['ingreso_id' => $ingreso->id]);
+                    if (!$avaluo->exists) {
+                        $ultimo = Avaluo::whereHas('ingreso', fn ($q) => $q->where('tiposervicio', 'Sec Bogota'))
+                            ->orderByDesc('code_movilidad')
+                            ->first();
+                        $avaluo->code_movilidad = $ultimo ? ($ultimo->code_movilidad + 1) : 1;
+                    }
+
+                    $avaluo->fill([
+                        'ingreso_id' => $ingreso->id,
+                        'formato' => 'Sec. Movilidad Bogotá',
+                        'fecha_inspeccion' => $this->parseExcelDate($this->value($row, 'fecha_avaluo')),
+                        'evaluador' => $evaluadorNombre,
+                        'user_id' => $evaluador?->id,
+                        'consecutivo' => $this->normalizeNumeric($this->value($row, 'consecutivo')),
+                        'codigo_fasecolda' => $this->value($row, 'codigo_fasecolda'),
+                        'observaciones' => $this->value($row, 'diagnostico'),
+                        'valor_razonable' => $this->normalizeNumeric($this->value($row, 'valor_razonable')),
+                        'valor_resonable' => $this->normalizeNumeric($this->value($row, 'valor_razonable')),
+                        'valor_SOAT' => $this->normalizeNumeric($this->value($row, 'valor_soat')),
+                        'valor_RTM' => $this->normalizeNumeric($this->value($row, 'valor_rtm')),
+                        'valor_chatarra_kg' => $this->normalizeNumeric($this->value($row, 'precio_chatarra')),
+                        'peso_chatarra_kg' => $this->normalizeNumeric($this->value($row, 'peso_mermado')),
+                        'avaluo_total' => $this->normalizeNumeric($this->value($row, 'valor_chatarra')),
+                        'ubicacion' => $this->value($row, 'ubicacion'),
+                        'latoneria_estado' => $this->value($row, 'latoneria'),
+                        'pintura_estado' => $this->value($row, 'pintura'),
+                        'tapiceria_estado' => $this->value($row, 'tapiceria'),
+                        'motor_estado' => $this->value($row, 'motor_1'),
+                        'chasis_estado' => $this->value($row, 'chasis_1'),
+                        'transmision_estado' => $this->value($row, 'transmision'),
+                        'frenos_estado' => $this->value($row, 'sistema_freno'),
+                        'refrigeracion_estado' => $this->value($row, 'refrigeracion'),
+                        'electrico_estado' => $this->value($row, 'sis_electrico'),
+                        'tanque_estado' => $this->value($row, 'tanque_combustible'),
+                        'bateria_estado' => $this->value($row, 'bateria'),
+                        'llantas_estado' => $this->value($row, 'llantas'),
+                        'llave_estado' => $this->value($row, 'llaves'),
+                        'vidrios_estado' => $this->value($row, 'vidrios'),
+                        'valor_reparaciones' => $this->normalizeNumeric($this->value($row, 'valor_reparaciones')),
+                    ]);
+                    $avaluo->save();
+
+                    $this->syncLimitaciones($avaluo, $row);
+                    $this->importDrivePhotos($avaluo->id, $this->value($row, 'enlace_fotos'));
+
+                    $pdfResponse = $this->generarPdf($avaluo->id, new Request(['action' => 'download']));
+                    if ($pdfResponse->getStatusCode() >= 400) {
+                        throw new \RuntimeException('No fue posible generar el PDF del avalúo');
+                    }
+
+                    $pdfContent = $pdfResponse->getContent();
+                    $pdfName = ($placa ?: 'ingreso-' . $ingreso->id) . '.pdf';
+                    $zip->addFromString($pdfName, $pdfContent);
+                    $procesados++;
+                });
+            } catch (\Throwable $e) {
+                $errores[] = [
+                    'fila' => $index + 2,
+                    'error' => $e->getMessage(),
+                ];
+            }
+        }
+
+        $zip->close();
+
+        if ($procesados === 0) {
+            @unlink($zipPath);
+            return response()->json([
+                'message' => 'No fue posible procesar filas del archivo',
+                'errores' => $errores,
+            ], 500);
+        }
+
+        return response()->download($zipPath, $zipFileName)->deleteFileAfterSend(true);
+    }
+
+    private function normalizeHeaders(array $headerRow): array
+    {
+        $headers = [];
+        foreach ($headerRow as $column => $header) {
+            $normalized = $this->normalizeHeader((string) $header);
+            if ($normalized === '') {
+                continue;
+            }
+            if (in_array($normalized, $headers, true)) {
+                $counter = 1;
+                while (in_array($normalized . '_' . $counter, $headers, true)) {
+                    $counter++;
+                }
+                $normalized .= '_' . $counter;
+            }
+            $headers[$column] = $normalized;
+        }
+
+        return $headers;
+    }
+
+    private function normalizeHeader(string $value): string
+    {
+        $value = Str::of($value)
+            ->lower()
+            ->ascii()
+            ->replace("\t", ' ')
+            ->replace('/', ' ')
+            ->replace('.', ' ')
+            ->replace('-', ' ')
+            ->replace('ñ', 'n')
+            ->squish()
+            ->replace(' ', '_')
+            ->toString();
+
+        return trim($value, '_');
+    }
+
+    private function mapRowByHeaders(array $row, array $headers): array
+    {
+        $mapped = [];
+        foreach ($headers as $column => $key) {
+            $mapped[$key] = $row[$column] ?? null;
+        }
+
+        return $mapped;
+    }
+
+    private function value(array $row, string $key): ?string
+    {
+        if (!array_key_exists($key, $row)) {
+            return null;
+        }
+
+        $value = $row[$key];
+        if ($value === null) {
+            return null;
+        }
+
+        $value = trim((string) $value);
+        return $value === '' ? null : $value;
+    }
+
+    private function normalizePlate(?string $placa): ?string
+    {
+        if (!$placa) {
+            return null;
+        }
+
+        return strtoupper(trim($placa));
+    }
+
+    private function normalizeNumeric($value): ?float
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (is_numeric($value)) {
+            return (float) $value;
+        }
+
+        $normalized = str_replace(['$', ' ', '.'], '', (string) $value);
+        $normalized = str_replace(',', '.', $normalized);
+        return is_numeric($normalized) ? (float) $normalized : null;
+    }
+
+    private function parseExcelDate($value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (is_numeric($value)) {
+            return ExcelDate::excelToDateTimeObject($value)->format('Y-m-d');
+        }
+
+        try {
+            return Carbon::parse((string) $value)->format('Y-m-d');
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    private function syncLimitaciones(Avaluo $avaluo, array $row): void
+    {
+        AvaluoLimitaciones::where('avaluo_id', $avaluo->id)->delete();
+
+        for ($i = 1; $i <= 7; $i++) {
+            $texto = $this->value($row, "limitacion_{$i}");
+            if (!$texto) {
+                continue;
+            }
+
+            AvaluoLimitaciones::create([
+                'avaluo_id' => $avaluo->id,
+                'texto' => $texto,
+            ]);
+        }
+    }
+
+    private function importDrivePhotos(int $avaluoId, ?string $driveLink): void
+    {
+        if (!$driveLink) {
+            return;
+        }
+
+        $folderId = $this->extractDriveFolderId($driveLink);
+        if (!$folderId) {
+            return;
+        }
+
+        $apiKey = config('services.google.drive_api_key');
+        if (!$apiKey) {
+            return;
+        }
+
+        $response = Http::get('https://www.googleapis.com/drive/v3/files', [
+            'q' => "'{$folderId}' in parents and trashed = false",
+            'fields' => 'files(id,name,mimeType)',
+            'key' => $apiKey,
+            'pageSize' => 100,
+        ]);
+
+        if (!$response->successful()) {
+            return;
+        }
+
+        $files = collect($response->json('files', []))
+            ->filter(fn ($file) => str_starts_with((string) ($file['mimeType'] ?? ''), 'image/'))
+            ->values();
+
+        if ($files->isEmpty()) {
+            return;
+        }
+
+        IngresoImage::where('avaluo_id', $avaluoId)->where('categoria', 'vehiculo')->delete();
+        $orden = 1;
+        foreach ($files as $file) {
+            $download = Http::timeout(30)->get("https://www.googleapis.com/drive/v3/files/{$file['id']}", [
+                'alt' => 'media',
+                'key' => $apiKey,
+            ]);
+
+            if (!$download->successful()) {
+                continue;
+            }
+
+            $extension = strtolower(pathinfo((string) $file['name'], PATHINFO_EXTENSION));
+            if (!$extension) {
+                $extension = 'jpg';
+            }
+
+            $fileName = Str::uuid() . '.' . $extension;
+            $path = "avaluos/{$avaluoId}/{$fileName}";
+            Storage::disk('public')->put($path, $download->body());
+
+            IngresoImage::create([
+                'avaluo_id' => $avaluoId,
+                'categoria' => 'vehiculo',
+                'path' => $path,
+                'orden' => $orden++,
+            ]);
+        }
+    }
+
+    private function extractDriveFolderId(string $url): ?string
+    {
+        if (preg_match('#/folders/([a-zA-Z0-9_-]+)#', $url, $matches) === 1) {
+            return $matches[1];
+        }
+
+        if (preg_match('/[?&]id=([a-zA-Z0-9_-]+)/', $url, $matches) === 1) {
+            return $matches[1];
+        }
+
+        return null;
     }
 }

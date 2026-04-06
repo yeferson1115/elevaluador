@@ -261,6 +261,15 @@ import(file: File): Observable<any> {
     });
   }
 
+  bulkImportCompact(file: File): Observable<Blob> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return this.http.post(`${this.baseUrl}/avaluos/bulk-import-compact`, formData, {
+      responseType: 'blob'
+    });
+  }
+
 // En tu IngresoService (Angular)
 // En tu servicio
 generarPdf(id: number): Observable<HttpResponse<Blob>> {
