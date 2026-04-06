@@ -34,6 +34,7 @@ export class AvaluoListComponent {
   selectionMode: 'manual' | 'allFiltered' = 'manual';
   mostrarEdicionMasiva = false;
   bulkEditLoading = false;
+  bulkImportLoading = false;
   ubicaciones: string[] = [
     'PATIOS',
     'ALAMOS 200',
@@ -382,6 +383,33 @@ exportarCertificadosZip(): void {
     }
   });
 }
+
+  onBulkCompactFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) {
+      return;
+    }
+
+    const file = input.files[0];
+    this.bulkImportLoading = true;
+
+    this.service.bulkImportCompact(file).subscribe({
+      next: (zipBlob: Blob) => {
+        const nombre = `avaluos-compact-importacion-${new Date().toISOString().slice(0, 10)}.zip`;
+        this.descargarArchivo(zipBlob, nombre);
+        this.alert.success('Importación masiva completada. Se descargó el ZIP con los PDFs.');
+        this.bulkImportLoading = false;
+        input.value = '';
+        this.cargarAvaluos(1);
+      },
+      error: (error) => {
+        console.error('Error en importación masiva compact:', error);
+        this.alert.error(error?.error?.message || 'No fue posible procesar el archivo de importación masiva.');
+        this.bulkImportLoading = false;
+        input.value = '';
+      }
+    });
+  }
 
 // En tu AvaluoListComponent
 
