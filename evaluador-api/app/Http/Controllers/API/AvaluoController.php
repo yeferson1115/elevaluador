@@ -17,7 +17,9 @@ use Illuminate\Support\Str;
 
 use Barryvdh\DomPDF\Facade\Pdf;
 
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
@@ -2110,16 +2112,26 @@ public function reprocesarIndividual($id)
     private function importDrivePhotos(int $avaluoId, ?string $driveLink): void
     {
         if (!$driveLink) {
+            Log::warning('importDrivePhotos: enlace de Drive vacío.', [
+                'avaluo_id' => $avaluoId,
+            ]);
             return;
         }
 
         $folderId = $this->extractDriveFolderId($driveLink);
         if (!$folderId) {
+            Log::warning('importDrivePhotos: no se pudo extraer folderId del enlace.', [
+                'avaluo_id' => $avaluoId,
+                'drive_link' => $driveLink,
+            ]);
             return;
         }
 
         $apiKey = (string) 'AIzaSyBrOPQPtTW-31_s7WmKfcp9Aadw5hLDJtw';
         if (!$apiKey) {
+            Log::error('importDrivePhotos: API key de Google Drive vacía.', [
+                'avaluo_id' => $avaluoId,
+            ]);
             return;
         }
 
@@ -2130,30 +2142,51 @@ public function reprocesarIndividual($id)
             'fields' => 'files(id,name,mimeType)',
             'key' => $apiKey,
             'pageSize' => 100,
+            'includeItemsFromAllDrives' => true,
+            'supportsAllDrives' => true,
         ]);
- 
-        if (!$response->successful()) {            
+
+        if (!$response->successful()) {
+            Log::error('importDrivePhotos: error listando archivos en Drive.', [
+                'avaluo_id' => $avaluoId,
+                'folder_id' => $folderId,
+                'status' => $response->status(),
+                'response' => $response->json(),
+            ]);
             return;
         }
-       
 
         $files = collect($response->json('files', []))
             ->filter(fn ($file) => str_starts_with((string) ($file['mimeType'] ?? ''), 'image/'))
             ->values();
 
         if ($files->isEmpty()) {
+            Log::warning('importDrivePhotos: la carpeta no tiene imágenes disponibles.', [
+                'avaluo_id' => $avaluoId,
+                'folder_id' => $folderId,
+                'total_archivos' => count($response->json('files', [])),
+            ]);
             return;
         }
 
         IngresoImage::where('avaluo_id', $avaluoId)->where('categoria', 'vehiculo')->delete();
         $orden = 1;
+        $saved = 0;
+
         foreach ($files as $file) {
             $download = $httpClient->timeout(30)->get("https://www.googleapis.com/drive/v3/files/{$file['id']}", [
                 'alt' => 'media',
                 'key' => $apiKey,
+                'supportsAllDrives' => true,
             ]);
 
             if (!$download->successful()) {
+                Log::warning('importDrivePhotos: no se pudo descargar archivo de Drive.', [
+                    'avaluo_id' => $avaluoId,
+                    'file_id' => $file['id'] ?? null,
+                    'file_name' => $file['name'] ?? null,
+                    'status' => $download->status(),
+                ]);
                 continue;
             }
 
@@ -2164,7 +2197,21 @@ public function reprocesarIndividual($id)
 
             $fileName = Str::uuid() . '.' . $extension;
             $path = "avaluos/{$avaluoId}/{$fileName}";
-            Storage::disk('public')->put($path, $download->body());
+            $absoluteDir = public_path("avaluos/{$avaluoId}");
+            if (!File::exists($absoluteDir)) {
+                File::makeDirectory($absoluteDir, 0755, true);
+            }
+
+            $absolutePath = public_path($path);
+            $bytes = file_put_contents($absolutePath, $download->body());
+            if ($bytes === false) {
+                Log::error('importDrivePhotos: error guardando imagen en /public.', [
+                    'avaluo_id' => $avaluoId,
+                    'file_name' => $fileName,
+                    'absolute_path' => $absolutePath,
+                ]);
+                continue;
+            }
 
             IngresoImage::create([
                 'avaluo_id' => $avaluoId,
@@ -2172,7 +2219,16 @@ public function reprocesarIndividual($id)
                 'path' => $path,
                 'orden' => $orden++,
             ]);
+            $saved++;
         }
+
+        Log::info('importDrivePhotos: finalizó importación de imágenes.', [
+            'avaluo_id' => $avaluoId,
+            'folder_id' => $folderId,
+            'imagenes_detectadas' => $files->count(),
+            'imagenes_guardadas' => $saved,
+            'destino' => '/public/avaluos/{avaluo_id}',
+        ]);
     }
 
 
