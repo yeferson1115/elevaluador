@@ -24,10 +24,66 @@
 <button class="btn btn-success" (click)="exportarExcelLocal()">
   <i class="fa-solid fa-file-excel"></i> Exportar Excel
 </button>
+
+<div class="alert alert-light border mt-3 d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-2">
+  <div>
+    <strong>Edición masiva:</strong>
+    <span *ngIf="selectionMode === 'allFiltered'; else seleccionManual"> se aplicará sobre todos los registros filtrados.</span>
+    <ng-template #seleccionManual>
+      <span *ngIf="totalSeleccionados > 0; else sinSeleccion"> se aplicará sobre {{ totalSeleccionados }} seleccionado(s).</span>
+    </ng-template>
+    <ng-template #sinSeleccion> selecciona registros para editar en bloque.</ng-template>
+  </div>
+  <div class="d-flex gap-2">
+    <button class="btn btn-outline-primary btn-sm" (click)="seleccionarVisibles()" [disabled]="loading || !avaluos.length || selectionMode === 'allFiltered'">Seleccionar visibles</button>
+    <button class="btn btn-outline-warning btn-sm" (click)="seleccionarTodosFiltrados()" [disabled]="loading || selectionMode === 'allFiltered'">Seleccionar todos filtrados</button>
+    <button class="btn btn-outline-secondary btn-sm" (click)="limpiarSeleccion()" [disabled]="loading || (selectionMode !== 'allFiltered' && totalSeleccionados === 0)">Limpiar</button>
+  </div>
+</div>
+
+<div class="card border-0 bg-light mt-3 mb-3">
+  <div class="card-body">
+    <h6 class="card-title">Edición masiva (Avaluo Pro)</h6>
+    <div class="row g-2">
+      <div class="col-md-3"><input class="form-control form-control-sm" [(ngModel)]="bulkChanges.codigo_fasecolda" placeholder="Código fasecolda"></div>
+      <div class="col-md-3">
+        <select class="form-select form-select-sm" [(ngModel)]="bulkChanges.tipo">
+          <option value="">Método sin cambio</option><option value="comercial">Comercial</option><option value="jans">Jans</option>
+        </select>
+      </div>
+      <div class="col-md-3"><input class="form-control form-control-sm" type="number" [(ngModel)]="bulkChanges.valor_chatarra_kg" placeholder="Valor chatarra kg"></div>
+      <div class="col-md-3"><input class="form-control form-control-sm" type="number" [(ngModel)]="bulkChanges.peso_chatarra_kg" placeholder="Peso chatarra kg"></div>
+      <div class="col-md-3">
+        <select class="form-select form-select-sm" [(ngModel)]="bulkChanges.ubicacion">
+          <option value="">Ubicación sin cambio</option>
+          <option *ngFor="let ubicacion of ubicaciones" [value]="ubicacion">{{ ubicacion }}</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <select class="form-select form-select-sm" [(ngModel)]="bulkChanges.chatarra">
+          <option value="">Chatarra sin cambio</option><option value="Si">Sí</option><option value="No">No</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <select class="form-select form-select-sm" [(ngModel)]="bulkChanges.observaciones">
+          <option value="">Diagnóstico sin cambio</option><option value="Chatarra">Chatarra</option><option value="uso">Uso</option>
+        </select>
+      </div>
+      <div class="col-md-3 d-grid gap-2 d-md-flex">
+        <button class="btn btn-primary btn-sm flex-fill" (click)="aplicarEdicionMasiva()" [disabled]="bulkEditLoading || !haySeleccionExportable">Aplicar cambios</button>
+        <button class="btn btn-warning btn-sm flex-fill" (click)="generarZipEdicionMasiva()" [disabled]="bulkEditLoading || !haySeleccionExportable">Generar ZIP</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="table-responsive" *ngIf="avaluos.length">
   <table class="table table-striped table-bordered">
     <thead class="table-light">
       <tr>
+        <th>
+          <input type="checkbox" [checked]="todosVisiblesSeleccionados" (change)="toggleSeleccionPagina($event)">
+        </th>
         <th>Acciones</th>
         <th>Placa</th>
         <th>Solicitante</th>
@@ -43,6 +99,9 @@
     </thead>
     <tbody>
       <tr *ngFor="let a of avaluos">
+         <td>
+          <input type="checkbox" [checked]="estaSeleccionado(a.id)" [disabled]="selectionMode === 'allFiltered'" (change)="toggleSeleccion(a.id, $any($event.target).checked)">
+         </td>
          <td class="text-nowrap">
           <button class="btn btn-primary btn-sm me-1" *hasPermission="Permissions.EDIT_AVALUO" (click)="editar(a.id)">Gestionar</button>
           <button class="btn btn-warning btn-sm" (click)="irAImagenes(a.id)">
