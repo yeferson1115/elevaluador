@@ -1862,9 +1862,9 @@ public function reprocesarIndividual($id)
                     ]);
                     $requestSimulado->setUserResolver(fn () => auth()->user());
                     $this->update($requestSimulado, $avaluo);
-
+                    
                     $this->importDrivePhotos($avaluo->id, $this->value($row, 'enlace_fotos'));
-
+        
                     $pdfResponse = $this->generarPdf($avaluo->id, new Request(['action' => 'download']));
                     if ($pdfResponse->getStatusCode() >= 400) {
                         throw new \RuntimeException('No fue posible generar el PDF del avalúo');
@@ -2118,7 +2118,7 @@ public function reprocesarIndividual($id)
             return;
         }
 
-        $apiKey = (string) config('services.google.drive_api_key', '');
+        $apiKey = (string) 'AIzaSyBrOPQPtTW-31_s7WmKfcp9Aadw5hLDJtw';
         if (!$apiKey) {
             return;
         }
@@ -2131,10 +2131,15 @@ public function reprocesarIndividual($id)
             'key' => $apiKey,
             'pageSize' => 100,
         ]);
-
+ return response()->json([
+                'message' => 'No fue posible procesar filas del archivo 44',
+                'errores' => $response,
+            ], 500);
         if (!$response->successful()) {
+            dd('ddd');
             return;
         }
+       
 
         $files = collect($response->json('files', []))
             ->filter(fn ($file) => str_starts_with((string) ($file['mimeType'] ?? ''), 'image/'))
@@ -2177,7 +2182,7 @@ public function reprocesarIndividual($id)
 
     private function driveHttpOptions(): array
     {
-        $verifySsl = filter_var(config('services.google.drive_verify_ssl', true), FILTER_VALIDATE_BOOL);
+        $verifySsl = false;
 
         if ($verifySsl === false) {
             return ['verify' => false];
@@ -2188,7 +2193,7 @@ public function reprocesarIndividual($id)
             return ['verify' => $caBundle];
         }
 
-        return ['verify' => true];
+        return ['verify' => false];
     }
 
     private function extractDriveFolderId(string $url): ?string
