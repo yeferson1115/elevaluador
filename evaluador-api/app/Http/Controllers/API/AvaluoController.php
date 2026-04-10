@@ -2131,12 +2131,8 @@ public function reprocesarIndividual($id)
             'key' => $apiKey,
             'pageSize' => 100,
         ]);
- return response()->json([
-                'message' => 'No fue posible procesar filas del archivo 44',
-                'errores' => $response,
-            ], 500);
-        if (!$response->successful()) {
-            dd('ddd');
+ 
+        if (!$response->successful()) {            
             return;
         }
        
