@@ -7,6 +7,5 @@ export const environment = {
    /*production: true,
   apiUrl: 'https://api.elevaluador.com/api',
   url: 'https://api.elevaluador.com/'*/
-
   
 };
