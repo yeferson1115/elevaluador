@@ -2118,12 +2118,14 @@ public function reprocesarIndividual($id)
             return;
         }
 
-        $apiKey = 'AIzaSyBrOPQPtTW-31_s7WmKfcp9Aadw5hLDJtw';
+        $apiKey = (string) config('services.google.drive_api_key', '');
         if (!$apiKey) {
             return;
         }
 
-        $response = Http::get('https://www.googleapis.com/drive/v3/files', [
+        $httpClient = Http::withOptions($this->driveHttpOptions());
+
+        $response = $httpClient->get('https://www.googleapis.com/drive/v3/files', [
             'q' => "'{$folderId}' in parents and trashed = false",
             'fields' => 'files(id,name,mimeType)',
             'key' => $apiKey,
@@ -2145,7 +2147,7 @@ public function reprocesarIndividual($id)
         IngresoImage::where('avaluo_id', $avaluoId)->where('categoria', 'vehiculo')->delete();
         $orden = 1;
         foreach ($files as $file) {
-            $download = Http::timeout(30)->get("https://www.googleapis.com/drive/v3/files/{$file['id']}", [
+            $download = $httpClient->timeout(30)->get("https://www.googleapis.com/drive/v3/files/{$file['id']}", [
                 'alt' => 'media',
                 'key' => $apiKey,
             ]);
@@ -2170,6 +2172,23 @@ public function reprocesarIndividual($id)
                 'orden' => $orden++,
             ]);
         }
+    }
+
+
+    private function driveHttpOptions(): array
+    {
+        $verifySsl = filter_var(config('services.google.drive_verify_ssl', true), FILTER_VALIDATE_BOOL);
+
+        if ($verifySsl === false) {
+            return ['verify' => false];
+        }
+
+        $caBundle = (string) config('services.google.drive_ca_bundle', '');
+        if ($caBundle !== '' && is_file($caBundle)) {
+            return ['verify' => $caBundle];
+        }
+
+        return ['verify' => true];
     }
 
     private function extractDriveFolderId(string $url): ?string

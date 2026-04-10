@@ -20,6 +20,8 @@ return [
 
     'google' => [
         'drive_api_key' => env('GOOGLE_DRIVE_API_KEY'),
+        'drive_verify_ssl' => env('GOOGLE_DRIVE_VERIFY_SSL', true),
+        'drive_ca_bundle' => env('GOOGLE_DRIVE_CA_BUNDLE'),
     ],
 
     'ses' => [
