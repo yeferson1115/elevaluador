@@ -299,15 +299,22 @@
                   </select>
                 </div>
                 <div class="mt-4">
-                  <button 
-                    class="btn btn-warning w-100" 
+                  <button
+                    class="btn btn-primary w-100 mb-2"
                     (click)="aplicarEdicionMasiva()" 
                     [disabled]="bulkEditLoading || (!exportaTodosFiltrados && totalSeleccionados === 0)">
                     <i class="fa-solid fa-pen-to-square me-2"></i>
-                    {{ bulkEditLoading ? 'Aplicando cambios...' : 'Aplicar cambios + generar ZIP' }}
+                    {{ bulkEditLoading ? 'Aplicando cambios...' : 'Aplicar cambios' }}
+                  </button>
+                  <button
+                    class="btn btn-warning w-100"
+                    (click)="generarZipEdicionMasiva()"
+                    [disabled]="bulkEditLoading || (!exportaTodosFiltrados && totalSeleccionados === 0)">
+                    <i class="fa-solid fa-file-zipper me-2"></i>
+                    {{ bulkEditLoading ? 'Generando ZIP...' : 'Generar ZIP' }}
                   </button>
                   <small class="text-muted d-block mt-2 text-center">
-                    <i class="fa-solid fa-sync"></i> Se recalcularán valores y se generarán nuevos PDFs
+                    <i class="fa-solid fa-sync"></i> Primero aplica los cambios y genera el ZIP cuando lo necesites
                   </small>
                 </div>
               </div>

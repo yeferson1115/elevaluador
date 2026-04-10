@@ -1472,6 +1472,8 @@ public function reprocesarIndividual($id)
             'ids.*' => 'integer|exists:ingresos,id',
             'filtro' => 'nullable|string',
             'all_filtered' => 'nullable|boolean',
+            'generar_zip' => 'nullable|boolean',
+            'tipo_servicio' => 'nullable|string|in:Sec Bogota,Avaluo',
             'changes' => 'required|array|min:1',
             'changes.codigo_fasecolda' => 'nullable|string',
             'changes.valor_chatarra_kg' => 'nullable|numeric',
@@ -1492,11 +1494,13 @@ public function reprocesarIndividual($id)
         }
 
         $allFiltered = (bool) ($validated['all_filtered'] ?? false);
+        $generarZip = (bool) ($validated['generar_zip'] ?? true);
+        $tipoServicio = $validated['tipo_servicio'] ?? 'Sec Bogota';
         $ids = $validated['ids'] ?? [];
         $filtro = trim((string) ($validated['filtro'] ?? ''));
 
         $query = Ingreso::query()
-            ->where('tiposervicio', 'Sec Bogota')
+            ->where('tiposervicio', $tipoServicio)
             ->with(['avaluo', 'avaluo.clasificados', 'avaluo.corregidos', 'avaluo.limitaciones']);
 
         if ($allFiltered) {
@@ -1523,15 +1527,18 @@ public function reprocesarIndividual($id)
             return response()->json(['message' => 'No se encontraron registros para edición masiva'], 404);
         }
 
-        $zipFileName = 'avaluos-compact-edicion-masiva-' . now()->format('Y-m-d-H-i-s') . '.zip';
+        $zipFileName = 'avaluos-edicion-masiva-' . now()->format('Y-m-d-H-i-s') . '.zip';
         $zipPath = storage_path('app/temp/' . $zipFileName);
-        if (!file_exists(dirname($zipPath))) {
-            mkdir(dirname($zipPath), 0755, true);
-        }
+        $zip = null;
+        if ($generarZip) {
+            if (!file_exists(dirname($zipPath))) {
+                mkdir(dirname($zipPath), 0755, true);
+            }
 
-        $zip = new ZipArchive();
-        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
-            return response()->json(['message' => 'No fue posible crear el archivo ZIP de salida'], 500);
+            $zip = new ZipArchive();
+            if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+                return response()->json(['message' => 'No fue posible crear el archivo ZIP de salida'], 500);
+            }
         }
 
         $procesados = 0;
@@ -1636,10 +1643,12 @@ public function reprocesarIndividual($id)
                 $requestSimulado->setUserResolver(fn () => auth()->user());
 
                 $this->update($requestSimulado, $avaluo);
-                $pdfResponse = $this->generarPdf($avaluo->id, new Request(['action' => 'download']));
-                $pdfContent = $pdfResponse->getContent();
-                $pdfName = ($ingreso->placa ?: 'ingreso-' . $ingreso->id) . '.pdf';
-                $zip->addFromString($pdfName, $pdfContent);
+                if ($generarZip) {
+                    $pdfResponse = $this->generarPdf($avaluo->id, new Request(['action' => 'download']));
+                    $pdfContent = $pdfResponse->getContent();
+                    $pdfName = ($ingreso->placa ?: 'ingreso-' . $ingreso->id) . '.pdf';
+                    $zip->addFromString($pdfName, $pdfContent);
+                }
                 $procesados++;
             } catch (\Throwable $e) {
                 $errores[] = [
@@ -1650,17 +1659,29 @@ public function reprocesarIndividual($id)
             }
         }
 
-        $zip->close();
+        if ($generarZip) {
+            $zip->close();
+        }
 
         if ($procesados === 0) {
-            @unlink($zipPath);
+            if ($generarZip) {
+                @unlink($zipPath);
+            }
             return response()->json([
                 'message' => 'No fue posible procesar registros',
                 'errores' => $errores,
             ], 500);
         }
 
-        return response()->download($zipPath, $zipFileName)->deleteFileAfterSend(true);
+        if ($generarZip) {
+            return response()->download($zipPath, $zipFileName)->deleteFileAfterSend(true);
+        }
+
+        return response()->json([
+            'message' => 'Edición masiva aplicada correctamente',
+            'procesados' => $procesados,
+            'errores' => $errores,
+        ]);
     }
 
     public function bulkImportCompact(Request $request)

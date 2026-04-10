@@ -23,11 +23,34 @@ export class AvaluoListComponent {
   Permissions = Permissions;
   filtro = '';
   loading = false;
+  bulkEditLoading = false;
   error: string | null = null;
 
   avaluos: Ingreso[] = [];
   currentPage = 1;
   lastPage = 1;
+  selectedIds = new Set<number>();
+  selectionMode: 'manual' | 'allFiltered' = 'manual';
+  ubicaciones: string[] = [
+    'PATIOS',
+    'ALAMOS 200',
+    'ALAMOS 201',
+    'FONTIBÓN 1',
+    'FONTIBÓN 2',
+    'PATIO SUR',
+    'PATIO 50',
+    'SUBA',
+    'TRANSITORIO'
+  ];
+  bulkChanges: any = {
+    codigo_fasecolda: '',
+    valor_chatarra_kg: null,
+    ubicacion: '',
+    tipo: '',
+    chatarra: '',
+    peso_chatarra_kg: null,
+    observaciones: '',
+  };
 
   constructor(private service: IngresoService, private router: Router,private alert: AlertService) {
     this.cargarAvaluos();
@@ -69,7 +92,56 @@ export class AvaluoListComponent {
   }
 
   onBuscar(): void {
+    this.limpiarSeleccion();
     this.cargarAvaluos(1);
+  }
+
+  toggleSeleccion(id: number | undefined, checked: boolean): void {
+    if (!id || this.selectionMode === 'allFiltered') return;
+    checked ? this.selectedIds.add(id) : this.selectedIds.delete(id);
+  }
+
+  toggleSeleccionPagina(event: Event): void {
+    if (this.selectionMode === 'allFiltered') return;
+    const checked = (event.target as HTMLInputElement).checked;
+    this.avaluos.forEach((avaluo) => {
+      if (!avaluo.id) return;
+      checked ? this.selectedIds.add(avaluo.id) : this.selectedIds.delete(avaluo.id);
+    });
+  }
+
+  seleccionarVisibles(): void {
+    this.selectionMode = 'manual';
+    this.avaluos.forEach((avaluo) => avaluo.id && this.selectedIds.add(avaluo.id));
+  }
+
+  seleccionarTodosFiltrados(): void {
+    this.selectionMode = 'allFiltered';
+    this.selectedIds.clear();
+  }
+
+  limpiarSeleccion(): void {
+    this.selectionMode = 'manual';
+    this.selectedIds.clear();
+  }
+
+  estaSeleccionado(id: number | undefined): boolean {
+    if (!id) return false;
+    return this.selectionMode === 'allFiltered' || this.selectedIds.has(id);
+  }
+
+  get totalSeleccionados(): number {
+    return this.selectedIds.size;
+  }
+
+  get todosVisiblesSeleccionados(): boolean {
+    const idsPagina = this.avaluos.map(a => a.id).filter((id): id is number => !!id);
+    return this.selectionMode === 'allFiltered'
+      || (idsPagina.length > 0 && idsPagina.every((id) => this.selectedIds.has(id)));
+  }
+
+  get haySeleccionExportable(): boolean {
+    return this.selectionMode === 'allFiltered' || this.totalSeleccionados > 0;
   }
 
   irAImagenes(id: number): void {
@@ -162,6 +234,61 @@ verPdf(id: number | null | undefined, action: 'view' | 'download' = 'view'): voi
     a.click();
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
+  }
+
+  aplicarEdicionMasiva(): void {
+    this.ejecutarEdicionMasiva(false);
+  }
+
+  generarZipEdicionMasiva(): void {
+    this.ejecutarEdicionMasiva(true);
+  }
+
+  private ejecutarEdicionMasiva(generarZip: boolean): void {
+    if (!this.haySeleccionExportable) {
+      this.alert.warning('Selecciona al menos un registro (o todos los filtrados) para edición masiva.');
+      return;
+    }
+
+    const changes: Record<string, any> = {};
+    Object.entries(this.bulkChanges).forEach(([key, value]) => {
+      if (value !== null && value !== undefined && `${value}`.trim() !== '') {
+        changes[key] = value;
+      }
+    });
+
+    if (Object.keys(changes).length === 0) {
+      this.alert.warning('Debes diligenciar al menos un campo para aplicar en bloque.');
+      return;
+    }
+
+    this.bulkEditLoading = true;
+    const ids = this.selectionMode === 'allFiltered' ? [] : Array.from(this.selectedIds);
+
+    this.service.bulkUpdateCompact({
+      ids,
+      filtro: this.filtro,
+      all_filtered: this.selectionMode === 'allFiltered',
+      changes,
+      generar_zip: generarZip,
+      tipo_servicio: 'Avaluo'
+    }).subscribe({
+      next: (response: Blob | any) => {
+        if (generarZip) {
+          const nombre = `avaluos-pro-edicion-masiva-${new Date().toISOString().slice(0, 10)}.zip`;
+          this.descargarArchivo(response as Blob, nombre);
+          this.alert.success('Edición masiva aplicada. Se descargó el ZIP con los PDFs actualizados.');
+        } else {
+          this.alert.success(response?.message || 'Edición masiva aplicada correctamente.');
+        }
+        this.bulkEditLoading = false;
+        this.cargarAvaluos(this.currentPage);
+      },
+      error: () => {
+        this.alert.error('No fue posible completar la edición masiva.');
+        this.bulkEditLoading = false;
+      }
+    });
   }
 
 }

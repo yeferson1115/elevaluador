@@ -54,6 +54,7 @@ export class IngresoImagenesComponent implements OnInit {
   ];
   categorias: Categoria[] = this.crearCategorias(this.categoriasBase);
   imagenSeleccionada: string | null = null;
+  placaVisible = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -84,6 +85,7 @@ export class IngresoImagenesComponent implements OnInit {
     this.service.getImagenes(this.id).subscribe({
       next: (response: GetImagenesResponse) => {
         this.infoIngreso = response.ingreso;
+        this.placaVisible = this.obtenerPlacaVisible(response.ingreso);
         this.configurarCategorias();
 
         this.categorias.forEach(cat => cat.imagenes = []);
@@ -107,6 +109,15 @@ export class IngresoImagenesComponent implements OnInit {
       },
       error: (err) => this.alertService.error('Error cargando imágenes', err.message)
     });
+  }
+
+  private obtenerPlacaVisible(ingreso: any): string {
+    return (
+      ingreso?.placa ||
+      ingreso?.datosGenerales?.placa ||
+      ingreso?.datos_generales?.placa ||
+      'SIN PLACA'
+    );
   }
 
   private configurarCategorias(): void {

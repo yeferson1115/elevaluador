@@ -347,6 +347,14 @@ exportarCertificadosZip(): void {
 }
 
   aplicarEdicionMasiva(): void {
+    this.ejecutarEdicionMasiva(false);
+  }
+
+  generarZipEdicionMasiva(): void {
+    this.ejecutarEdicionMasiva(true);
+  }
+
+  private ejecutarEdicionMasiva(generarZip: boolean): void {
   if (!this.haySeleccionExportable) {
     this.alert.warning('Selecciona al menos un registro (o todos los filtrados) para edición masiva.');
     return;
@@ -371,12 +379,18 @@ exportarCertificadosZip(): void {
     ids,
     filtro: this.filtro,
     all_filtered: this.exportaTodosFiltrados,
-    changes
+    changes,
+    generar_zip: generarZip,
+    tipo_servicio: 'Sec Bogota'
   }).subscribe({
-    next: (zipBlob: Blob) => {
-      const nombre = `avaluos-compact-edicion-masiva-${new Date().toISOString().slice(0, 10)}.zip`;
-      this.descargarArchivo(zipBlob, nombre);
-      this.alert.success('Edición masiva aplicada. Se descargó el ZIP con los PDFs actualizados.');
+    next: (response: Blob | any) => {
+      if (generarZip) {
+        const nombre = `avaluos-compact-edicion-masiva-${new Date().toISOString().slice(0, 10)}.zip`;
+        this.descargarArchivo(response as Blob, nombre);
+        this.alert.success('Edición masiva aplicada. Se descargó el ZIP con los PDFs actualizados.');
+      } else {
+        this.alert.success(response?.message || 'Edición masiva aplicada correctamente.');
+      }
       this.bulkEditLoading = false;
       this.cargarAvaluos(this.currentPage);
     },
@@ -386,7 +400,7 @@ exportarCertificadosZip(): void {
       this.bulkEditLoading = false;
     }
   });
-}
+  }
 
   onBulkCompactFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;

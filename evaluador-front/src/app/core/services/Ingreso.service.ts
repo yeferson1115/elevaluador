@@ -255,10 +255,17 @@ import(file: File): Observable<any> {
     filtro: string;
     all_filtered: boolean;
     changes: Record<string, any>;
-  }): Observable<Blob> {
-    return this.http.post(`${this.baseUrl}/avaluos/bulk-update-compact`, payload, {
-      responseType: 'blob'
-    });
+    generar_zip?: boolean;
+    tipo_servicio?: string;
+  }): Observable<any> {
+    const generarZip = payload.generar_zip ?? true;
+    if (generarZip) {
+      return this.http.post(`${this.baseUrl}/avaluos/bulk-update-compact`, payload, {
+        responseType: 'blob'
+      });
+    }
+
+    return this.http.post(`${this.baseUrl}/avaluos/bulk-update-compact`, payload);
   }
 
   bulkImportCompact(file: File, metodo: 'comercial' | 'jans'): Observable<Blob> {
