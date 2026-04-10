@@ -372,7 +372,7 @@ calcularPesoMermado(pesoVacio: number | null): void {
       numero_serie: [{ value: ''}],
       numero_motor: [{ value: '' }],
       numeroVin: ['', Validators.required],
-      tipo_servicio_vehiculo: ['', Validators.required],
+      tipo_servicio_vehiculo: [{ value: 'Particular'}],
       tipo_carroceria: [{ value: '' }],
       fecha_inspeccion: [{ value: '' }],
       porc_reposicion: [{ value: '' }],
@@ -635,6 +635,7 @@ private fusionarConValoresPorDefecto(avaluoData: any): any {
     llave_estado: 'No Presenta',
     vidrios_estado: 'No Aplica',
     
+    
     // Valores numéricos por defecto (0)
     latoneria_valor: 0,
     valor_pintura: 0,
@@ -694,56 +695,81 @@ private fusionarConValoresPorDefecto(avaluoData: any): any {
   return resultado;
 }
 
-private fusionarConValoresPorDefectoIngreso(avaluoData: any): any {
-  // Obtener los valores por defecto del formulario para avaluo
-  const valoresPorDefecto = {
-    // Estados con sus valores por defecto
-     capacidad_ton: '0',
-      numero_pasajeros: '2',
-      numero_serie:'',
-      estado_registro_runt:'',
-      numero_motor:'',
-      numero_chasis:'',
-      tipo_carroceria:'',
-      placa:'',
-      fecha_solicitud:'',
-      fecha_inspeccion:'',
-      fecha_matricula:'',
-      marca:'',
-      linea:'',
-      clase:'',
-      color:'',
-      cilindraje:'',
-      modelo:'',
-      kilometraje:'0',
-      cantidad_ejes:'2',
-      peso_bruto:'',
-      peso_mermado:'',
-      numeroVin:'',
-      tipo_servicio_vehiculo:'Particular',
-      id:'',
-      caja_cambios:'Manual'
+fusionarConValoresPorDefectoIngreso(avaluoData: any): any {
 
+  const valoresPorDefecto = {
+    capacidad_ton: '0',
+    numero_pasajeros: '2',
+    numero_serie:'',
+    estado_registro_runt:'',
+    numero_motor:'',
+    numero_chasis:'',
+    tipo_carroceria:'',
+    placa:'',
+    fecha_solicitud:'',
+    fecha_inspeccion:'',
+    fecha_matricula:'',
+    marca:'',
+    linea:'',
+    clase:'',
+    color:'',
+    cilindraje:'',
+    modelo:'',
+    kilometraje:'0',
+    cantidad_ejes:'2',
+    peso_bruto:'',
+    peso_mermado:'',
+    numeroVin:'',
+    tipo_servicio_vehiculo:'Particular',
+    id:'',
+    caja_cambios:'Manual'
   };
 
   const resultado: any = {};
 
-  // Para cada campo en valoresPorDefecto
   Object.keys(valoresPorDefecto).forEach(campo => {
-    // Si el backend tiene un valor para este campo Y no es null/undefined
-    if (avaluoData && avaluoData[campo] !== null && avaluoData[campo] !== undefined) {
-      // Usar el valor del backend
-      resultado[campo] = avaluoData[campo];
-      console.log(`Campo ${campo}: usando valor del backend =`, avaluoData[campo]);
-    } else {
-      // Usar el valor por defecto
-      resultado[campo] = valoresPorDefecto[campo as keyof typeof valoresPorDefecto];
-      console.log(`Campo ${campo}: usando valor por defecto =`, valoresPorDefecto[campo as keyof typeof valoresPorDefecto]);
-    }
-  });
 
-  // Incluir otros campos que no están en valoresPorDefecto pero vienen del backend
- 
+    let valor = avaluoData?.[campo];
+
+    // 🔥 Normalización especial para tipo_servicio_vehiculo
+    if (campo === 'tipo_servicio_vehiculo') {
+
+      if (valor && typeof valor === 'object' && valor.value) {
+        valor = valor.value;
+      }
+
+      if (typeof valor === 'string') {
+        valor = valor.toLowerCase();
+        valor = valor.charAt(0).toUpperCase() + valor.slice(1);
+      }
+
+      resultado[campo] = valor || valoresPorDefecto[campo];
+      return;
+    }
+
+    if (campo === 'caja_cambios') {
+
+      if (valor && typeof valor === 'object' && valor.value) {
+        valor = valor.value;
+      }
+
+      if (typeof valor === 'string') {
+        valor = valor.toLowerCase();
+        valor = valor.charAt(0).toUpperCase() + valor.slice(1);
+      }
+
+      resultado[campo] = valor || valoresPorDefecto[campo];
+      return;
+    }
+
+    // Lógica normal para otros campos
+    if (valor !== null && valor !== undefined) {
+      resultado[campo] = valor;
+    } else {
+      resultado[campo] = valoresPorDefecto[campo as keyof typeof valoresPorDefecto];
+    }
+
+  });
 
   return resultado;
 }

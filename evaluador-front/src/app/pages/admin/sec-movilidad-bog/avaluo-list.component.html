@@ -99,7 +99,7 @@
                       style="display: none;"
                       (change)="onBulkCompactFileSelected($event)"
                       accept=".xlsx,.xls,.csv"
-                    />
+                    />                    
                     <button 
                       class="btn btn-success flex-grow-1" 
                       (click)="compactBulkInput.click()" 
@@ -108,6 +108,9 @@
                       {{ bulkImportLoading ? 'Importando...' : 'Importar y generar ZIP' }}
                     </button>
                   </div>
+                  <a class="btn btn-outline-secondary" href="assets/basepdfbog.xlsx" download>
+                      <i class="fa-solid fa-download me-2"></i>Descargar plantilla
+                    </a>
                   <small class="text-muted">
                     <i class="fa-solid fa-magic"></i> Aplica el método seleccionado y genera PDFs automáticamente
                   </small>

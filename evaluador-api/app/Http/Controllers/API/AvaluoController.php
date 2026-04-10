@@ -2118,7 +2118,7 @@ public function reprocesarIndividual($id)
             return;
         }
 
-        $apiKey = config('services.google.drive_api_key');
+        $apiKey = 'AIzaSyBrOPQPtTW-31_s7WmKfcp9Aadw5hLDJtw';
         if (!$apiKey) {
             return;
         }
