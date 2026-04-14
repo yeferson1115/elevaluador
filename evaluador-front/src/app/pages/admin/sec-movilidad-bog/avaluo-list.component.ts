@@ -71,9 +71,9 @@ export class AvaluoListComponent {
     console.log(Permissions.VIEW_INGRESO);
   }
 
-  cargarAvaluos(page: number = 1): void {
+  cargarAvaluos(page: number = 1, forceRefresh: boolean = false): void {
     this.loading = true;
-    this.service.getAvaluos(page, this.filtro, 'Sec Bogota').subscribe({
+    this.service.getAvaluos(page, this.filtro, 'Sec Bogota', forceRefresh).subscribe({
       next: (response) => {
         this.avaluos = response.data;
         this.sincronizarSeleccionPagina();
@@ -106,7 +106,7 @@ export class AvaluoListComponent {
     this.avaluoService.actualizarCierre(avaluoId, nuevoEstado).subscribe({
       next: (response) => {
         this.alert.success(response.message);
-        this.cargarAvaluos(this.currentPage);
+        this.cargarAvaluos(this.currentPage, true);
       },
       error: () => {
         this.alert.error('No se pudo actualizar el estado de cierre del avalúo.');
@@ -392,7 +392,7 @@ exportarCertificadosZip(): void {
         this.alert.success(response?.message || 'Edición masiva aplicada correctamente.');
       }
       this.bulkEditLoading = false;
-      this.cargarAvaluos(this.currentPage);
+      this.cargarAvaluos(this.currentPage, true);
     },
     error: (error) => {
       console.error('Error en edición masiva:', error);
