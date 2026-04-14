@@ -584,14 +584,14 @@ exportarCertificadosZip(): void {
     if (!avaluo) {
       return 0;
     }
-
-    const valorComercial = this.toNumber(avaluo.valor_razonable) * this.toNumber(avaluo.factor_demerito, 1);
-    const gastos = this.calcularValorReparaciones(avaluo);
-
+    const factor = avaluo.factor_demerito ?? 1;
+    const valorComercial = this.toNumber(avaluo.valor_razonable) * this.toNumber(factor);
+    const gastos = this.calcularValorReparaciones(avaluo);  
     if (gastos > 0 && valorComercial > 0) {
       const indice = Math.round((gastos / valorComercial) * 10000) / 10000;
       return indice * 100;
     }
+
 
     return 0;
   }
