@@ -390,14 +390,15 @@
           />
         </th>
         <th>Acciones</th>
-        <th>Tipo</th>
-        <th>Placa</th>        
-        <th>Ubicación</th>
-        <th>Fecha solicitud</th>
+        <th>Placa</th>
         <th>Marca</th>
         <th>Línea</th>
         <th>Modelo</th>
         <th>Avaluador</th>
+        <th>Ubicación</th>
+        <th>Valor Razonable</th>
+        <th>Valor reparaciones</th>
+        <th>Índice de reparabilidad</th>
         <th>pdf</th>
       </tr>
     </thead>
@@ -427,14 +428,15 @@
             <i class="fa-solid fa-camera"></i> Imágenes
           </button>
         </td>
-        <td>{{ a.datosGenerales?.tiposervicio }}</td>
-        <td>{{ a.datosGenerales?.placa }}</td>       
-        <td>{{ a.datosGenerales?.ubicacionActivo }}</td>
-        <td>{{ a.datosGenerales?.fechaSolicitud | date:'yyyy-MM-dd' }}</td>
+        <td>{{ a.datosGenerales?.placa }}</td>
         <td>{{ a.informacionBien?.marca }}</td>
         <td>{{ a.informacionBien?.linea }}</td>
         <td>{{ a.informacionBien?.modelo }}</td>
-        <td>{{ a.avaluo.evaluador }}</td>
+        <td>{{ a.avaluo?.evaluador || 'N/A' }}</td>
+        <td>{{ a.avaluo?.ubicacion || a.datosGenerales?.ubicacionActivo || 'N/A' }}</td>
+        <td>{{ (a.avaluo?.valor_razonable ?? 0) | number:'1.0-0' }}</td>
+        <td>{{ (a.avaluo?.valor_reparaciones ?? 0) | number:'1.0-0' }}</td>
+        <td>{{ (a.avaluo?.indice_responsabilidad_minimo ?? 0) | number:'1.0-4' }}</td>
         <td>
   <ng-container *ngIf="a.avaluo?.id && a.avaluo.file!=null">
     <!-- Botón para ver -->
