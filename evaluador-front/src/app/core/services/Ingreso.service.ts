@@ -23,13 +23,14 @@ export class IngresoService {
   /**
    * Obtener avalúos paginados con búsqueda
    */
-getAvaluos(page = 1, filtro = '', tipo: string = ''): Observable<any> {
+getAvaluos(page = 1, filtro = '', tipo: string = '', forceRefresh = false): Observable<any> {
   return this.http
     .get<any>(`${this.baseUrl}/ingreso`, {
       params: {
         page: page.toString(),
         search: filtro,
-        ...(tipo ? { tipo } : {}) // 👈 solo lo agrega si viene
+        ...(tipo ? { tipo } : {}),
+        ...(forceRefresh ? { _ts: Date.now().toString() } : {})
       }
     })
     .pipe(
