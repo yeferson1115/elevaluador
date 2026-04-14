@@ -435,8 +435,8 @@
         <td>{{ a.avaluo?.evaluador || 'N/A' }}</td>
         <td>{{ a.avaluo?.ubicacion || a.datosGenerales?.ubicacionActivo || 'N/A' }}</td>
         <td>{{ (a.avaluo?.valor_razonable ?? 0) | number:'1.0-0' }}</td>
-        <td>{{ (a.avaluo?.valor_reparaciones ?? 0) | number:'1.0-0' }}</td>
-        <td>{{ (a.avaluo?.indice_responsabilidad_minimo ?? 0) | number:'1.0-4' }}</td>
+        <td>{{ calcularValorReparaciones(a.avaluo) | number:'1.0-0' }}</td>
+        <td>{{ calcularIndiceReparabilidad(a.avaluo) | number:'1.1-1' }}%</td>
         <td>
   <ng-container *ngIf="a.avaluo?.id && a.avaluo.file!=null">
     <!-- Botón para ver -->

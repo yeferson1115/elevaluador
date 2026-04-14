@@ -546,6 +546,56 @@ exportarCertificadosZip(): void {
     return paginas;
   }
 
+  private toNumber(value: unknown, fallback = 0): number {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  }
+
+  calcularValorReparaciones(avaluo: any): number {
+    if (!avaluo) {
+      return 0;
+    }
+
+    const totalComponentes =
+      this.toNumber(avaluo.latoneria_valor) +
+      this.toNumber(avaluo.valor_pintura) +
+      this.toNumber(avaluo.motor_valor) +
+      this.toNumber(avaluo.chasis_valor) +
+      this.toNumber(avaluo.tapiceria_valor) +
+      this.toNumber(avaluo.refrigeracion_valor) +
+      this.toNumber(avaluo.electrico_valor) +
+      this.toNumber(avaluo.valor_llantas) +
+      this.toNumber(avaluo.transmision_valor) +
+      this.toNumber(avaluo.vidrios_valor) +
+      this.toNumber(avaluo.tanque_valor) +
+      this.toNumber(avaluo.bateria_valor) +
+      this.toNumber(avaluo.frenos_valor) +
+      this.toNumber(avaluo.llave_valor);
+
+    return (
+      this.toNumber(avaluo.valor_faltantes) +
+      this.toNumber(avaluo.valor_RTM) +
+      this.toNumber(avaluo.valor_SOAT) +
+      totalComponentes
+    );
+  }
+
+  calcularIndiceReparabilidad(avaluo: any): number {
+    if (!avaluo) {
+      return 0;
+    }
+
+    const valorComercial = this.toNumber(avaluo.valor_razonable) * this.toNumber(avaluo.factor_demerito, 1);
+    const gastos = this.calcularValorReparaciones(avaluo);
+
+    if (gastos > 0 && valorComercial > 0) {
+      const indice = Math.round((gastos / valorComercial) * 10000) / 10000;
+      return indice * 100;
+    }
+
+    return 0;
+  }
+
 
 
 }
