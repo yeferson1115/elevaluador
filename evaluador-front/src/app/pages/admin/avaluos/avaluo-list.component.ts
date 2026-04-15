@@ -46,6 +46,8 @@ export class AvaluoListComponent {
     codigo_fasecolda: '',
     valor_chatarra_kg: null,
     ubicacion: '',
+    cilindraje: null,
+    fecha_inspeccion: '',
     tipo: '',
     chatarra: '',
     peso_chatarra_kg: null,

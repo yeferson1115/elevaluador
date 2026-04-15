@@ -49,10 +49,13 @@ class AvaluoController extends Controller
         'codigo_fasecolda',
         'valor_chatarra_kg',
         'ubicacion',
+        'evaluador',
         'tipo',
         'chatarra',
         'peso_chatarra_kg',
         'observaciones',
+        'cilindraje',
+        'fecha_inspeccion',
     ];
     // Obtener listado paginado con búsqueda
     public function index(Request $request)
@@ -1480,10 +1483,13 @@ public function reprocesarIndividual($id)
             'changes.codigo_fasecolda' => 'nullable|string',
             'changes.valor_chatarra_kg' => 'nullable|numeric',
             'changes.ubicacion' => 'nullable|string',
+            'changes.evaluador' => 'nullable|string',
             'changes.tipo' => 'nullable|string',
             'changes.chatarra' => 'nullable|string|in:Si,No',
             'changes.peso_chatarra_kg' => 'nullable|numeric',
             'changes.observaciones' => 'nullable|string',
+            'changes.cilindraje' => 'nullable|integer|min:0',
+            'changes.fecha_inspeccion' => 'nullable|date',
         ]);
 
         $changes = collect($validated['changes'])
@@ -1583,10 +1589,15 @@ public function reprocesarIndividual($id)
 
                 $changesToApply = $this->aplicarEstadosPorDefecto($changesToApply, $avaluo->toArray());
 
-                if (!empty($ingreso->clase) && !empty($ingreso->cilindraje)) {
+                $cilindrajeOperacion = array_key_exists('cilindraje', $changesToApply)
+                    ? (int) $changesToApply['cilindraje']
+                    : $ingreso->cilindraje;
+                $fechaInspeccionOperacion = $changesToApply['fecha_inspeccion'] ?? $ingreso->fecha_inspeccion;
+
+                if (!empty($ingreso->clase) && !empty($cilindrajeOperacion)) {
                     $repuesto = ValoresRepuesto::where('tipo', $ingreso->clase)
-                        ->where('cilindraje_from', '<=', $ingreso->cilindraje)
-                        ->where('cilindraje_to', '>=', $ingreso->cilindraje)
+                        ->where('cilindraje_from', '<=', $cilindrajeOperacion)
+                        ->where('cilindraje_to', '>=', $cilindrajeOperacion)
                         ->where('especial', false)
                         ->first();
 
@@ -1619,7 +1630,7 @@ public function reprocesarIndividual($id)
                     'clase' => $ingreso->clase,
                     'tipo_carroceria' => $ingreso->tipo_carroceria,
                     'color' => $ingreso->color,
-                    'cilindraje' => $ingreso->cilindraje,
+                    'cilindraje' => $cilindrajeOperacion,
                     'modelo' => $ingreso->modelo,
                     'kilometraje' => $ingreso->kilometraje,
                     'caja_cambios' => $ingreso->caja_cambios,
@@ -1634,7 +1645,7 @@ public function reprocesarIndividual($id)
                     'numero_pasajeros' => $ingreso->numero_pasajeros,
                     'estado_registro_runt' => $ingreso->estado_registro_runt,
                     'capacidad_ton' => $ingreso->capacidad_ton,
-                    'fecha_inspeccion' => $ingreso->fecha_inspeccion,
+                    'fecha_inspeccion' => $fechaInspeccionOperacion,
                     'fecha_solicitud' => $ingreso->fecha_solicitud,
                     'avaluo' => array_merge(
                         $avaluo->toArray(),
