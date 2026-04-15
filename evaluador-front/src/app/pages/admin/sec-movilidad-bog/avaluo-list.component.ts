@@ -50,10 +50,20 @@ export class AvaluoListComponent {
     'SUBA',
     'TRANSITORIO'
   ];
+  evaluadores: string[] = [
+    'Ivan Mora',
+    'Jhonny Rodríguez',
+    'Mauricio Garcia',
+    'Lenin Ariza',
+    'German Galvis'
+  ];
   bulkChanges: any = {
     codigo_fasecolda: '',
     valor_chatarra_kg: null,
     ubicacion: '',
+    evaluador: '',
+    cilindraje: null,
+    fecha_inspeccion: '',
     tipo: '',
     chatarra: '',
     peso_chatarra_kg: null,
