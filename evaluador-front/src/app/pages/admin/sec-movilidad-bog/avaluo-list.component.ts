@@ -268,6 +268,10 @@ export class AvaluoListComponent {
   this.router.navigate([`/admin/ingresos/${id}/imagenes`]);
 }
 
+  tieneImagenes(avaluo: Ingreso): boolean {
+    return (avaluo.imagesCount ?? 0) > 0;
+  }
+
 onFileSelected(event: Event): void {
   const input = event.target as HTMLInputElement;
   if (!input.files?.length) return;

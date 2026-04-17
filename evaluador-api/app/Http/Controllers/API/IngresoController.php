@@ -33,7 +33,8 @@ public function index(Request $request)
     
             
     $query = Ingreso::query()
-        ->select('ingresos.*');
+        ->select('ingresos.*')
+        ->withCount('images');
 
     // Si el usuario NO es admin, filtrar por user_id en avaluo o inspeccion
     if (!auth()->user()->hasRole('admin') && !auth()->user()->hasRole('Super Administrador')) {

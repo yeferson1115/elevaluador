@@ -164,6 +164,10 @@ export class AvaluoListComponent {
   this.router.navigate([`/admin/ingresos/${id}/imagenes`]);
 }
 
+  tieneImagenes(avaluo: Ingreso): boolean {
+    return (avaluo.imagesCount ?? 0) > 0;
+  }
+
  getDocumentoUrl(ruta: string | null): string {
     if (!ruta) {
       return ''; // o una URL por defecto
