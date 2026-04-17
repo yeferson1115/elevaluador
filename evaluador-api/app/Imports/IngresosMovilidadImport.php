@@ -40,6 +40,7 @@ class IngresosMovilidadImport implements ToCollection, WithHeadingRow
                     'estado_registro_runt' => $row['estado_runt'] ?? null,
                     'organismo_transito' => $row['organismo_de_transito'] ?? null,
                     'fecha_ingreso' => $this->parseExcelDate($row['fecha_ingreso'] ?? null),
+                    'caja_cambios' => $row['caja_de_cambios'] ?? ($row['caja'] ?? null),
                     'estado' => 'En Inspección',
                 ];
 
