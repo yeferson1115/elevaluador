@@ -59,6 +59,7 @@ export class AvaluoListComponent {
     codigo_fasecolda: '',
     valor_chatarra_kg: null,
     ubicacion: '',
+    caja_cambios: '',
     tipo_vehiculo: '',
     es_repuesto_especial: null,
     cilindraje: null,

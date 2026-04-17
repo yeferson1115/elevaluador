@@ -75,6 +75,7 @@ export class AvaluoListComponent {
     valor_chatarra_kg: null,
     ubicacion: '',
     evaluador: '',
+    caja_cambios: '',
     tipo_vehiculo: '',
     es_repuesto_especial: null,
     cilindraje: null,
