@@ -43,6 +43,8 @@ class Avaluo extends Model
         'registro_maquinaria',
         'gps',
         'fecha_inspeccion',
+        'fecha_inmovilizacion',
+        'dias_inmovilizacion',
         'file',
         'avaluador',
         'user_id',

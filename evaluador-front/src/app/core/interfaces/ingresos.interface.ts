@@ -158,6 +158,8 @@ export interface Avaluo {
   file:string|null; 
   evaluador :string|null; 
   ubicacion :string|null; 
+  fecha_inmovilizacion?: string | null;
+  dias_inmovilizacion?: number | null;
   cerrado?: boolean | null;
 }
 
