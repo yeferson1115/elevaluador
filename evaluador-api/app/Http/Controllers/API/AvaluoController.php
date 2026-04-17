@@ -1659,7 +1659,9 @@ public function reprocesarIndividual($id)
                 if ($generarZip) {
                     $pdfResponse = $this->generarPdf($avaluo->id, new Request(['action' => 'download']));
                     $pdfContent = $pdfResponse->getContent();
-                    $pdfName = ($ingreso->placa ?: 'ingreso-' . $ingreso->id) . '.pdf';
+                    $prefijoNombre = $ingreso->placa ?: 'ingreso-' . $ingreso->id;
+                    $consecutivoNombre = ($avaluo->inicial ?? '') . ($avaluo->consecutivo ?? '');
+                    $pdfName = $prefijoNombre . ($consecutivoNombre !== '' ? '-' . $consecutivoNombre : '') . '.pdf';
                     $zip->addFromString($pdfName, $pdfContent);
                 }
                 $procesados++;
