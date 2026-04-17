@@ -455,8 +455,14 @@
             {{ a.avaluo?.cerrado ? 'Abrir' : 'Cerrar' }}
           </button>
           <button class="btn btn-danger btn-sm me-1" *hasPermission="Permissions.DELETE_INGRESO" (click)="eliminar(a.id)">Eliminar</button>
-          <button class="btn btn-warning btn-sm" (click)="irAImagenes(a.id)">
-            <i class="fa-solid fa-camera"></i> Imágenes
+          <button
+            class="btn btn-sm btn-imagenes"
+            [class.btn-imagenes--loaded]="tieneImagenes(a)"
+            (click)="irAImagenes(a.id)"
+            [title]="tieneImagenes(a) ? 'Este avalúo ya tiene imágenes cargadas' : 'Este avalúo aún no tiene imágenes cargadas'"
+          >
+            <i class="fa-solid" [class.fa-circle-check]="tieneImagenes(a)" [class.fa-camera]="!tieneImagenes(a)"></i>
+            Imágenes
           </button>
         </td>
         <td>{{ a.datosGenerales?.placa }}</td>

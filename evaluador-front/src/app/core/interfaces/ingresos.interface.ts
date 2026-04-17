@@ -108,6 +108,7 @@ export interface HistoricoPropietario {
 
 export interface Ingreso {
   id: number;
+  imagesCount?: number;
   datosGenerales: DatosGenerales;
   informacionBien: InformacionBien;
   estadoVehiculoRunt: EstadoVehiculoRunt;
