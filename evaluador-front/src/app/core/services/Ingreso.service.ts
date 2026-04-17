@@ -82,6 +82,7 @@ getAvaluos(page = 1, filtro = '', tipo: string = '', forceRefresh = false): Obse
   private mapToAvaluo(item: any): Ingreso {
     return {
       id: item.id,
+      imagesCount: item.images_count ?? 0,
       datosGenerales: {
         tiposervicio: item.tiposervicio,
         solicitante: item.solicitante,

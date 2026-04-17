@@ -120,3 +120,24 @@
 .accordion-body {
   animation: fadeInUp 0.3s ease-out;
 }
+
+.btn-imagenes {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff;
+  border: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.btn-imagenes:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(217, 119, 6, 0.35);
+  filter: brightness(1.02);
+}
+
+.btn-imagenes--loaded {
+  background: linear-gradient(135deg, #16a34a, #15803d);
+}
+
+.btn-imagenes--loaded:hover {
+  box-shadow: 0 6px 14px rgba(21, 128, 61, 0.35);
+}
