@@ -57,11 +57,25 @@ export class AvaluoListComponent {
     'Lenin Ariza',
     'German Galvis'
   ];
+  tiposVehiculo: string[] = [
+    'AUTOMOVIL',
+    'BUS',
+    'BUSETA',
+    'CAMION',
+    'CAMION MAS 6 TON',
+    'CAMIONETA',
+    'CAMPERO',
+    'MICROBUS',
+    'MOTOCARRO',
+    'MOTOCICLETA'
+  ];
   bulkChanges: any = {
     codigo_fasecolda: '',
     valor_chatarra_kg: null,
     ubicacion: '',
     evaluador: '',
+    tipo_vehiculo: '',
+    es_repuesto_especial: null,
     cilindraje: null,
     fecha_inspeccion: '',
     tipo: '',
@@ -399,14 +413,19 @@ exportarCertificadosZip(): void {
         this.descargarArchivo(response as Blob, nombre);
         this.alert.success('Edición masiva aplicada. Se descargó el ZIP con los PDFs actualizados.');
       } else {
-        this.alert.success(response?.message || 'Edición masiva aplicada correctamente.');
+        const totalErrores = Array.isArray(response?.errores) ? response.errores.length : 0;
+        if (totalErrores > 0) {
+          this.alert.warning(`${response?.message || 'Edición masiva aplicada parcialmente.'} ${totalErrores} registro(s) no se pudieron actualizar.`);
+        } else {
+          this.alert.success(response?.message || 'Edición masiva aplicada correctamente.');
+        }
       }
       this.bulkEditLoading = false;
       this.cargarAvaluos(this.currentPage, true);
     },
     error: (error) => {
       console.error('Error en edición masiva:', error);
-      this.alert.error('No fue posible completar la edición masiva.');
+      this.alert.error(error?.error?.message || 'No fue posible completar la edición masiva.');
       this.bulkEditLoading = false;
     }
   });

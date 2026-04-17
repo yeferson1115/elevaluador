@@ -53,6 +53,19 @@
       </div>
       <div class="col-md-3"><input class="form-control form-control-sm" type="number" [(ngModel)]="bulkChanges.valor_chatarra_kg" placeholder="Valor chatarra kg"></div>
       <div class="col-md-3"><input class="form-control form-control-sm" type="number" [(ngModel)]="bulkChanges.peso_chatarra_kg" placeholder="Peso chatarra kg"></div>
+      <div class="col-md-3">
+        <select class="form-select form-select-sm" [(ngModel)]="bulkChanges.tipo_vehiculo">
+          <option value="">Tipo de vehículo sin cambio</option>
+          <option *ngFor="let tipoVehiculo of tiposVehiculo" [value]="tipoVehiculo">{{ tipoVehiculo }}</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <select class="form-select form-select-sm" [(ngModel)]="bulkChanges.es_repuesto_especial">
+          <option [ngValue]="null">Especial sin cambio</option>
+          <option [ngValue]="true">Especial: Sí</option>
+          <option [ngValue]="false">Especial: No</option>
+        </select>
+      </div>
       <div class="col-md-3"><input class="form-control form-control-sm" type="number" min="0" [(ngModel)]="bulkChanges.cilindraje" placeholder="Cilindraje"></div>
       <div class="col-md-3"><input class="form-control form-control-sm" type="date" [(ngModel)]="bulkChanges.fecha_inspeccion"></div>
       <div class="col-md-3">
