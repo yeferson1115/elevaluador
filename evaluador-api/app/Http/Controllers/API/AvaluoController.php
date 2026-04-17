@@ -51,6 +51,7 @@ class AvaluoController extends Controller
         'valor_chatarra_kg',
         'ubicacion',
         'evaluador',
+        'caja_cambios',
         'tipo',
         'chatarra',
         'peso_chatarra_kg',
@@ -1500,6 +1501,7 @@ public function reprocesarIndividual($id)
             'changes.valor_chatarra_kg' => 'nullable|numeric',
             'changes.ubicacion' => 'nullable|string',
             'changes.evaluador' => 'nullable|string',
+            'changes.caja_cambios' => 'nullable|string|in:Manual,Automática,CVT,Otra',
             'changes.tipo' => 'nullable|string',
             'changes.chatarra' => 'nullable|string|in:Si,No',
             'changes.peso_chatarra_kg' => 'nullable|numeric',
@@ -1610,6 +1612,7 @@ public function reprocesarIndividual($id)
                 $cilindrajeOperacion = array_key_exists('cilindraje', $changesToApply)
                     ? (int) $changesToApply['cilindraje']
                     : $ingreso->cilindraje;
+                $cajaCambiosOperacion = $changesToApply['caja_cambios'] ?? $ingreso->caja_cambios;
                 $fechaInspeccionOperacion = $changesToApply['fecha_inspeccion'] ?? $ingreso->fecha_inspeccion;
                 $tipoVehiculoOperacion = $changesToApply['tipo_vehiculo'] ?? $ingreso->clase;
                 $esRepuestoEspecialOperacion = array_key_exists('es_repuesto_especial', $changesToApply)
@@ -1664,7 +1667,7 @@ public function reprocesarIndividual($id)
                     'cilindraje' => $cilindrajeOperacion,
                     'modelo' => $ingreso->modelo,
                     'kilometraje' => $ingreso->kilometraje,
-                    'caja_cambios' => $ingreso->caja_cambios,
+                    'caja_cambios' => $cajaCambiosOperacion,
                     'numero_chasis' => $ingreso->numero_chasis,
                     'numero_serie' => $ingreso->numero_serie,
                     'numero_motor' => $ingreso->numero_motor,
