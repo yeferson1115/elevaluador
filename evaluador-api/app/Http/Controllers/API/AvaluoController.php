@@ -563,33 +563,7 @@ class AvaluoController extends Controller
         }
         
         
-        if ($avaluo->evaluador != null) {
-
-        // SOLO si no tiene consecutivo (registro nuevo)
-        if (empty($avaluo->consecutivo)) {
-    
-            // Buscar el último avalúo del mismo evaluador
-            $ultimoAvaluo = Avaluo::where('evaluador', $avaluo->evaluador)
-                ->orderBy('consecutivo', 'desc')
-                ->first();
-    
-            // Obtener iniciales del nombre del evaluador
-            $nombre = $avaluo->evaluador; // ej: "Juan Pérez López"
-            $palabras = explode(' ', trim($nombre));
-            $inicial = '';
-    
-            foreach ($palabras as $palabra) {
-                $inicial .= strtoupper(substr($palabra, 0, 1));
-            }
-    
-            // Asignar consecutivo
-            $avaluo->consecutivo = $ultimoAvaluo ? $ultimoAvaluo->consecutivo + 1 : 1;
-    
-            // Asignar inicial
-            $avaluo->inicial = $inicial;
-            $avaluo->save();
-        }
-    }
+        $this->asignarConsecutivoEInicialSiAplica($avaluo);
 
 
         
@@ -712,6 +686,27 @@ class AvaluoController extends Controller
     // =======================
     // Funciones privadas
     // =======================
+
+    private function asignarConsecutivoEInicialSiAplica(Avaluo $avaluo): void
+    {
+        if (empty($avaluo->evaluador) || !empty($avaluo->consecutivo)) {
+            return;
+        }
+
+        $ultimoAvaluo = Avaluo::where('evaluador', $avaluo->evaluador)
+            ->orderBy('consecutivo', 'desc')
+            ->first();
+
+        $palabras = preg_split('/\s+/', trim((string) $avaluo->evaluador)) ?: [];
+        $inicial = collect($palabras)
+            ->filter()
+            ->map(fn ($palabra) => strtoupper(substr($palabra, 0, 1)))
+            ->join('');
+
+        $avaluo->consecutivo = $ultimoAvaluo ? $ultimoAvaluo->consecutivo + 1 : 1;
+        $avaluo->inicial = $inicial;
+        $avaluo->save();
+    }
 
     private function validateAvaluo(Request $request)
     {
@@ -1758,6 +1753,7 @@ public function reprocesarIndividual($id)
         $validated = $request->validate([
             'file' => 'required|file|mimes:xlsx,xls,csv',
             'metodo' => 'required|string|in:comercial,jans',
+            'ignorar_consecutivo' => 'nullable|boolean',
         ]);
 
         $sheet = IOFactory::load($validated['file']->getRealPath())->getActiveSheet();
@@ -1841,6 +1837,8 @@ public function reprocesarIndividual($id)
                         $avaluo->code_movilidad = $ultimo ? ($ultimo->code_movilidad + 1) : 1;
                     }
 
+                    $ignorarConsecutivo = filter_var($validated['ignorar_consecutivo'] ?? false, FILTER_VALIDATE_BOOLEAN);
+
                     $avaluo->fill([
                         'ingreso_id' => $ingreso->id,
                         'tipo' => $validated['metodo'],
@@ -1850,7 +1848,8 @@ public function reprocesarIndividual($id)
                         'dias_inmovilizacion' => $this->normalizeInteger($this->value($row, 'dias_inmovilizado')),
                         'evaluador' => $evaluadorNombre,
                         'user_id' => $evaluador?->id,
-                        'consecutivo' => $this->normalizeInteger($this->value($row, 'consecutivo')),
+                        'consecutivo' => $ignorarConsecutivo ? null : $this->normalizeInteger($this->value($row, 'consecutivo')),
+                        'inicial' => $ignorarConsecutivo ? null : ($avaluo->inicial ?? null),
                         'codigo_fasecolda' => $this->value($row, 'codigo_fasecolda'),
                         'observaciones' => $this->value($row, 'diagnostico'),
                         'valor_razonable' => $this->normalizeNumeric($this->value($row, 'valor_razonable')),
@@ -1892,6 +1891,9 @@ public function reprocesarIndividual($id)
                         'vidrios_estado' => self::ESTADOS_COMPONENTES_POR_DEFECTO['vidrios_estado'],
                     ]);
                     $avaluo->save();
+                    if ($ignorarConsecutivo) {
+                        $this->asignarConsecutivoEInicialSiAplica($avaluo);
+                    }
 
                     if (!empty($avaluo->codigo_fasecolda)) {
                         $this->sincronizarMemoriasFasecolda($avaluo, $avaluo->codigo_fasecolda);

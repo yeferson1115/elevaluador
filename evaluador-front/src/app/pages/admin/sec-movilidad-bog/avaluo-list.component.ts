@@ -40,6 +40,7 @@ export class AvaluoListComponent {
   bulkImportLoading = false;
   bulkImportImagesLoading = false;
   bulkImportMetodo: 'comercial' | 'jans' | '' = '';
+  bulkImportIgnorarConsecutivo = false;
   ubicaciones: string[] = [
     'PATIOS',
     'ALAMOS 200',
@@ -451,7 +452,7 @@ exportarCertificadosZip(): void {
     const file = input.files[0];
     this.bulkImportLoading = true;
 
-    this.service.bulkImportCompact(file, this.bulkImportMetodo).subscribe({
+    this.service.bulkImportCompact(file, this.bulkImportMetodo, this.bulkImportIgnorarConsecutivo).subscribe({
       next: (zipBlob: Blob) => {
         const nombre = `avaluos-compact-importacion-${new Date().toISOString().slice(0, 10)}.zip`;
         this.descargarArchivo(zipBlob, nombre);
