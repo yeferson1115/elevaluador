@@ -270,11 +270,10 @@ import(file: File): Observable<any> {
     return this.http.post(`${this.baseUrl}/avaluos/bulk-update-compact`, payload);
   }
 
-  bulkImportCompact(file: File, metodo: 'comercial' | 'jans', ignorarConsecutivo: boolean = false): Observable<Blob> {
+  bulkImportCompact(file: File, metodo: 'comercial' | 'jans'): Observable<Blob> {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('metodo', metodo);
-    formData.append('ignorar_consecutivo', ignorarConsecutivo ? '1' : '0');
 
     return this.http.post(`${this.baseUrl}/avaluos/bulk-import-compact`, formData, {
       responseType: 'blob'
