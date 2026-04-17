@@ -280,6 +280,13 @@ import(file: File): Observable<any> {
     });
   }
 
+  bulkImportCompactImages(file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return this.http.post(`${this.baseUrl}/avaluos/bulk-import-compact-images`, formData);
+  }
+
 // En tu IngresoService (Angular)
 // En tu servicio
 generarPdf(id: number): Observable<HttpResponse<Blob>> {

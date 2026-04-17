@@ -1914,7 +1914,7 @@ public function reprocesarIndividual($id)
                     $requestSimulado->setUserResolver(fn () => auth()->user());
                     $this->update($requestSimulado, $avaluo);
                     
-                    $this->importDrivePhotos($ingreso->id, $this->value($row, 'enlace_fotos'));
+                    $this->importDrivePhotos($avaluo->id, $this->value($row, 'enlace_fotos'));
         
                     $pdfResponse = $this->generarPdf($avaluo->id, new Request(['action' => 'download']));
                     if ($pdfResponse->getStatusCode() >= 400) {
@@ -1945,6 +1945,74 @@ public function reprocesarIndividual($id)
         }
 
         return response()->download($zipPath, $zipFileName)->deleteFileAfterSend(true);
+    }
+
+    public function bulkImportCompactImages(Request $request)
+    {
+        $validated = $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls,csv',
+        ]);
+
+        $sheet = IOFactory::load($validated['file']->getRealPath())->getActiveSheet();
+        $rows = $sheet->toArray(null, true, true, true);
+
+        if (count($rows) < 2) {
+            return response()->json(['message' => 'El archivo no contiene filas para procesar'], 422);
+        }
+
+        $headers = $this->normalizeHeaders(array_shift($rows));
+        $procesados = 0;
+        $imagenesGuardadas = 0;
+        $errores = [];
+
+        foreach ($rows as $index => $rawRow) {
+            try {
+                $row = $this->mapRowByHeaders($rawRow, $headers);
+                $placa = $this->normalizePlate($this->value($row, 'placas') ?? $this->value($row, 'placa'));
+                $enlaceFotos = $this->value($row, 'enlace_fotos')
+                    ?? $this->value($row, 'enlace')
+                    ?? $this->value($row, 'link_drive');
+
+                if (!$placa) {
+                    throw new \RuntimeException('La columna PLACA/PLACAS es obligatoria');
+                }
+
+                if (!$enlaceFotos) {
+                    throw new \RuntimeException('La columna ENLACE_FOTOS (o ENLACE/LINK_DRIVE) es obligatoria');
+                }
+
+                $ingreso = Ingreso::where('placa', $placa)
+                    ->where('tiposervicio', 'Sec Bogota')
+                    ->first();
+
+                if (!$ingreso || !$ingreso->avaluo) {
+                    throw new \RuntimeException("No se encontró un avalúo compact para la placa {$placa}");
+                }
+
+                $guardadasFila = $this->importDrivePhotos($ingreso->avaluo->id, $enlaceFotos);
+                $procesados++;
+                $imagenesGuardadas += $guardadasFila;
+            } catch (\Throwable $e) {
+                $errores[] = [
+                    'fila' => $index + 2,
+                    'error' => $e->getMessage(),
+                ];
+            }
+        }
+
+        if ($procesados === 0) {
+            return response()->json([
+                'message' => 'No fue posible procesar filas del archivo',
+                'errores' => $errores,
+            ], 500);
+        }
+
+        return response()->json([
+            'message' => 'Importación de imágenes desde Drive completada',
+            'filas_procesadas' => $procesados,
+            'imagenes_guardadas' => $imagenesGuardadas,
+            'errores' => $errores,
+        ]);
     }
 
     private function normalizeHeaders(array $headerRow): array
@@ -2168,13 +2236,13 @@ public function reprocesarIndividual($id)
             ->implode(' ');
     }
 
-    private function importDrivePhotos(int $avaluoId, ?string $driveLink): void
+    private function importDrivePhotos(int $avaluoId, ?string $driveLink): int
     {
         if (!$driveLink) {
             /*Log::warning('importDrivePhotos: enlace de Drive vacío.', [
                 'avaluo_id' => $avaluoId,
             ]);*/
-            return;
+            return 0;
         }
 
         $folderId = $this->extractDriveFolderId($driveLink);
@@ -2183,7 +2251,7 @@ public function reprocesarIndividual($id)
                 'avaluo_id' => $avaluoId,
                 'drive_link' => $driveLink,
             ]);*/
-            return;
+            return 0;
         }
 
         $apiKey = (string) 'AIzaSyBrOPQPtTW-31_s7WmKfcp9Aadw5hLDJtw';
@@ -2191,7 +2259,7 @@ public function reprocesarIndividual($id)
             /*Log::error('importDrivePhotos: API key de Google Drive vacía.', [
                 'avaluo_id' => $avaluoId,
             ]);*/
-            return;
+            return 0;
         }
 
         $httpClient = Http::withOptions($this->driveHttpOptions());
@@ -2213,7 +2281,7 @@ public function reprocesarIndividual($id)
                 'status' => $response->status(),
                 'response' => $response->json(),
             ]);*/
-            return;
+            return 0;
         }
 
         $files = collect($response->json('files', []))
@@ -2226,10 +2294,10 @@ public function reprocesarIndividual($id)
                 'folder_id' => $folderId,
                 'total_archivos' => count($response->json('files', [])),
             ]);*/
-            return;
+            return 0;
         }
 
-        IngresoImage::where('avaluo_id', $avaluoId)->where('categoria', 'vehiculo')->delete();
+        IngresoImage::where('avaluo_id', $avaluoId)->where('categoria', 'extra')->delete();
         $orden = 1;
         $saved = 0;
 
@@ -2289,6 +2357,7 @@ public function reprocesarIndividual($id)
             'imagenes_guardadas' => $saved,
             'destino' => '/public/avaluos/{avaluo_id}',
         ]);*/
+        return $saved;
     }
 
 
