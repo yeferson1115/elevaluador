@@ -333,10 +333,12 @@ class AvaluoController extends Controller
 
         // Extraer únicamente el bloque de avaluo
         $data = $validated['avaluo'];
-        $data['dias_inmovilizacion'] = $this->calcularDiasInmovilizacion(
-            $data['fecha_inmovilizacion'] ?? null,
-            $request->input('fecha_inspeccion')
-        );
+        if (!array_key_exists('dias_inmovilizacion', $data) || $data['dias_inmovilizacion'] === null) {
+            $data['dias_inmovilizacion'] = $this->calcularDiasInmovilizacion(
+                $data['fecha_inmovilizacion'] ?? null,
+                $request->input('fecha_inspeccion')
+            );
+        }
 
         $avaluo = Avaluo::create($data);
 
@@ -493,10 +495,12 @@ class AvaluoController extends Controller
         $data = $validated['avaluo'];
         $fechaInspeccionReferencia = $request->input('fecha_inspeccion')
             ?? optional($avaluo->ingreso)->fecha_inspeccion;
-        $data['dias_inmovilizacion'] = $this->calcularDiasInmovilizacion(
-            $data['fecha_inmovilizacion'] ?? ($avaluo->fecha_inmovilizacion ?? null),
-            $fechaInspeccionReferencia
-        );
+        if (!array_key_exists('dias_inmovilizacion', $data) || $data['dias_inmovilizacion'] === null) {
+            $data['dias_inmovilizacion'] = $this->calcularDiasInmovilizacion(
+                $data['fecha_inmovilizacion'] ?? ($avaluo->fecha_inmovilizacion ?? null),
+                $fechaInspeccionReferencia
+            );
+        }
 
         if ($avaluo->cerrado && !array_key_exists('cerrado', $data)) {
             return response()->json([
@@ -1842,6 +1846,8 @@ public function reprocesarIndividual($id)
                         'tipo' => $validated['metodo'],
                         'formato' => 'Sec. Movilidad Bogotá',
                         'fecha_inspeccion' => $this->parseExcelDate($this->value($row, 'fecha_avaluo')),
+                        'fecha_inmovilizacion' => $this->parseExcelDate($this->value($row, 'fecha_ingreso_a_patios')),
+                        'dias_inmovilizacion' => $this->normalizeInteger($this->value($row, 'dias_inmovilizado')),
                         'evaluador' => $evaluadorNombre,
                         'user_id' => $evaluador?->id,
                         'consecutivo' => $this->normalizeInteger($this->value($row, 'consecutivo')),
