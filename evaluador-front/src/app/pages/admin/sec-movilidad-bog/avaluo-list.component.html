@@ -58,7 +58,7 @@
       <div class="accordion-body">
         <div class="row g-3">
           <!-- Importación estándar -->
-          <div class="col-md-6">
+          <div class="col-md-4">
             <div class="card border-0 bg-light h-100">
               <div class="card-body">
                 <h6 class="card-title mb-3">
@@ -80,7 +80,7 @@
           </div>
 
           <!-- Importación por método (Comercial/Jans) -->
-          <div class="col-md-6">
+          <div class="col-md-4">
             <div class="card border-0 bg-gradient h-100" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
               <div class="card-body">
                 <h6 class="card-title mb-3">
@@ -113,6 +113,35 @@
                     </a>
                   <small class="text-muted">
                     <i class="fa-solid fa-magic"></i> Aplica el método seleccionado y genera PDFs automáticamente
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="card border-0 bg-light h-100">
+              <div class="card-body">
+                <h6 class="card-title mb-3">
+                  <i class="fa-solid fa-images text-info me-2"></i>Importar imágenes desde Drive
+                </h6>
+                <div class="d-flex flex-column gap-3">
+                  <input
+                    type="file"
+                    #compactBulkImagesInput
+                    style="display: none;"
+                    (change)="onBulkCompactImagesFileSelected($event)"
+                    accept=".xlsx,.xls,.csv"
+                  />
+                  <button
+                    class="btn btn-info text-white"
+                    (click)="compactBulkImagesInput.click()"
+                    [disabled]="bulkImportImagesLoading">
+                    <i class="fa-solid fa-cloud-arrow-up me-2"></i>
+                    {{ bulkImportImagesLoading ? 'Importando imágenes...' : 'Subir archivo de placas + Drive' }}
+                  </button>
+                  <small class="text-muted">
+                    <i class="fa-solid fa-info-circle"></i> Columnas requeridas: <strong>PLACA</strong> o <strong>PLACAS</strong> y <strong>ENLACE_FOTOS</strong> (también acepta ENLACE/LINK_DRIVE).
                   </small>
                 </div>
               </div>

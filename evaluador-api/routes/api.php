@@ -89,6 +89,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('/avaluos/reprocesar/status', [ReprocesarAvaluosController::class, 'status']);
     Route::post('/avaluos/bulk-update-compact', [AvaluoController::class, 'bulkUpdateCompact']);
     Route::post('/avaluos/bulk-import-compact', [AvaluoController::class, 'bulkImportCompact']);
+    Route::post('/avaluos/bulk-import-compact-images', [AvaluoController::class, 'bulkImportCompactImages']);
 
     // Exportaciones
     Route::get('/ingresos/export-sec-bog', [IngresoController::class, 'exportSecBog']);

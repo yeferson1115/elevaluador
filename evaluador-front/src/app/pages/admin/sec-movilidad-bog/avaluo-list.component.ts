@@ -38,6 +38,7 @@ export class AvaluoListComponent {
   mostrarImportacionMasiva = false;
   bulkEditLoading = false;
   bulkImportLoading = false;
+  bulkImportImagesLoading = false;
   bulkImportMetodo: 'comercial' | 'jans' | '' = '';
   ubicaciones: string[] = [
     'PATIOS',
@@ -463,6 +464,40 @@ exportarCertificadosZip(): void {
         console.error('Error en importación masiva compact:', error);
         this.alert.error(error?.error?.message || 'No fue posible procesar el archivo de importación masiva.');
         this.bulkImportLoading = false;
+        input.value = '';
+      }
+    });
+  }
+
+  onBulkCompactImagesFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) {
+      return;
+    }
+
+    const file = input.files[0];
+    this.bulkImportImagesLoading = true;
+
+    this.service.bulkImportCompactImages(file).subscribe({
+      next: (response) => {
+        const filas = response?.filas_procesadas ?? 0;
+        const imagenes = response?.imagenes_guardadas ?? 0;
+        const errores = Array.isArray(response?.errores) ? response.errores.length : 0;
+
+        if (errores > 0) {
+          this.alert.warning(`Importación de imágenes completada con novedades: ${filas} fila(s), ${imagenes} imagen(es), ${errores} error(es).`);
+        } else {
+          this.alert.success(`Importación de imágenes completada: ${filas} fila(s), ${imagenes} imagen(es) guardadas.`);
+        }
+
+        this.bulkImportImagesLoading = false;
+        input.value = '';
+        this.cargarAvaluos(this.currentPage, true);
+      },
+      error: (error) => {
+        console.error('Error en importación masiva de imágenes compact:', error);
+        this.alert.error(error?.error?.message || 'No fue posible importar imágenes desde el archivo.');
+        this.bulkImportImagesLoading = false;
         input.value = '';
       }
     });
