@@ -61,6 +61,7 @@ export class AvaluoListComponent {
     tipo_vehiculo: '',
     es_repuesto_especial: null,
     cilindraje: null,
+    tipo_vehiculo: '',
     fecha_inspeccion: '',
     tipo: '',
     chatarra: '',
