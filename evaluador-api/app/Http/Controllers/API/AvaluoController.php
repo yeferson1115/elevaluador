@@ -10,6 +10,7 @@ use App\Models\ValoresRepuesto;
 use App\Models\User;
 use App\Models\IngresoImage;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -56,6 +57,7 @@ class AvaluoController extends Controller
         'observaciones',
         'cilindraje',
         'fecha_inspeccion',
+        'tipo_vehiculo',
     ];
     // Obtener listado paginado con búsqueda
     public function index(Request $request)
@@ -1490,6 +1492,7 @@ public function reprocesarIndividual($id)
             'changes.observaciones' => 'nullable|string',
             'changes.cilindraje' => 'nullable|integer|min:0',
             'changes.fecha_inspeccion' => 'nullable|date',
+            'changes.tipo_vehiculo' => 'nullable|string',
         ]);
 
         $changes = collect($validated['changes'])
@@ -1593,9 +1596,12 @@ public function reprocesarIndividual($id)
                     ? (int) $changesToApply['cilindraje']
                     : $ingreso->cilindraje;
                 $fechaInspeccionOperacion = $changesToApply['fecha_inspeccion'] ?? $ingreso->fecha_inspeccion;
+                $tipoVehiculoOperacion = $changesToApply['tipo_vehiculo'] ?? $ingreso->clase;
 
-                if (!empty($ingreso->clase) && !empty($cilindrajeOperacion)) {
-                    $repuesto = ValoresRepuesto::where('tipo', $ingreso->clase)
+                unset($changesToApply['tipo_vehiculo']);
+
+                if (!empty($tipoVehiculoOperacion) && !empty($cilindrajeOperacion)) {
+                    $repuesto = ValoresRepuesto::where('tipo', $tipoVehiculoOperacion)
                         ->where('cilindraje_from', '<=', $cilindrajeOperacion)
                         ->where('cilindraje_to', '>=', $cilindrajeOperacion)
                         ->where('especial', false)
@@ -1627,7 +1633,7 @@ public function reprocesarIndividual($id)
                     'marca' => $ingreso->marca,
                     'linea' => $ingreso->linea,
                     'fecha_matricula' => $ingreso->fecha_matricula,
-                    'clase' => $ingreso->clase,
+                    'clase' => $tipoVehiculoOperacion,
                     'tipo_carroceria' => $ingreso->tipo_carroceria,
                     'color' => $ingreso->color,
                     'cilindraje' => $cilindrajeOperacion,
@@ -1655,11 +1661,31 @@ public function reprocesarIndividual($id)
                 ]);
                 $requestSimulado->setUserResolver(fn () => auth()->user());
 
-                $this->update($requestSimulado, $avaluo);
+                $updateResponse = $this->update($requestSimulado, $avaluo);
+                if ($updateResponse instanceof JsonResponse && $updateResponse->getStatusCode() >= 400) {
+                    $updateData = $updateResponse->getData(true);
+                    $errores[] = [
+                        'ingreso_id' => $ingreso->id,
+                        'avaluo_id' => $ingreso->avaluo?->id,
+                        'error' => $updateData['message'] ?? 'No fue posible aplicar los cambios al avalúo',
+                    ];
+                    continue;
+                }
+
                 if ($generarZip) {
                     $pdfResponse = $this->generarPdf($avaluo->id, new Request(['action' => 'download']));
+                    if ($pdfResponse->getStatusCode() >= 400) {
+                        $errores[] = [
+                            'ingreso_id' => $ingreso->id,
+                            'avaluo_id' => $ingreso->avaluo?->id,
+                            'error' => 'No fue posible generar el PDF para este registro',
+                        ];
+                        continue;
+                    }
                     $pdfContent = $pdfResponse->getContent();
-                    $pdfName = ($ingreso->placa ?: 'ingreso-' . $ingreso->id) . '.pdf';
+                    $prefijoNombre = $ingreso->placa ?: 'ingreso-' . $ingreso->id;
+                    $consecutivoNombre = ($avaluo->inicial ?? '') . ($avaluo->consecutivo ?? '');
+                    $pdfName = $prefijoNombre . ($consecutivoNombre !== '' ? '-' . $consecutivoNombre : '') . '.pdf';
                     $zip->addFromString($pdfName, $pdfContent);
                 }
                 $procesados++;
