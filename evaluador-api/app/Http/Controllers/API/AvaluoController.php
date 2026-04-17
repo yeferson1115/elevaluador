@@ -1605,13 +1605,19 @@ public function reprocesarIndividual($id)
 
                 unset($changesToApply['tipo_vehiculo']);
                 unset($changesToApply['es_repuesto_especial']);
+                
 
                 if (!empty($tipoVehiculoOperacion) && !empty($cilindrajeOperacion)) {
-                    $repuesto = ValoresRepuesto::where('tipo', $this->normalizarTipoVehiculoMasivo($tipoVehiculoOperacion))
-                        ->where('cilindraje_from', '<=', $cilindrajeOperacion)
-                        ->where('cilindraje_to', '>=', $cilindrajeOperacion)
-                        ->where('especial', $esRepuestoEspecialOperacion)
+                   $repuesto = ValoresRepuesto::whereRaw('TRIM(tipo) = ?', [
+                            trim($this->normalizarTipoVehiculoMasivo($tipoVehiculoOperacion))
+                        ])
+                        ->whereNotNull('cilindraje_from')
+                        ->whereNotNull('cilindraje_to')
+                        ->whereRaw('CAST(cilindraje_to AS UNSIGNED) <= ?', [(int)$cilindrajeOperacion])
+                        ->whereRaw('CAST(cilindraje_from AS UNSIGNED) >= ?', [(int)$cilindrajeOperacion])
+                        ->where('especial', (bool)$esRepuestoEspecialOperacion)
                         ->first();
+                       
 
                     if ($repuesto) {
                         $changesToApply = array_merge($changesToApply, [
