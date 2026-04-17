@@ -24,6 +24,7 @@ export class AvaluoListComponent {
   filtro = '';
   loading = false;
   bulkEditLoading = false;
+  bulkImportImagesLoading = false;
   error: string | null = null;
 
   avaluos: Ingreso[] = [];
@@ -166,6 +167,33 @@ export class AvaluoListComponent {
 
   tieneImagenes(avaluo: Ingreso): boolean {
     return (avaluo.imagesCount ?? 0) > 0;
+  }
+
+  onBulkProImagesFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) {
+      return;
+    }
+
+    const file = input.files[0];
+    this.bulkImportImagesLoading = true;
+
+    this.service.bulkImportCompactImages(file).subscribe({
+      next: (response) => {
+        const filas = response?.filas_procesadas ?? 0;
+        const imagenes = response?.imagenes_guardadas ?? 0;
+        this.alert.success(`Importación completada. Filas procesadas: ${filas}. Imágenes guardadas: ${imagenes}.`);
+        this.bulkImportImagesLoading = false;
+        input.value = '';
+        this.cargarAvaluos(this.currentPage);
+      },
+      error: (error) => {
+        const message = error?.error?.message || 'No fue posible importar imágenes desde Drive.';
+        this.alert.error(message);
+        this.bulkImportImagesLoading = false;
+        input.value = '';
+      }
+    });
   }
 
  getDocumentoUrl(ruta: string | null): string {
