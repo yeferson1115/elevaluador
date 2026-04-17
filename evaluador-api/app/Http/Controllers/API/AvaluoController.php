@@ -1810,7 +1810,7 @@ public function reprocesarIndividual($id)
                         'numero_pasajeros' => $this->normalizeNumeric($this->value($row, 'pasajeros')),
                         'capacidad_ton' => $this->normalizeNumeric($this->value($row, 'capacidad_ton')),
                         'cantidad_ejes' => $this->normalizeNumeric($this->value($row, 'ejes')),
-                        'caja_cambios' => $this->value($row, 'caja'),
+                        'caja_cambios' => $this->value($row, 'caja_de_cambios') ?? $this->value($row, 'caja'),
                         'peso_bruto' => $this->normalizeNumeric($this->value($row, 'peso_vacio')),
                         'peso_mermado' => $this->normalizeNumeric($this->value($row, 'peso_mermado')),
                         'estado' => 'En Inspección',
