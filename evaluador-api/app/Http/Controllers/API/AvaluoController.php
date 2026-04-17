@@ -320,6 +320,8 @@ class AvaluoController extends Controller
             'avaluo.valor_SOAT'=>'nullable',
             'avaluo.valor_faltantes'=>'nullable',
             'avaluo.codigo_fasecolda'=>'nullable',
+            'avaluo.fecha_inmovilizacion' => 'nullable|date',
+            'avaluo.dias_inmovilizacion' => 'nullable|integer|min:0',
             'avaluo.porc_reposicion'=>'nullable',
             'avaluo.ubicacion'=>'nullable',
             'avaluo.evaluador'=>'nullable',
@@ -331,6 +333,10 @@ class AvaluoController extends Controller
 
         // Extraer únicamente el bloque de avaluo
         $data = $validated['avaluo'];
+        $data['dias_inmovilizacion'] = $this->calcularDiasInmovilizacion(
+            $data['fecha_inmovilizacion'] ?? null,
+            $request->input('fecha_inspeccion')
+        );
 
         $avaluo = Avaluo::create($data);
 
@@ -476,6 +482,8 @@ class AvaluoController extends Controller
             'avaluo.valor_SOAT'=>'nullable',
             'avaluo.valor_faltantes'=>'nullable',
             'avaluo.codigo_fasecolda'=>'nullable',
+            'avaluo.fecha_inmovilizacion' => 'nullable|date',
+            'avaluo.dias_inmovilizacion' => 'nullable|integer|min:0',
             'avaluo.porc_reposicion'=>'nullable',
             'avaluo.ubicacion'=>'nullable',
             'avaluo.evaluador'=>'nullable',
@@ -483,6 +491,12 @@ class AvaluoController extends Controller
         ]);
 
         $data = $validated['avaluo'];
+        $fechaInspeccionReferencia = $request->input('fecha_inspeccion')
+            ?? optional($avaluo->ingreso)->fecha_inspeccion;
+        $data['dias_inmovilizacion'] = $this->calcularDiasInmovilizacion(
+            $data['fecha_inmovilizacion'] ?? ($avaluo->fecha_inmovilizacion ?? null),
+            $fechaInspeccionReferencia
+        );
 
         if ($avaluo->cerrado && !array_key_exists('cerrado', $data)) {
             return response()->json([
@@ -2375,6 +2389,19 @@ public function reprocesarIndividual($id)
         }
 
         return ['verify' => false];
+    }
+
+    private function calcularDiasInmovilizacion($fechaInmovilizacion, $fechaInspeccion): ?int
+    {
+        if (empty($fechaInmovilizacion) || empty($fechaInspeccion)) {
+            return null;
+        }
+
+        try {
+            return Carbon::parse($fechaInmovilizacion)->diffInDays(Carbon::parse($fechaInspeccion));
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 
     private function extractDriveFolderId(string $url): ?string

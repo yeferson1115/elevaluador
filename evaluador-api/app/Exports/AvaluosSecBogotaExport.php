@@ -126,7 +126,9 @@ class AvaluosSecBogotaExport implements FromQuery, WithHeadings, WithMapping
             'CONCEPTO TECNICO',
             'PESO',            
             'AVALUO',
-            'OBSERVACION'
+            'OBSERVACION',
+            'FECHA INMOVILIZACION',
+            'DIAS INMOVILIZACION'
         ];
     }
 
@@ -362,7 +364,13 @@ class AvaluosSecBogotaExport implements FromQuery, WithHeadings, WithMapping
             $valorTotal,
             
             // OBSERVACION
-            $ingreso->avaluo->observaciones ?? ''
+            $ingreso->avaluo->observaciones ?? '',
+
+            // FECHA INMOVILIZACION
+            $ingreso->avaluo->fecha_inmovilizacion ?? '',
+
+            // DIAS INMOVILIZACION
+            $ingreso->avaluo->dias_inmovilizacion ?? ''
         ];
     }
 }

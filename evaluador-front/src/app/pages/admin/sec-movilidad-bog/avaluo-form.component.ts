@@ -138,6 +138,12 @@ export class AvaluoFormComponent implements OnInit {
   this.form.get('avaluo.valor_chatarra_kg')?.valueChanges.subscribe(() => {
     this.calcularValorChatarra();
   });
+  this.form.get('fecha_inspeccion')?.valueChanges.subscribe(() => {
+    this.actualizarDiasInmovilizacion();
+  });
+  this.form.get('avaluo.fecha_inmovilizacion')?.valueChanges.subscribe(() => {
+    this.actualizarDiasInmovilizacion();
+  });
 
    this.form.get('clase')?.valueChanges.subscribe((clase) => {
     if (clase !== this.claseAnterior) {
@@ -197,6 +203,7 @@ export class AvaluoFormComponent implements OnInit {
   
   
   this.calcularFormulas();
+  this.actualizarDiasInmovilizacion();
   }
 
 buscarValoresRepuestoDebounced(esCambioManual: boolean = false): void {
@@ -427,6 +434,8 @@ calcularPesoMermado(pesoVacio: number | null): void {
         observaciones:[''],
         ingreso_id: [{ value: '', disabled: true }],
         fecha_inspeccion: [''],
+        fecha_inmovilizacion: [''],
+        dias_inmovilizacion: [{ value: '', disabled: true }],
         vida_util_probable: [''],
         vida_usada_dias: [{ value: '', disabled: true }],
         vida_usada_meses: [{ value: '', disabled: true }],
@@ -1011,6 +1020,31 @@ private agregarLimitacionesPorDefecto(): void {
     avaluoForm.get('valor_total_chatarra')?.setValue(valorTotalChatarra.toFixed(0), { emitEvent: false });
 
     this.calcularIndiceReparabilidad();
+  }
+
+  private actualizarDiasInmovilizacion(): void {
+    const fechaInspeccion = this.form.get('fecha_inspeccion')?.value;
+    const fechaInmovilizacion = this.form.get('avaluo.fecha_inmovilizacion')?.value;
+
+    if (!fechaInspeccion || !fechaInmovilizacion) {
+      this.form.get('avaluo.dias_inmovilizacion')?.setValue('', { emitEvent: false });
+      return;
+    }
+
+    const fechaInspeccionDate = new Date(fechaInspeccion);
+    const fechaInmovilizacionDate = new Date(fechaInmovilizacion);
+
+    if (Number.isNaN(fechaInspeccionDate.getTime()) || Number.isNaN(fechaInmovilizacionDate.getTime())) {
+      this.form.get('avaluo.dias_inmovilizacion')?.setValue('', { emitEvent: false });
+      return;
+    }
+
+    const diferenciaMilisegundos = Math.abs(
+      fechaInspeccionDate.getTime() - fechaInmovilizacionDate.getTime()
+    );
+    const dias = Math.floor(diferenciaMilisegundos / (1000 * 60 * 60 * 24));
+
+    this.form.get('avaluo.dias_inmovilizacion')?.setValue(dias, { emitEvent: false });
   }
 
   guardar() {
