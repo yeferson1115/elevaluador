@@ -1914,7 +1914,7 @@ public function reprocesarIndividual($id)
                     $requestSimulado->setUserResolver(fn () => auth()->user());
                     $this->update($requestSimulado, $avaluo);
                     
-                    $this->importDrivePhotos($avaluo->id, $this->value($row, 'enlace_fotos'));
+                    $this->importDrivePhotos($ingreso->id, $this->value($row, 'enlace_fotos'));
         
                     $pdfResponse = $this->generarPdf($avaluo->id, new Request(['action' => 'download']));
                     if ($pdfResponse->getStatusCode() >= 400) {
@@ -1989,7 +1989,7 @@ public function reprocesarIndividual($id)
                     throw new \RuntimeException("No se encontró un avalúo compact para la placa {$placa}");
                 }
 
-                $guardadasFila = $this->importDrivePhotos($ingreso->avaluo->id, $enlaceFotos);
+                $guardadasFila = $this->importDrivePhotos($ingreso->id, $enlaceFotos);
                 $procesados++;
                 $imagenesGuardadas += $guardadasFila;
             } catch (\Throwable $e) {
