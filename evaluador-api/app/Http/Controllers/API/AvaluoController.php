@@ -58,6 +58,7 @@ class AvaluoController extends Controller
         'cilindraje',
         'fecha_inspeccion',
         'tipo_vehiculo',
+        'es_repuesto_especial',
     ];
     // Obtener listado paginado con búsqueda
     public function index(Request $request)
@@ -1493,6 +1494,7 @@ public function reprocesarIndividual($id)
             'changes.cilindraje' => 'nullable|integer|min:0',
             'changes.fecha_inspeccion' => 'nullable|date',
             'changes.tipo_vehiculo' => 'nullable|string',
+            'changes.es_repuesto_especial' => 'nullable|boolean',
         ]);
 
         $changes = collect($validated['changes'])
@@ -1597,14 +1599,18 @@ public function reprocesarIndividual($id)
                     : $ingreso->cilindraje;
                 $fechaInspeccionOperacion = $changesToApply['fecha_inspeccion'] ?? $ingreso->fecha_inspeccion;
                 $tipoVehiculoOperacion = $changesToApply['tipo_vehiculo'] ?? $ingreso->clase;
+                $esRepuestoEspecialOperacion = array_key_exists('es_repuesto_especial', $changesToApply)
+                    ? filter_var($changesToApply['es_repuesto_especial'], FILTER_VALIDATE_BOOLEAN)
+                    : false;
 
                 unset($changesToApply['tipo_vehiculo']);
+                unset($changesToApply['es_repuesto_especial']);
 
                 if (!empty($tipoVehiculoOperacion) && !empty($cilindrajeOperacion)) {
-                    $repuesto = ValoresRepuesto::where('tipo', $tipoVehiculoOperacion)
+                    $repuesto = ValoresRepuesto::where('tipo', $this->normalizarTipoVehiculoMasivo($tipoVehiculoOperacion))
                         ->where('cilindraje_from', '<=', $cilindrajeOperacion)
                         ->where('cilindraje_to', '>=', $cilindrajeOperacion)
-                        ->where('especial', false)
+                        ->where('especial', $esRepuestoEspecialOperacion)
                         ->first();
 
                     if ($repuesto) {
@@ -2005,6 +2011,16 @@ public function reprocesarIndividual($id)
         }
 
         return strtoupper(trim($placa));
+    }
+
+    private function normalizarTipoVehiculoMasivo(?string $tipoVehiculo): string
+    {
+        $normalizado = Str::upper(trim(Str::ascii((string) $tipoVehiculo)));
+
+        return match ($normalizado) {
+            'MOTOCILIETA', 'MOTOCICLETAS' => 'MOTOCICLETA',
+            default => $normalizado,
+        };
     }
 
     private function normalizeNumeric($value): ?float
