@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Models\IngresoImage;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Client\Pool;
 use Illuminate\Http\Response;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -60,6 +61,17 @@ class AvaluoController extends Controller
         'fecha_inspeccion',
         'tipo_vehiculo',
         'es_repuesto_especial',
+    ];
+
+    private const LIMITACIONES_POR_DEFECTO = [
+        'Las condiciones climatológicas, ambientales, de iluminación y de almacenamiento del vehículo al momento de la inspección pueden influir en la apreciación del estado físico y estético de los componentes, constituyéndose en una limitación inherente al proceso de inspección técnica.',
+        'La inspección técnica se limita a una evaluación visual y funcional de los sistemas, subconjuntos y componentes del vehículo que se encuentran accesibles y ensamblados, sin realizar desarmes parciales o totales, los cuales se encuentran fuera del alcance del presente avalúo.',
+        'El bien objeto del presente avalúo se encuentra sometido a gastos continuos derivados de su permanencia en patios oficiales y/o privados.',
+        'El presente avalúo se realizó sin efectuar desarmes, pruebas invasivas ni intervenciones mecánicas, limitándose la verificación del motor a una inspección visual externa. Por lo anterior, no se puede determinar el estado real de los componentes internos ni de los sistemas asociados.',
+        'No se realiza validación de los sistemas de identificación del vehículo ni consulta de antecedentes judiciales, constituyéndose esta condición como una limitación del presente avalúo técnico.',
+        'El método usado para el cálculo de datos es el de comparación de mercado. Este método consiste en reunir datos de varias fuentes del mercado local como lo son: concesionarios de nuevos y usados, clasificados en sitios web y revistas especialistas; una vez consultadas estas fuentes se sigue el proceso de valoración.',
+        'Moto en estado regular con focos de oxidación en chasis, estructura asiento, tubo de exhosto, barras delanteras y piezas metálicas, motor posiblemente bloqueado por falta de mantenimiento.',
+        'El índice de reparabilidad mínimo supera el 90% del valor comercial del vehículo, teniendo en cuenta esto se calcula valor de charra por peso mermado ajustado por el valor de chatarra vigente para compra. El concepto de valor adoptado para el avalúo es VALOR CHATARRA.',
     ];
     // Obtener listado paginado con búsqueda
     public function index(Request $request)
@@ -1753,6 +1765,8 @@ public function reprocesarIndividual($id)
 
     public function bulkImportCompact(Request $request)
     {
+        @set_time_limit(0);
+
         $validated = $request->validate([
             'file' => 'required|file|mimes:xlsx,xls,csv',
             'metodo' => 'required|string|in:comercial,jans',
@@ -1783,33 +1797,50 @@ public function reprocesarIndividual($id)
         foreach ($rows as $index => $rawRow) {
             try {
                 $row = $this->mapRowByHeaders($rawRow, $headers);
-                $placa = $this->normalizePlate($this->value($row, 'placas'));
+                $placa = $this->normalizePlate($this->value($row, 'placas') ?? $this->value($row, 'placa'));
 
                 if (!$placa) {
-                    throw new \RuntimeException('La columna PLACAS es obligatoria');
+                    throw new \RuntimeException('La columna PLACA/PLACAS es obligatoria');
                 }
 
                 DB::transaction(function () use ($row, $placa, &$procesados, $zip, $validated) {
+                    $fechaIngresoPatios = $this->valueFromAliases($row, [
+                        'fecha_ingreso_a_patios',
+                        'ingreso_a_patios',
+                        'fecha_inmovilizacion',
+                    ]);
+
+                    $fechaInspeccion = $this->valueFromAliases($row, [
+                        'fecha_avaluo',
+                        'fecha_inspeccion',
+                    ]);
+
+                    $codigoFasecolda = $this->valueFromAliases($row, [
+                        'codigo_fasecolda',
+                        'cod_fasecolda',
+                        'fasecolda',
+                    ]);
+
                     $ingresoData = [
                         'tiposervicio' => 'Sec Bogota',
                         'placa' => $placa,
-                        'ubicacion_activo' => $this->value($row, 'ubicacion'),
-                        'fecha_inspeccion' => $this->parseExcelDate($this->value($row, 'fecha_avaluo')),
-                        'fecha_ingreso' => $this->parseExcelDate($this->value($row, 'fecha_ingreso_a_patios')),
-                        'organismo_transito' => $this->value($row, 'organismo_de_transito'),
-                        'estado_registro_runt' => $this->value($row, 'estado_de_registro_en_runt'),
+                        'ubicacion_activo' => $this->valueFromAliases($row, ['ubicacion']),
+                        'fecha_inspeccion' => $this->parseExcelDate($fechaInspeccion),
+                        'fecha_ingreso' => $this->parseExcelDate($fechaIngresoPatios),
+                        'organismo_transito' => $this->valueFromAliases($row, ['organismo_de_transito', 'organismo_transito']),
+                        'estado_registro_runt' => $this->valueFromAliases($row, ['estado_de_registro_en_runt', 'estado_runt']),
                         'marca' => $this->value($row, 'marca'),
                         'clase' => $this->value($row, 'clase'),
-                        'tipo_servicio_vehiculo' => $this->value($row, 'servicio'),
+                        'tipo_servicio_vehiculo' => $this->valueFromAliases($row, ['servicio', 'tipo_de_servicio']),
                         'linea' => $this->value($row, 'linea'),
                         'modelo' => $this->normalizeNumeric($this->value($row, 'modelo')),
                         'color' => $this->value($row, 'color'),
-                        'tipo_carroceria' => $this->value($row, 'carroceria'),
+                        'tipo_carroceria' => $this->valueFromAliases($row, ['carroceria', 'tipo_carroceria']),
                         'cilindraje' => $this->normalizeNumeric($this->value($row, 'cilindraje')),
-                        'numero_motor' => $this->value($row, 'motor'),
-                        'numero_chasis' => $this->value($row, 'chasis'),
+                        'numero_motor' => $this->valueFromAliases($row, ['motor', 'numero_motor']),
+                        'numero_chasis' => $this->valueFromAliases($row, ['chasis', 'numero_de_chasis', 'numero_chasis']),
                         'numero_serie' => $this->value($row, 'serie'),
-                        'numeroVin' => $this->value($row, 'vin'),
+                        'numeroVin' => $this->valueFromAliases($row, ['vin', 'numero_vin']),
                         'numero_pasajeros' => $this->normalizeNumeric($this->value($row, 'pasajeros')),
                         'capacidad_ton' => $this->normalizeNumeric($this->value($row, 'capacidad_ton')),
                         'cantidad_ejes' => $this->normalizeNumeric($this->value($row, 'ejes')),
@@ -1843,23 +1874,23 @@ public function reprocesarIndividual($id)
                         'ingreso_id' => $ingreso->id,
                         'tipo' => $validated['metodo'],
                         'formato' => 'Sec. Movilidad Bogotá',
-                        'fecha_inspeccion' => $this->parseExcelDate($this->value($row, 'fecha_avaluo')),
-                        'fecha_inmovilizacion' => $this->parseExcelDate($this->value($row, 'fecha_ingreso_a_patios')),
+                        'fecha_inspeccion' => $this->parseExcelDate($fechaInspeccion),
+                        'fecha_inmovilizacion' => $this->parseExcelDate($fechaIngresoPatios),
                         'dias_inmovilizacion' => $this->normalizeInteger($this->value($row, 'dias_inmovilizado')),
                         'evaluador' => $evaluadorNombre,
                         'user_id' => $evaluador?->id,
                         'consecutivo' => null,
                         'inicial' => null,
-                        'codigo_fasecolda' => $this->value($row, 'codigo_fasecolda'),
-                        'observaciones' => $this->value($row, 'diagnostico'),
-                        'valor_razonable' => $this->normalizeNumeric($this->value($row, 'valor_razonable')),
-                        'valor_resonable' => $this->normalizeNumeric($this->value($row, 'valor_razonable')),
+                        'codigo_fasecolda' => $codigoFasecolda,
+                        'observaciones' => $this->valueFromAliases($row, ['diagnostico', 'observaciones']),
+                        'valor_razonable' => $this->normalizeNumeric($this->valueFromAliases($row, ['valor_razonable'])),
+                        'valor_resonable' => $this->normalizeNumeric($this->valueFromAliases($row, ['valor_razonable'])),
                         'valor_SOAT' => $this->normalizeNumeric($this->value($row, 'valor_soat')),
                         'valor_RTM' => $this->normalizeNumeric($this->value($row, 'valor_rtm')),
-                        'valor_chatarra_kg' => $this->normalizeNumeric($this->value($row, 'precio_chatarra')),
-                        'peso_chatarra_kg' => $this->normalizeNumeric($this->value($row, 'peso_mermado')),
-                        'avaluo_total' => $this->normalizeNumeric($this->value($row, 'valor_chatarra')),
-                        'ubicacion' => $this->value($row, 'ubicacion'),
+                        'valor_chatarra_kg' => $this->normalizeNumeric($this->valueFromAliases($row, ['precio_chatarra', 'valor_chatarra_kg'])),
+                        'peso_chatarra_kg' => $this->normalizeNumeric($this->valueFromAliases($row, ['peso_mermado', 'peso_chatarra_kg'])),
+                        'avaluo_total' => $this->normalizeNumeric($this->valueFromAliases($row, ['valor_chatarra', 'valor_total'])),
+                        'ubicacion' => $this->valueFromAliases($row, ['ubicacion']),
                         'latoneria_valor' => $this->normalizeNumeric($this->value($row, 'latoneria')),
                         'pintura_valor' => $this->normalizeNumeric($this->value($row, 'pintura')),
                         'tapiceria_valor' => $this->normalizeNumeric($this->value($row, 'tapiceria')),
@@ -1969,6 +2000,8 @@ public function reprocesarIndividual($id)
 
     public function bulkImportCompactImages(Request $request)
     {
+        @set_time_limit(0);
+
         $validated = $request->validate([
             'file' => 'required|file|mimes:xlsx,xls,csv',
         ]);
@@ -2058,6 +2091,8 @@ public function reprocesarIndividual($id)
 
     private function normalizeHeader(string $value): string
     {
+        $value = str_replace(["\u{00A0}", "\u{2007}", "\u{202F}", "\u{FEFF}"], ' ', $value);
+
         $value = Str::of($value)
             ->lower()
             ->ascii()
@@ -2096,6 +2131,18 @@ public function reprocesarIndividual($id)
 
         $value = trim((string) $value);
         return $value === '' ? null : $value;
+    }
+
+    private function valueFromAliases(array $row, array $aliases): ?string
+    {
+        foreach ($aliases as $alias) {
+            $value = $this->value($row, $alias);
+            if ($value !== null) {
+                return $value;
+            }
+        }
+
+        return null;
     }
 
     private function normalizePlate(?string $placa): ?string
@@ -2191,7 +2238,25 @@ public function reprocesarIndividual($id)
             $limitaciones[] = ['texto' => $texto];
         }
 
-        return $limitaciones;
+        if (empty($limitaciones)) {
+            $limitacionUnica = $this->value($row, 'limitacion')
+                ?? $this->value($row, '1_limitacion')
+                ?? $this->value($row, 'limitacion1');
+
+            if ($limitacionUnica) {
+                $limitaciones[] = ['texto' => $limitacionUnica];
+            }
+        }
+
+        return collect($limitaciones)
+            ->pluck('texto')
+            ->merge(self::LIMITACIONES_POR_DEFECTO)
+            ->map(fn ($texto) => trim((string) $texto))
+            ->filter(fn ($texto) => $texto !== '')
+            ->unique()
+            ->values()
+            ->map(fn (string $texto) => ['texto' => $texto])
+            ->toArray();
     }
 
 
@@ -2321,53 +2386,52 @@ public function reprocesarIndividual($id)
         $orden = 1;
         $saved = 0;
 
-        foreach ($files as $file) {
-            $download = $httpClient->timeout(30)->get("https://www.googleapis.com/drive/v3/files/{$file['id']}", [
-                'alt' => 'media',
-                'key' => $apiKey,
-                'supportsAllDrives' => true,
-            ]);
+        foreach ($files->chunk(5) as $chunk) {
+            $responses = Http::pool(function (Pool $pool) use ($chunk, $apiKey) {
+                foreach ($chunk as $index => $file) {
+                    $pool->as((string) $index)
+                        ->withOptions($this->driveHttpOptions())
+                        ->timeout(15)
+                        ->get("https://www.googleapis.com/drive/v3/files/{$file['id']}", [
+                            'alt' => 'media',
+                            'key' => $apiKey,
+                            'supportsAllDrives' => true,
+                        ]);
+                }
+            });
 
-            if (!$download->successful()) {
-                /*Log::warning('importDrivePhotos: no se pudo descargar archivo de Drive.', [
+            foreach ($chunk as $index => $file) {
+                $download = $responses[(string) $index] ?? null;
+                if (!$download || !$download->successful()) {
+                    continue;
+                }
+
+                $extension = strtolower(pathinfo((string) $file['name'], PATHINFO_EXTENSION));
+                if (!$extension) {
+                    $extension = 'jpg';
+                }
+
+                $fileName = Str::uuid() . '.' . $extension;
+                $path = "avaluos/{$avaluoId}/{$fileName}";
+                $absoluteDir = public_path("avaluos/{$avaluoId}");
+                if (!File::exists($absoluteDir)) {
+                    File::makeDirectory($absoluteDir, 0755, true);
+                }
+
+                $absolutePath = public_path($path);
+                $bytes = file_put_contents($absolutePath, $download->body());
+                if ($bytes === false) {
+                    continue;
+                }
+
+                IngresoImage::create([
                     'avaluo_id' => $avaluoId,
-                    'file_id' => $file['id'] ?? null,
-                    'file_name' => $file['name'] ?? null,
-                    'status' => $download->status(),
-                ]);*/
-                continue;
+                    'categoria' => 'extra',
+                    'path' => $path,
+                    'orden' => $orden++,
+                ]);
+                $saved++;
             }
-
-            $extension = strtolower(pathinfo((string) $file['name'], PATHINFO_EXTENSION));
-            if (!$extension) {
-                $extension = 'jpg';
-            }
-
-            $fileName = Str::uuid() . '.' . $extension;
-            $path = "avaluos/{$avaluoId}/{$fileName}";
-            $absoluteDir = public_path("avaluos/{$avaluoId}");
-            if (!File::exists($absoluteDir)) {
-                File::makeDirectory($absoluteDir, 0755, true);
-            }
-
-            $absolutePath = public_path($path);
-            $bytes = file_put_contents($absolutePath, $download->body());
-            if ($bytes === false) {
-                /*Log::error('importDrivePhotos: error guardando imagen en /public.', [
-                    'avaluo_id' => $avaluoId,
-                    'file_name' => $fileName,
-                    'absolute_path' => $absolutePath,
-                ]);*/
-                continue;
-            }
-
-            IngresoImage::create([
-                'avaluo_id' => $avaluoId,
-                'categoria' => 'extra',
-                'path' => $path,
-                'orden' => $orden++,
-            ]);
-            $saved++;
         }
 
         /*Log::info('importDrivePhotos: finalizó importación de imágenes.', [
