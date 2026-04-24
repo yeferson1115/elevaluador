@@ -15,6 +15,17 @@ use Carbon\Carbon;
 
 class IngresosMovilidadImport implements ToCollection, WithHeadingRow
 {
+    private const LIMITACIONES_POR_DEFECTO = [
+        'Las condiciones climatológicas, ambientales, de iluminación y de almacenamiento del vehículo al momento de la inspección pueden influir en la apreciación del estado físico y estético de los componentes, constituyéndose en una limitación inherente al proceso de inspección técnica.',
+        'La inspección técnica se limita a una evaluación visual y funcional de los sistemas, subconjuntos y componentes del vehículo que se encuentran accesibles y ensamblados, sin realizar desarmes parciales o totales, los cuales se encuentran fuera del alcance del presente avalúo.',
+        'El bien objeto del presente avalúo se encuentra sometido a gastos continuos derivados de su permanencia en patios oficiales y/o privados.',
+        'El presente avalúo se realizó sin efectuar desarmes, pruebas invasivas ni intervenciones mecánicas, limitándose la verificación del motor a una inspección visual externa. Por lo anterior, no se puede determinar el estado real de los componentes internos ni de los sistemas asociados.',
+        'No se realiza validación de los sistemas de identificación del vehículo ni consulta de antecedentes judiciales, constituyéndose esta condición como una limitación del presente avalúo técnico.',
+        'El método usado para el cálculo de datos es el de comparación de mercado. Este método consiste en reunir datos de varias fuentes del mercado local como lo son: concesionarios de nuevos y usados, clasificados en sitios web y revistas especialistas; una vez consultadas estas fuentes se sigue el proceso de valoración.',
+        'Moto en estado regular con focos de oxidación en chasis, estructura asiento, tubo de exhosto, barras delanteras y piezas metálicas, motor posiblemente bloqueado por falta de mantenimiento.',
+        'El índice de reparabilidad mínimo supera el 90% del valor comercial del vehículo, teniendo en cuenta esto se calcula valor de charra por peso mermado ajustado por el valor de chatarra vigente para compra. El concepto de valor adoptado para el avalúo es VALOR CHATARRA.',
+    ];
+
     public function collection(Collection $rows)
     {
         foreach ($rows as $row) {
@@ -91,11 +102,21 @@ class IngresosMovilidadImport implements ToCollection, WithHeadingRow
                 $avaluo->save();
 
                 $limitacionUno = $this->valueFromAliases($row, ['limitacion_1', 'limitacion1', 'limitacion']);
+                $avaluo->limitaciones()->delete();
+
+                $limitacionesFinales = collect(self::LIMITACIONES_POR_DEFECTO);
                 if ($limitacionUno !== null) {
-                    $avaluo->limitaciones()->delete();
-                    $avaluo->limitaciones()->create([
-                        'texto' => $limitacionUno,
-                    ]);
+                    $limitacionesFinales->prepend($limitacionUno);
+                }
+
+                foreach (
+                    $limitacionesFinales
+                        ->map(fn ($texto) => trim((string) $texto))
+                        ->filter(fn ($texto) => $texto !== '')
+                        ->unique()
+                        ->values() as $textoLimitacion
+                ) {
+                    $avaluo->limitaciones()->create(['texto' => $textoLimitacion]);
                 }
 
                 $inspectorName = $row['inspector'] ?? null;
