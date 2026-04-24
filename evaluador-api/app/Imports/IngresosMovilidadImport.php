@@ -35,11 +35,11 @@ class IngresosMovilidadImport implements ToCollection, WithHeadingRow
                     'clase' => $row['clase'] ?? null,
                     'numeroVin' => $row['numero_vin'] ?? null,
                     'tipo_servicio_vehiculo' => $row['tipo_de_servicio'] ?? null,
-                    'fecha_solicitud' => $this->parseExcelDate($row['fecha_solicitud'] ?? null),
-                    'fecha_inspeccion' => $this->parseExcelDate($row['fecha_inspeccion'] ?? null),
+                    'fecha_solicitud' => $this->parseExcelDate($this->valueFromAliases($row, ['fecha_solicitud'])),
+                    'fecha_inspeccion' => $this->parseExcelDate($this->valueFromAliases($row, ['fecha_inspeccion', 'fecha_avaluo'])),
                     'estado_registro_runt' => $row['estado_runt'] ?? null,
-                    'organismo_transito' => $row['organismo_de_transito'] ?? null,
-                    'fecha_ingreso' => $this->parseExcelDate($row['fecha_ingreso'] ?? null),
+                    'organismo_transito' => $this->valueFromAliases($row, ['organismo_de_transito', 'organismo_transito']),
+                    'fecha_ingreso' => $this->parseExcelDate($this->valueFromAliases($row, ['fecha_ingreso'])),
                     'caja_cambios' => $row['caja_de_cambios'] ?? ($row['caja'] ?? null),
                     'estado' => 'En Inspección',
                 ];
@@ -75,18 +75,28 @@ class IngresosMovilidadImport implements ToCollection, WithHeadingRow
                 }
 
                 $avaluo->fill([
-                    'fecha_inspeccion' => $this->parseExcelDate($row['fecha_inspeccion'] ?? null),
+                    'fecha_inspeccion' => $this->parseExcelDate($this->valueFromAliases($row, ['fecha_inspeccion', 'fecha_avaluo'])),
+                    'fecha_inmovilizacion' => $this->parseExcelDate($this->valueFromAliases($row, ['fecha_ingreso_a_patios', 'ingreso_a_patios', 'fecha_inmovilizacion'])),
                     'chatarra' => $row['estado_del_activo'] ?? null,
                     'valor_razonable' => $row['valor_razonable'] ?? null,
                     'avaluo_total' => $row['valor_total'] ?? null,
                     'valor_chatarra_kg' => $row['valor_chatarra_kg'] ?? null,
                     'peso_chatarra_kg' => $row['peso_chatarra_kg'] ?? null,
                     'observaciones' => $row['observaciones'] ?? null,
+                    'codigo_fasecolda' => $this->valueFromAliases($row, ['codigo_fasecolda', 'cod_fasecolda', 'fasecolda']),
                     'ubicacion' => $row['ubicacion'] ?? null,
                     'avaluador' => $avaluadorName,
                     'user_id' => $avaluadorId,
                 ]);
                 $avaluo->save();
+
+                $limitacionUno = $this->valueFromAliases($row, ['limitacion_1', 'limitacion1', 'limitacion']);
+                if ($limitacionUno !== null) {
+                    $avaluo->limitaciones()->delete();
+                    $avaluo->limitaciones()->create([
+                        'texto' => $limitacionUno,
+                    ]);
+                }
 
                 $inspectorName = $row['inspector'] ?? null;
                 $inspectorId = null;
@@ -126,7 +136,22 @@ class IngresosMovilidadImport implements ToCollection, WithHeadingRow
             return Date::excelToDateTimeObject($value)->format('Y-m-d');
         }
 
-        // Si es texto => intentar con Carbon
+        if (is_string($value)) {
+            $value = trim($value);
+            if ($value === '') {
+                return null;
+            }
+
+            foreach (['d/m/Y', 'd-m-Y', 'Y-m-d'] as $format) {
+                try {
+                    return Carbon::createFromFormat($format, $value)->format('Y-m-d');
+                } catch (\Exception $e) {
+                    // Intentar siguiente formato
+                }
+            }
+        }
+
+        // Si es texto => intentar con Carbon libre
         try {
             return Carbon::parse($value)->format('Y-m-d');
         } catch (\Exception $e) {
@@ -143,5 +168,21 @@ class IngresosMovilidadImport implements ToCollection, WithHeadingRow
         $placa = trim((string) $placa);
 
         return $placa === '' ? null : strtoupper($placa);
+    }
+
+    private function valueFromAliases($row, array $aliases): ?string
+    {
+        foreach ($aliases as $alias) {
+            if (!isset($row[$alias])) {
+                continue;
+            }
+
+            $value = trim((string) $row[$alias]);
+            if ($value !== '') {
+                return $value;
+            }
+        }
+
+        return null;
     }
 }
