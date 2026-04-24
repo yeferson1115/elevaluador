@@ -250,6 +250,9 @@
         <ng-container *ngIf="!a.avaluo?.id">
           N/A
         </ng-container>
+        <ng-container *ngIf="a.avaluo?.id && !a.avaluo?.file">
+          <span class="badge bg-warning text-dark">Sin PDF</span>
+        </ng-container>
       </td>
        
       </tr>

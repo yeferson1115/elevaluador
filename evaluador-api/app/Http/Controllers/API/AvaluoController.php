@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Models\IngresoImage;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Client\Pool;
 use Illuminate\Http\Response;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -1753,6 +1754,8 @@ public function reprocesarIndividual($id)
 
     public function bulkImportCompact(Request $request)
     {
+        @set_time_limit(0);
+
         $validated = $request->validate([
             'file' => 'required|file|mimes:xlsx,xls,csv',
             'metodo' => 'required|string|in:comercial,jans',
@@ -1783,19 +1786,22 @@ public function reprocesarIndividual($id)
         foreach ($rows as $index => $rawRow) {
             try {
                 $row = $this->mapRowByHeaders($rawRow, $headers);
-                $placa = $this->normalizePlate($this->value($row, 'placas'));
+                $placa = $this->normalizePlate($this->value($row, 'placas') ?? $this->value($row, 'placa'));
 
                 if (!$placa) {
                     throw new \RuntimeException('La columna PLACAS es obligatoria');
                 }
 
                 DB::transaction(function () use ($row, $placa, &$procesados, $zip, $validated) {
+                    $fechaIngresoPatios = $this->value($row, 'fecha_ingreso_a_patios')
+                        ?? $this->value($row, 'ingreso_a_patios');
+
                     $ingresoData = [
                         'tiposervicio' => 'Sec Bogota',
                         'placa' => $placa,
                         'ubicacion_activo' => $this->value($row, 'ubicacion'),
                         'fecha_inspeccion' => $this->parseExcelDate($this->value($row, 'fecha_avaluo')),
-                        'fecha_ingreso' => $this->parseExcelDate($this->value($row, 'fecha_ingreso_a_patios')),
+                        'fecha_ingreso' => $this->parseExcelDate($fechaIngresoPatios),
                         'organismo_transito' => $this->value($row, 'organismo_de_transito'),
                         'estado_registro_runt' => $this->value($row, 'estado_de_registro_en_runt'),
                         'marca' => $this->value($row, 'marca'),
@@ -1839,18 +1845,22 @@ public function reprocesarIndividual($id)
                         $avaluo->code_movilidad = $ultimo ? ($ultimo->code_movilidad + 1) : 1;
                     }
 
+                    $codigoFasecolda = $this->value($row, 'codigo_fasecolda')
+                        ?? $this->value($row, 'cod_fasecolda')
+                        ?? $this->value($row, 'fasecolda');
+
                     $avaluo->fill([
                         'ingreso_id' => $ingreso->id,
                         'tipo' => $validated['metodo'],
                         'formato' => 'Sec. Movilidad Bogotá',
                         'fecha_inspeccion' => $this->parseExcelDate($this->value($row, 'fecha_avaluo')),
-                        'fecha_inmovilizacion' => $this->parseExcelDate($this->value($row, 'fecha_ingreso_a_patios')),
+                        'fecha_inmovilizacion' => $this->parseExcelDate($fechaIngresoPatios),
                         'dias_inmovilizacion' => $this->normalizeInteger($this->value($row, 'dias_inmovilizado')),
                         'evaluador' => $evaluadorNombre,
                         'user_id' => $evaluador?->id,
                         'consecutivo' => null,
                         'inicial' => null,
-                        'codigo_fasecolda' => $this->value($row, 'codigo_fasecolda'),
+                        'codigo_fasecolda' => $codigoFasecolda,
                         'observaciones' => $this->value($row, 'diagnostico'),
                         'valor_razonable' => $this->normalizeNumeric($this->value($row, 'valor_razonable')),
                         'valor_resonable' => $this->normalizeNumeric($this->value($row, 'valor_razonable')),
@@ -1969,6 +1979,8 @@ public function reprocesarIndividual($id)
 
     public function bulkImportCompactImages(Request $request)
     {
+        @set_time_limit(0);
+
         $validated = $request->validate([
             'file' => 'required|file|mimes:xlsx,xls,csv',
         ]);
@@ -2191,6 +2203,16 @@ public function reprocesarIndividual($id)
             $limitaciones[] = ['texto' => $texto];
         }
 
+        if (empty($limitaciones)) {
+            $limitacionUnica = $this->value($row, 'limitacion')
+                ?? $this->value($row, '1_limitacion')
+                ?? $this->value($row, 'limitacion1');
+
+            if ($limitacionUnica) {
+                $limitaciones[] = ['texto' => $limitacionUnica];
+            }
+        }
+
         return $limitaciones;
     }
 
@@ -2321,53 +2343,52 @@ public function reprocesarIndividual($id)
         $orden = 1;
         $saved = 0;
 
-        foreach ($files as $file) {
-            $download = $httpClient->timeout(30)->get("https://www.googleapis.com/drive/v3/files/{$file['id']}", [
-                'alt' => 'media',
-                'key' => $apiKey,
-                'supportsAllDrives' => true,
-            ]);
+        foreach ($files->chunk(5) as $chunk) {
+            $responses = Http::pool(function (Pool $pool) use ($chunk, $apiKey) {
+                foreach ($chunk as $index => $file) {
+                    $pool->as((string) $index)
+                        ->withOptions($this->driveHttpOptions())
+                        ->timeout(15)
+                        ->get("https://www.googleapis.com/drive/v3/files/{$file['id']}", [
+                            'alt' => 'media',
+                            'key' => $apiKey,
+                            'supportsAllDrives' => true,
+                        ]);
+                }
+            });
 
-            if (!$download->successful()) {
-                /*Log::warning('importDrivePhotos: no se pudo descargar archivo de Drive.', [
+            foreach ($chunk as $index => $file) {
+                $download = $responses[(string) $index] ?? null;
+                if (!$download || !$download->successful()) {
+                    continue;
+                }
+
+                $extension = strtolower(pathinfo((string) $file['name'], PATHINFO_EXTENSION));
+                if (!$extension) {
+                    $extension = 'jpg';
+                }
+
+                $fileName = Str::uuid() . '.' . $extension;
+                $path = "avaluos/{$avaluoId}/{$fileName}";
+                $absoluteDir = public_path("avaluos/{$avaluoId}");
+                if (!File::exists($absoluteDir)) {
+                    File::makeDirectory($absoluteDir, 0755, true);
+                }
+
+                $absolutePath = public_path($path);
+                $bytes = file_put_contents($absolutePath, $download->body());
+                if ($bytes === false) {
+                    continue;
+                }
+
+                IngresoImage::create([
                     'avaluo_id' => $avaluoId,
-                    'file_id' => $file['id'] ?? null,
-                    'file_name' => $file['name'] ?? null,
-                    'status' => $download->status(),
-                ]);*/
-                continue;
+                    'categoria' => 'extra',
+                    'path' => $path,
+                    'orden' => $orden++,
+                ]);
+                $saved++;
             }
-
-            $extension = strtolower(pathinfo((string) $file['name'], PATHINFO_EXTENSION));
-            if (!$extension) {
-                $extension = 'jpg';
-            }
-
-            $fileName = Str::uuid() . '.' . $extension;
-            $path = "avaluos/{$avaluoId}/{$fileName}";
-            $absoluteDir = public_path("avaluos/{$avaluoId}");
-            if (!File::exists($absoluteDir)) {
-                File::makeDirectory($absoluteDir, 0755, true);
-            }
-
-            $absolutePath = public_path($path);
-            $bytes = file_put_contents($absolutePath, $download->body());
-            if ($bytes === false) {
-                /*Log::error('importDrivePhotos: error guardando imagen en /public.', [
-                    'avaluo_id' => $avaluoId,
-                    'file_name' => $fileName,
-                    'absolute_path' => $absolutePath,
-                ]);*/
-                continue;
-            }
-
-            IngresoImage::create([
-                'avaluo_id' => $avaluoId,
-                'categoria' => 'extra',
-                'path' => $path,
-                'orden' => $orden++,
-            ]);
-            $saved++;
         }
 
         /*Log::info('importDrivePhotos: finalizó importación de imágenes.', [
