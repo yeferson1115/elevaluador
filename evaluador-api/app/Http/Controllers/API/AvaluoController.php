@@ -1870,6 +1870,10 @@ public function reprocesarIndividual($id)
                         $avaluo->code_movilidad = $ultimo ? ($ultimo->code_movilidad + 1) : 1;
                     }
 
+                    $codigoFasecolda = $this->value($row, 'codigo_fasecolda')
+                        ?? $this->value($row, 'cod_fasecolda')
+                        ?? $this->value($row, 'fasecolda');
+
                     $avaluo->fill([
                         'ingreso_id' => $ingreso->id,
                         'tipo' => $validated['metodo'],
