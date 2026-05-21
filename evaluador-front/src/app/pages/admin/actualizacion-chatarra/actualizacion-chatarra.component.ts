@@ -6,7 +6,6 @@ import { IngresoService } from '../../../core/services/Ingreso.service';
 import { Ingreso } from '../../../core/interfaces/ingresos.interface';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { saveAs } from 'file-saver';
 
 interface RowInput {
   placa: string;
@@ -173,30 +172,148 @@ export class ActualizacionChatarraComponent {
     });
   }
 
-  generarZipPDFs(): void {
+  async generarZipPDFs(): Promise<void> {
     if (!this.rows.length || this.downloadingZip) return;
-
-    const ids = Array.from(new Set(this.rows.map((r) => r.ingresoId).filter((id): id is number => !!id)));
-
-    if (!ids.length) {
-      this.error = 'No se encontraron IDs válidos para exportar ZIP. Verifica que las placas existan en el sistema.';
-      return;
-    }
 
     this.downloadingZip = true;
     this.error = '';
 
-    this.ingresoService.exportCertificadosZip('', ids).subscribe({
-      next: (zipBlob: Blob) => {
-        const nombre = `actualizacion-chatarra-${new Date().toISOString().slice(0, 10)}.zip`;
-        saveAs(zipBlob, nombre);
-        this.downloadingZip = false;
-      },
-      error: () => {
-        this.error = 'No fue posible generar el ZIP. Intenta nuevamente o valida permisos del endpoint de exportación.';
-        this.downloadingZip = false;
-      },
-    });
+    try {
+      const files = this.rows.map((r, index) => {
+        const html = this.buildPrintableHtml(r);
+        const safePlaca = (r.placa || `registro-${index + 1}`).replace(/[^a-zA-Z0-9-_]/g, '_');
+        return {
+          name: `actualizacion-chatarra-${safePlaca}.html`,
+          content: html,
+        };
+      });
+
+      const zipBlob = await this.createZipFromFiles(files);
+      this.downloadBlob(zipBlob, `actualizacion-chatarra-${new Date().toISOString().slice(0, 10)}.zip`);
+    } catch (error) {
+      console.error(error);
+      this.error = 'No fue posible generar el ZIP del formato de actualización de chatarra.';
+    } finally {
+      this.downloadingZip = false;
+    }
+  }
+
+  private buildPrintableHtml(r: RowResult): string {
+    return `<!doctype html><html><head><meta charset="utf-8"><title>Actualización Chatarra ${r.placa}</title>
+    <style>body{font-family:Arial,sans-serif;padding:20px;} table{width:100%;border-collapse:collapse;margin-top:8px;} td,th{border:1px solid #999;padding:4px;font-size:12px;} h3{margin:0 0 8px}</style>
+    </head><body>
+    <div class="page">
+      <h3 style="text-align:center;font-size:16px;margin:8px 0 10px;">AJUSTE VALOR BASE KILOGRAMO DE CHATARRA</h3>
+      <table>
+        <tr><td><b>Placa:</b> ${r.placa}</td><td><b>Clase:</b> ${r.clase}</td><td><b>Servicio:</b></td></tr>
+        <tr><td><b>Marca:</b> ${r.marca}</td><td><b>Línea:</b> ${r.linea}</td><td><b>Modelo:</b> ${r.modelo}</td></tr>
+        <tr><td><b>Carrocería:</b> ${r.carroceria}</td><td><b>Motor:</b></td><td><b>Cilindraje:</b> ${r.cilindraje}</td></tr>
+        <tr><td><b>Serie:</b> ${r.serie}</td><td><b>Chasis:</b> ${r.chasis}</td><td><b>VIN:</b> ${r.vin}</td></tr>
+      </table>
+      <table>
+      <tr><th>MATERIAL</th><th>${r.nombreChatarreria1}</th><th>${r.nombreChatarreria2}</th><th>${r.nombreChatarreria3}</th><th>${r.nombreChatarreria4}</th><th>PROMEDIO</th></tr>
+      <tr><td>CHATARRA</td><td>${r.chatarreria1.toFixed(2)}</td><td>${r.chatarreria2.toFixed(2)}</td><td>${r.chatarreria3.toFixed(2)}</td><td>${r.chatarreria4.toFixed(2)}</td><td>${r.promedio.toFixed(2)}</td></tr>
+      <tr><td colspan="4"></td><td><b>FACTOR SUBASTA</b></td><td>${r.factorSubasta.toFixed(2)}</td></tr>
+      <tr><td colspan="4"></td><td><b>TOTAL</b></td><td>${r.total.toFixed(2)}</td></tr>
+      </table>
+    </div></body></html>`;
+  }
+
+  private async createZipFromFiles(files: Array<{ name: string; content: string }>): Promise<Blob> {
+    const encoder = new TextEncoder();
+    const localParts: Uint8Array[] = [];
+    const centralParts: Uint8Array[] = [];
+    let offset = 0;
+
+    for (const file of files) {
+      const nameBytes = encoder.encode(file.name);
+      const data = encoder.encode(file.content);
+      const crc = this.crc32(data);
+
+      const localHeader = new Uint8Array(30 + nameBytes.length);
+      const localView = new DataView(localHeader.buffer);
+      localView.setUint32(0, 0x04034b50, true);
+      localView.setUint16(4, 20, true);
+      localView.setUint16(6, 0, true);
+      localView.setUint16(8, 0, true);
+      localView.setUint16(10, 0, true);
+      localView.setUint16(12, 0, true);
+      localView.setUint32(14, crc, true);
+      localView.setUint32(18, data.length, true);
+      localView.setUint32(22, data.length, true);
+      localView.setUint16(26, nameBytes.length, true);
+      localView.setUint16(28, 0, true);
+      localHeader.set(nameBytes, 30);
+
+      localParts.push(localHeader, data);
+
+      const centralHeader = new Uint8Array(46 + nameBytes.length);
+      const centralView = new DataView(centralHeader.buffer);
+      centralView.setUint32(0, 0x02014b50, true);
+      centralView.setUint16(4, 20, true);
+      centralView.setUint16(6, 20, true);
+      centralView.setUint16(8, 0, true);
+      centralView.setUint16(10, 0, true);
+      centralView.setUint16(12, 0, true);
+      centralView.setUint16(14, 0, true);
+      centralView.setUint32(16, crc, true);
+      centralView.setUint32(20, data.length, true);
+      centralView.setUint32(24, data.length, true);
+      centralView.setUint16(28, nameBytes.length, true);
+      centralView.setUint16(30, 0, true);
+      centralView.setUint16(32, 0, true);
+      centralView.setUint16(34, 0, true);
+      centralView.setUint16(36, 0, true);
+      centralView.setUint32(38, 0, true);
+      centralView.setUint32(42, offset, true);
+      centralHeader.set(nameBytes, 46);
+      centralParts.push(centralHeader);
+
+      offset += localHeader.length + data.length;
+    }
+
+    const centralSize = centralParts.reduce((sum, part) => sum + part.length, 0);
+    const end = new Uint8Array(22);
+    const endView = new DataView(end.buffer);
+    endView.setUint32(0, 0x06054b50, true);
+    endView.setUint16(4, 0, true);
+    endView.setUint16(6, 0, true);
+    endView.setUint16(8, files.length, true);
+    endView.setUint16(10, files.length, true);
+    endView.setUint32(12, centralSize, true);
+    endView.setUint32(16, offset, true);
+    endView.setUint16(20, 0, true);
+
+    return new Blob([...localParts, ...centralParts, end], { type: 'application/zip' });
+  }
+
+  private crc32(data: Uint8Array): number {
+    let crc = 0 ^ -1;
+    for (let i = 0; i < data.length; i++) {
+      crc = (crc >>> 8) ^ this.crcTable[(crc ^ data[i]) & 0xff];
+    }
+    return (crc ^ -1) >>> 0;
+  }
+
+  private readonly crcTable: Uint32Array = (() => {
+    const table = new Uint32Array(256);
+    for (let n = 0; n < 256; n++) {
+      let c = n;
+      for (let k = 0; k < 8; k++) {
+        c = (c & 1) ? (0xedb88320 ^ (c >>> 1)) : (c >>> 1);
+      }
+      table[n] = c >>> 0;
+    }
+    return table;
+  })();
+
+  private downloadBlob(blob: Blob, filename: string): void {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(url);
   }
 
   generarPDF(): void {
