@@ -212,10 +212,14 @@ rotarImagen(avaluoId: number, categoria: string, url: string, grados: number) {
   );
 }
 
-import(file: File): Observable<any> {
+  import(file: File): Observable<any> {
     const formData = new FormData();
     formData.append('file', file);
     return this.http.post(`${this.baseUrl}/ingreso/import`, formData);
+  }
+
+  exportActualizacionChatarraZip(rows: any[]): Observable<Blob> {
+    return this.http.post(`${this.baseUrl}/ingresos/export-actualizacion-chatarra-zip`, { rows }, { responseType: 'blob' });
   }
 
   importSecBog(file: File): Observable<any> {

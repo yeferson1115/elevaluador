@@ -127,7 +127,7 @@ export class ActualizacionChatarraComponent {
     const placas = Array.from(new Set(inputs.map((x) => x.placa)));
 
     const requests = placas.map((placa) =>
-      this.ingresoService.getAvaluos(1, placa).pipe(
+      this.ingresoService.getAvaluos(1, placa, 'Sec Bogota').pipe(
         map((res) => {
           const match = (res?.data || []).find((ing: Ingreso) =>
             (ing?.datosGenerales?.placa || '').toUpperCase() === placa
@@ -183,42 +183,22 @@ export class ActualizacionChatarraComponent {
     this.error = '';
 
     try {
-      const files = this.rows.map((r, index) => {
-        const html = this.buildPrintableHtml(r);
-        const safePlaca = (r.placa || `registro-${index + 1}`).replace(/[^a-zA-Z0-9-_]/g, '_');
-        return {
-          name: `actualizacion-chatarra-${safePlaca}.html`,
-          content: html,
-        };
+      this.ingresoService.exportActualizacionChatarraZip(this.rows).subscribe({
+        next: (zipBlob) => {
+          this.downloadBlob(zipBlob, `actualizacion-chatarra-${new Date().toISOString().slice(0, 10)}.zip`);
+          this.downloadingZip = false;
+        },
+        error: (error) => {
+          console.error(error);
+          this.error = 'No fue posible generar el ZIP del formato de actualización de chatarra.';
+          this.downloadingZip = false;
+        }
       });
-
-      const zipBlob = await this.createZipFromFiles(files);
-      this.downloadBlob(zipBlob, `actualizacion-chatarra-${new Date().toISOString().slice(0, 10)}.zip`);
     } catch (error) {
       console.error(error);
       this.error = 'No fue posible generar el ZIP del formato de actualización de chatarra.';
-    } finally {
       this.downloadingZip = false;
     }
-  }
-
-  private buildPrintableHtml(r: RowResult): string {
-    return `<!doctype html><html><head><meta charset="utf-8"><title>Actualización Chatarra ${r.placa}</title>
-    <style>body{font-family:Arial,sans-serif;padding:20px;color:#222} table{width:100%;border-collapse:collapse;margin-top:8px;} td,th{border:1px solid #777;padding:4px;font-size:12px;} h3{margin:0 0 8px}.sub{color:#1f6f8b;font-size:30px}.section{color:#1f6f8b;font-weight:700;margin:14px 0 6px}</style>
-    </head><body><div class="page">
-      <div style="text-align:center"><img src="/assets/images/AlcadiaSDM_Bogota_Verde.png" style="max-width:330px;height:auto"/></div>
-      <h3 style="text-align:center;letter-spacing:.5px">AJUSTE VALOR BASE KILOGRAMO DE CHATARRA</h3>
-      <p style="font-size:12px">Por medio de este documento, se busca actualizar el valor base de subasta del kilogramo (kg.) de chatarra, para el lote de automotores de la subasta 28 que fueron declarados por Chatarra.</p>
-      <p style="font-size:12px">El perito <b>${r.evaluador}</b> con Registro Avaluador AVÁL-________ emite concepto mediante el cual recomienda que el vehículo que se relaciona a continuación debe ser comercializado en calidad de <b>CHATARRA</b> con un peso estimado de <b>${r.pesoChatarraKg}</b> Kg.</p>
-      <table><tr><td><b>Placa:</b> ${r.placa}</td><td><b>Clase:</b> ${r.clase}</td><td><b>Servicio:</b></td></tr><tr><td><b>Marca:</b> ${r.marca}</td><td><b>Línea:</b> ${r.linea}</td><td><b>Modelo:</b> ${r.modelo}</td></tr><tr><td><b>Carrocería:</b> ${r.carroceria}</td><td><b>Motor:</b></td><td><b>Cilindraje:</b> ${r.cilindraje}</td></tr><tr><td><b>Serie:</b> ${r.serie}</td><td><b>Chasis:</b> ${r.chasis}</td><td><b>VIN:</b> ${r.vin}</td></tr></table>
-      <div class="section">Estimación Valor Kg Chatarra</div>
-      <table><tr><th>MATERIAL</th><th>${r.nombreChatarreria1}</th><th>${r.nombreChatarreria2}</th><th>${r.nombreChatarreria3}</th><th>${r.nombreChatarreria4}</th><th>PROMEDIO</th></tr><tr><td>CHATARRA</td><td>${r.chatarreria1.toFixed(2)}</td><td>${r.chatarreria2.toFixed(2)}</td><td>${r.chatarreria3.toFixed(2)}</td><td>${r.chatarreria4.toFixed(2)}</td><td>${r.promedio.toFixed(2)}</td></tr><tr><td colspan="4"></td><td><b>FACTOR SUBASTA</b></td><td>${r.factorSubasta.toFixed(2)}</td></tr><tr><td colspan="4"></td><td><b>TOTAL</b></td><td>${r.total.toFixed(2)}</td></tr></table>
-      <div class="section">Ajuste valor vehículo</div>
-      <table><tr><th>PLACA</th><th>PESO CHATARRA Kg.</th><th>VALOR CHATARRA Kg.</th><th>AVALÚO ESTIMADO SUBASTA</th></tr><tr><td>${r.placa}</td><td>${r.pesoChatarraKg}</td><td>${r.promedio.toFixed(2)}</td><td>${r.total.toFixed(2)}</td></tr></table>
-      <div class="section">Vigencia del avalúo</div>
-      <p style="font-size:12px">El valor estimado del presente avalúo está calculado a la fecha de medición y se considera que tiene una vigencia de un (1) año; siempre que las condiciones económicas, políticas, características particulares y otras que puedan afectar el valor comercial del bien se conserven.</p>
-      <p style="font-size:12px">Se emite el presente concepto de avalúo a los ___ días del mes de ____ de ____.</p><p style="font-size:12px">Cordialmente,</p>
-    </div></body></html>`;
   }
 
   private async createZipFromFiles(files: Array<{ name: string; content: string }>): Promise<Blob> {

@@ -1940,5 +1940,36 @@ private function calcularRegresionRapida(array $puntos)
     return ['curve' => $curve, 'a' => $a, 'b' => $b];
 }
 
+public function exportActualizacionChatarraZip(Request $request)
+{
+    $rows = $request->input('rows', []);
+
+    if (!is_array($rows) || empty($rows)) {
+        return response()->json(['message' => 'No hay datos para exportar.'], 422);
+    }
+
+    $zipFileName = 'actualizacion-chatarra-' . now()->format('Y-m-d-H-i') . '.zip';
+    $zipPath = storage_path('app/temp/' . $zipFileName);
+    File::ensureDirectoryExists(dirname($zipPath));
+
+    $zip = new ZipArchive();
+    if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+        return response()->json(['message' => 'No fue posible crear el archivo ZIP.'], 500);
+    }
+
+    foreach ($rows as $index => $r) {
+        $placa = strtoupper((string) ($r['placa'] ?? ('REGISTRO-' . ($index + 1))));
+        $safePlaca = preg_replace('/[^A-Z0-9-_]/', '_', $placa);
+
+        $html = view('pdf.actualizacion_chatarra', ['row' => $r])->render();
+        $pdf = Pdf::loadHTML($html)->setPaper('letter');
+        $zip->addFromString('actualizacion-chatarra-' . $safePlaca . '.pdf', $pdf->output());
+    }
+
+    $zip->close();
+
+    return response()->download($zipPath, $zipFileName)->deleteFileAfterSend(true);
+}
+
 
 }
