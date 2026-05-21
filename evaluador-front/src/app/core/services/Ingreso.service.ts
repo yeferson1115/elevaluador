@@ -253,21 +253,6 @@ import(file: File): Observable<any> {
   }
 
   
-  exportActualizacionChatarraZip(payload: {
-    registros: Array<{
-      placa: string;
-      nombres_chatarrerias: string[];
-      valores_chatarrerias: number[];
-      factor_subasta: number;
-      promedio: number;
-      total: number;
-      vehiculo: Record<string, any>;
-    }>;
-  }): Observable<Blob> {
-    return this.http.post(`${this.apiUrl}/export-actualizacion-chatarra-zip`, payload, {
-      responseType: 'blob'
-    });
-  }
 bulkUpdateCompact(payload: {
     ids: number[];
     filtro: string;

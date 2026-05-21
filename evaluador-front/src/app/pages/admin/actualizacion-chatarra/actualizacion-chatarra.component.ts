@@ -22,6 +22,7 @@ interface RowInput {
 }
 
 interface RowResult extends RowInput {
+  ingresoId?: number;
   marca: string;
   clase: string;
   linea: string;
@@ -148,6 +149,7 @@ export class ActualizacionChatarraComponent {
 
           return {
             ...row,
+            ingresoId: ingreso?.id,
             marca: ingreso?.informacionBien?.marca || 'N/A',
             clase: ingreso?.informacionBien?.clase || 'N/A',
             linea: ingreso?.informacionBien?.linea || 'N/A',
@@ -174,39 +176,24 @@ export class ActualizacionChatarraComponent {
   generarZipPDFs(): void {
     if (!this.rows.length || this.downloadingZip) return;
 
+    const ids = Array.from(new Set(this.rows.map((r) => r.ingresoId).filter((id): id is number => !!id)));
+
+    if (!ids.length) {
+      this.error = 'No se encontraron IDs válidos para exportar ZIP. Verifica que las placas existan en el sistema.';
+      return;
+    }
+
     this.downloadingZip = true;
     this.error = '';
 
-    const payload = {
-      registros: this.rows.map((r) => ({
-        placa: r.placa,
-        nombres_chatarrerias: [r.nombreChatarreria1, r.nombreChatarreria2, r.nombreChatarreria3, r.nombreChatarreria4],
-        valores_chatarrerias: [r.chatarreria1, r.chatarreria2, r.chatarreria3, r.chatarreria4],
-        factor_subasta: r.factorSubasta,
-        promedio: r.promedio,
-        total: r.total,
-        vehiculo: {
-          marca: r.marca,
-          clase: r.clase,
-          linea: r.linea,
-          modelo: r.modelo,
-          cilindraje: r.cilindraje,
-          carroceria: r.carroceria,
-          serie: r.serie,
-          chasis: r.chasis,
-          vin: r.vin,
-        },
-      })),
-    };
-
-    this.ingresoService.exportActualizacionChatarraZip(payload).subscribe({
-      next: (zipBlob) => {
+    this.ingresoService.exportCertificadosZip('', ids).subscribe({
+      next: (zipBlob: Blob) => {
         const nombre = `actualizacion-chatarra-${new Date().toISOString().slice(0, 10)}.zip`;
         saveAs(zipBlob, nombre);
         this.downloadingZip = false;
       },
       error: () => {
-        this.error = 'No fue posible generar el ZIP en el servidor. Verifica que el endpoint esté habilitado.';
+        this.error = 'No fue posible generar el ZIP. Intenta nuevamente o valida permisos del endpoint de exportación.';
         this.downloadingZip = false;
       },
     });
