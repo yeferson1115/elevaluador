@@ -33,6 +33,8 @@ interface RowResult extends RowInput {
   vin: string;
   promedio: number;
   total: number;
+  evaluador: string;
+  pesoChatarraKg: number | string;
 }
 
 @Component({
@@ -160,6 +162,8 @@ export class ActualizacionChatarraComponent {
             vin: ingreso?.informacionBien?.numeroVin || 'N/A',
             promedio,
             total,
+            evaluador: (ingreso as any)?.avaluo?.evaluador || 'N/A',
+            pesoChatarraKg: (ingreso as any)?.avaluo?.peso_chatarra_kg ?? '-',
           };
         });
 
@@ -200,22 +204,20 @@ export class ActualizacionChatarraComponent {
 
   private buildPrintableHtml(r: RowResult): string {
     return `<!doctype html><html><head><meta charset="utf-8"><title>Actualización Chatarra ${r.placa}</title>
-    <style>body{font-family:Arial,sans-serif;padding:20px;} table{width:100%;border-collapse:collapse;margin-top:8px;} td,th{border:1px solid #999;padding:4px;font-size:12px;} h3{margin:0 0 8px}</style>
-    </head><body>
-    <div class="page">
-      <h3 style="text-align:center;font-size:16px;margin:8px 0 10px;">AJUSTE VALOR BASE KILOGRAMO DE CHATARRA</h3>
-      <table>
-        <tr><td><b>Placa:</b> ${r.placa}</td><td><b>Clase:</b> ${r.clase}</td><td><b>Servicio:</b></td></tr>
-        <tr><td><b>Marca:</b> ${r.marca}</td><td><b>Línea:</b> ${r.linea}</td><td><b>Modelo:</b> ${r.modelo}</td></tr>
-        <tr><td><b>Carrocería:</b> ${r.carroceria}</td><td><b>Motor:</b></td><td><b>Cilindraje:</b> ${r.cilindraje}</td></tr>
-        <tr><td><b>Serie:</b> ${r.serie}</td><td><b>Chasis:</b> ${r.chasis}</td><td><b>VIN:</b> ${r.vin}</td></tr>
-      </table>
-      <table>
-      <tr><th>MATERIAL</th><th>${r.nombreChatarreria1}</th><th>${r.nombreChatarreria2}</th><th>${r.nombreChatarreria3}</th><th>${r.nombreChatarreria4}</th><th>PROMEDIO</th></tr>
-      <tr><td>CHATARRA</td><td>${r.chatarreria1.toFixed(2)}</td><td>${r.chatarreria2.toFixed(2)}</td><td>${r.chatarreria3.toFixed(2)}</td><td>${r.chatarreria4.toFixed(2)}</td><td>${r.promedio.toFixed(2)}</td></tr>
-      <tr><td colspan="4"></td><td><b>FACTOR SUBASTA</b></td><td>${r.factorSubasta.toFixed(2)}</td></tr>
-      <tr><td colspan="4"></td><td><b>TOTAL</b></td><td>${r.total.toFixed(2)}</td></tr>
-      </table>
+    <style>body{font-family:Arial,sans-serif;padding:20px;color:#222} table{width:100%;border-collapse:collapse;margin-top:8px;} td,th{border:1px solid #777;padding:4px;font-size:12px;} h3{margin:0 0 8px}.sub{color:#1f6f8b;font-size:30px}.section{color:#1f6f8b;font-weight:700;margin:14px 0 6px}</style>
+    </head><body><div class="page">
+      <div style="text-align:center"><img src="/logos/AlcadiaSDM_Bogota_Verde.png" style="max-width:330px;height:auto"/></div>
+      <h3 style="text-align:center;letter-spacing:.5px">AJUSTE VALOR BASE KILOGRAMO DE CHATARRA</h3>
+      <p style="font-size:12px">Por medio de este documento, se busca actualizar el valor base de subasta del kilogramo (kg.) de chatarra, para el lote de automotores de la subasta 28 que fueron declarados por Chatarra.</p>
+      <p style="font-size:12px">El perito <b>${r.evaluador}</b> con Registro Avaluador AVÁL-________ emite concepto mediante el cual recomienda que el vehículo que se relaciona a continuación debe ser comercializado en calidad de <b>CHATARRA</b> con un peso estimado de <b>${r.pesoChatarraKg}</b> Kg.</p>
+      <table><tr><td><b>Placa:</b> ${r.placa}</td><td><b>Clase:</b> ${r.clase}</td><td><b>Servicio:</b></td></tr><tr><td><b>Marca:</b> ${r.marca}</td><td><b>Línea:</b> ${r.linea}</td><td><b>Modelo:</b> ${r.modelo}</td></tr><tr><td><b>Carrocería:</b> ${r.carroceria}</td><td><b>Motor:</b></td><td><b>Cilindraje:</b> ${r.cilindraje}</td></tr><tr><td><b>Serie:</b> ${r.serie}</td><td><b>Chasis:</b> ${r.chasis}</td><td><b>VIN:</b> ${r.vin}</td></tr></table>
+      <div class="section">Estimación Valor Kg Chatarra</div>
+      <table><tr><th>MATERIAL</th><th>${r.nombreChatarreria1}</th><th>${r.nombreChatarreria2}</th><th>${r.nombreChatarreria3}</th><th>${r.nombreChatarreria4}</th><th>PROMEDIO</th></tr><tr><td>CHATARRA</td><td>${r.chatarreria1.toFixed(2)}</td><td>${r.chatarreria2.toFixed(2)}</td><td>${r.chatarreria3.toFixed(2)}</td><td>${r.chatarreria4.toFixed(2)}</td><td>${r.promedio.toFixed(2)}</td></tr><tr><td colspan="4"></td><td><b>FACTOR SUBASTA</b></td><td>${r.factorSubasta.toFixed(2)}</td></tr><tr><td colspan="4"></td><td><b>TOTAL</b></td><td>${r.total.toFixed(2)}</td></tr></table>
+      <div class="section">Ajuste valor vehículo</div>
+      <table><tr><th>PLACA</th><th>PESO CHATARRA Kg.</th><th>VALOR CHATARRA Kg.</th><th>AVALÚO ESTIMADO SUBASTA</th></tr><tr><td>${r.placa}</td><td>${r.pesoChatarraKg}</td><td>${r.promedio.toFixed(2)}</td><td>${r.total.toFixed(2)}</td></tr></table>
+      <div class="section">Vigencia del avalúo</div>
+      <p style="font-size:12px">El valor estimado del presente avalúo está calculado a la fecha de medición y se considera que tiene una vigencia de un (1) año; siempre que las condiciones económicas, políticas, características particulares y otras que puedan afectar el valor comercial del bien se conserven.</p>
+      <p style="font-size:12px">Se emite el presente concepto de avalúo a los ___ días del mes de ____ de ____.</p><p style="font-size:12px">Cordialmente,</p>
     </div></body></html>`;
   }
 
