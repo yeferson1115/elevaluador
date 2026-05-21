@@ -252,7 +252,8 @@ import(file: File): Observable<any> {
     });
   }
 
-  bulkUpdateCompact(payload: {
+  
+bulkUpdateCompact(payload: {
     ids: number[];
     filtro: string;
     all_filtered: boolean;
