@@ -1,0 +1,95 @@
+<h4>Actualización Chatarra</h4>
+<p class="text-muted">Sube un Excel con columnas: <b>placa, nombre_chatarreria_1, chatarreria_1, nombre_chatarreria_2, chatarreria_2, nombre_chatarreria_3, chatarreria_3, nombre_chatarreria_4, chatarreria_4, factor_subasta</b>.</p>
+
+<div class="d-flex gap-2 mb-3">
+  <button class="btn btn-outline-primary" (click)="descargarFormatoExcel()">Descargar formato Excel</button>
+  <input type="file" class="form-control" accept=".xlsx,.xls" (change)="onFileSelected($event)">
+  <button class="btn btn-success" [disabled]="!rows.length" (click)="generarPDF()">Generar/Descargar PDF</button>
+</div>
+
+<div *ngIf="loading" class="alert alert-info">Procesando archivo...</div>
+<div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+<div class="table-responsive" *ngIf="rows.length">
+  <table class="table table-sm table-bordered">
+    <thead>
+      <tr>
+        <th>Placa</th><th>Marca</th><th>Clase</th><th>Línea</th><th>Modelo</th><th>Cilindraje</th>
+        <th>Nombre C1</th><th>C1</th><th>Nombre C2</th><th>C2</th><th>Nombre C3</th><th>C3</th><th>Nombre C4</th><th>C4</th><th>Promedio</th><th>Factor</th><th>Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let r of rows">
+        <td>{{ r.placa }}</td><td>{{ r.marca }}</td><td>{{ r.clase }}</td><td>{{ r.linea }}</td><td>{{ r.modelo }}</td><td>{{ r.cilindraje }}</td>
+        <td>{{ r.nombreChatarreria1 }}</td><td>{{ r.chatarreria1 | number:'1.0-0' }}</td><td>{{ r.nombreChatarreria2 }}</td><td>{{ r.chatarreria2 | number:'1.0-0' }}</td><td>{{ r.nombreChatarreria3 }}</td><td>{{ r.chatarreria3 | number:'1.0-0' }}</td><td>{{ r.nombreChatarreria4 }}</td><td>{{ r.chatarreria4 | number:'1.0-0' }}</td>
+        <td>{{ r.promedio | number:'1.0-2' }}</td><td>{{ r.factorSubasta | number:'1.0-3' }}</td><td>{{ r.total | number:'1.0-2' }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div id="printable-content" style="display:none">
+  <div class="page" *ngFor="let r of rows">
+    <div class="header" style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+      <div style="font-weight:700;font-size:28px;line-height:1;">BOGOTÁ</div>
+      <div style="font-size:15px;font-weight:700;text-align:right;line-height:1.1;">SECRETARÍA DE<br>MOVILIDAD</div>
+    </div>
+
+    <h3 style="text-align:center;font-size:16px;margin:8px 0 10px;">AJUSTE VALOR BASE KILOGRAMO DE CHATARRA</h3>
+
+    <p style="font-size:12px;margin:0 0 6px;">Por medio de este documento, se busca actualizar el valor base de subasta del kilogramo (kg.) de chatarra, para el lote de automotores de la subasta 28 que fueron declarados por Chatarra.</p>
+
+    <p style="font-size:12px;margin:0 0 6px;">El perito _______________________ con Registro Avaluador AVÁL-________ emite concepto mediante el cual recomienda que el vehículo se relacione a continuación debe ser comercializado en calidad de <b>CHATARRA</b> con un peso estimado de _______ Kg.</p>
+
+    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+      <tr><td style="border:1px solid #666;padding:2px;"><b>Placa:</b> {{ r.placa }}</td><td style="border:1px solid #666;padding:2px;"><b>Clase:</b> {{ r.clase }}</td><td style="border:1px solid #666;padding:2px;"><b>Servicio:</b></td></tr>
+      <tr><td style="border:1px solid #666;padding:2px;"><b>Marca:</b> {{ r.marca }}</td><td style="border:1px solid #666;padding:2px;"><b>Línea:</b> {{ r.linea }}</td><td style="border:1px solid #666;padding:2px;"><b>Modelo:</b> {{ r.modelo }}</td></tr>
+      <tr><td style="border:1px solid #666;padding:2px;"><b>Carrocería:</b> {{ r.carroceria }}</td><td style="border:1px solid #666;padding:2px;"><b>Motor:</b></td><td style="border:1px solid #666;padding:2px;"><b>Cilindraje:</b> {{ r.cilindraje }}</td></tr>
+      <tr><td style="border:1px solid #666;padding:2px;"><b>Serie:</b> {{ r.serie }}</td><td style="border:1px solid #666;padding:2px;"><b>Chasis:</b> {{ r.chasis }}</td><td style="border:1px solid #666;padding:2px;"><b>VIN:</b> {{ r.vin }}</td></tr>
+    </table>
+
+    <h4 style="font-size:14px;color:#1f6f8b;margin:10px 0 4px;">Estimación Valor Kg Chatarra</h4>
+    <p style="font-size:12px;margin:0 0 6px;">Para este cálculo se usó el método de mercado con el fin de determinar el valor del kilogramo (kg.), de chatarra, promediarlo y posteriormente afectarlo por un factor de subasta con el fin de determinar el valor base de venta.</p>
+
+    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+      <tr>
+        <th style="border:1px solid #666;padding:3px;">MATERIAL</th>
+        <th style="border:1px solid #666;padding:3px;">{{ r.nombreChatarreria1 }}</th>
+        <th style="border:1px solid #666;padding:3px;">{{ r.nombreChatarreria2 }}</th>
+        <th style="border:1px solid #666;padding:3px;">{{ r.nombreChatarreria3 }}</th>
+        <th style="border:1px solid #666;padding:3px;">{{ r.nombreChatarreria4 }}</th>
+        <th style="border:1px solid #666;padding:3px;">PROMEDIO</th>
+      </tr>
+      <tr>
+        <td style="border:1px solid #666;padding:3px;">CHATARRA</td>
+        <td style="border:1px solid #666;padding:3px;text-align:center;">{{ r.chatarreria1 | number:'1.0-2' }}</td>
+        <td style="border:1px solid #666;padding:3px;text-align:center;">{{ r.chatarreria2 | number:'1.0-2' }}</td>
+        <td style="border:1px solid #666;padding:3px;text-align:center;">{{ r.chatarreria3 | number:'1.0-2' }}</td>
+        <td style="border:1px solid #666;padding:3px;text-align:center;">{{ r.chatarreria4 | number:'1.0-2' }}</td>
+        <td style="border:1px solid #666;padding:3px;text-align:center;">{{ r.promedio | number:'1.0-2' }}</td>
+      </tr>
+      <tr><td colspan="4" style="border:none"></td><td style="border:1px solid #666;padding:3px;"><b>FACTOR SUBASTA</b></td><td style="border:1px solid #666;padding:3px;text-align:center;">{{ r.factorSubasta | number:'1.0-2' }}</td></tr>
+      <tr><td colspan="4" style="border:none"></td><td style="border:1px solid #666;padding:3px;"><b>TOTAL</b></td><td style="border:1px solid #666;padding:3px;text-align:center;">{{ r.total | number:'1.0-2' }}</td></tr>
+    </table>
+
+    <h4 style="font-size:14px;color:#1f6f8b;margin:10px 0 4px;">Ajuste valor vehículo</h4>
+    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+      <tr>
+        <th style="border:1px solid #666;padding:3px;">PLACA</th>
+        <th style="border:1px solid #666;padding:3px;">PESO CHATARRA Kg.</th>
+        <th style="border:1px solid #666;padding:3px;">VALOR CHATARRA Kg.</th>
+        <th style="border:1px solid #666;padding:3px;">AVALÚO ESTIMADO SUBASTA</th>
+      </tr>
+      <tr>
+        <td style="border:1px solid #666;padding:3px;text-align:center;">{{ r.placa }}</td>
+        <td style="border:1px solid #666;padding:3px;text-align:center;">-</td>
+        <td style="border:1px solid #666;padding:3px;text-align:center;">{{ r.promedio | number:'1.0-2' }}</td>
+        <td style="border:1px solid #666;padding:3px;text-align:center;">{{ r.total | number:'1.0-2' }}</td>
+      </tr>
+    </table>
+
+    <h4 style="font-size:14px;color:#1f6f8b;margin:10px 0 4px;">Vigencia del avalúo</h4>
+    <p style="font-size:12px;margin:0 0 4px;">El valor estimado del presente avalúo está calculado a la fecha de medición y se considera que tiene una vigencia de un (1) año; siempre que las condiciones económicas, políticas, características particulares y otras que puedan afectar el valor comercial del bien se conserven.</p>
+    <p style="font-size:12px;margin:0;">Se emite el presente concepto de avalúo a los ____ días, del mes de ______ de ______.</p>
+  </div>
+</div>
