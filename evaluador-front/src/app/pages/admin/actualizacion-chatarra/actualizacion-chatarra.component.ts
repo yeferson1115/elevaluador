@@ -4,12 +4,18 @@ import { FormsModule } from '@angular/forms';
 import * as XLSX from 'xlsx';
 import { IngresoService } from '../../../core/services/Ingreso.service';
 import { Ingreso } from '../../../core/interfaces/ingresos.interface';
+import { forkJoin, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
 interface RowInput {
   placa: string;
+  nombreChatarreria1: string;
   chatarreria1: number;
+  nombreChatarreria2: string;
   chatarreria2: number;
+  nombreChatarreria3: string;
   chatarreria3: number;
+  nombreChatarreria4: string;
   chatarreria4: number;
   factorSubasta: number;
 }
@@ -45,9 +51,13 @@ export class ActualizacionChatarraComponent {
     const data = [
       {
         placa: 'ABC123',
+        nombre_chatarreria_1: 'CHATARRERIA LA 66',
         chatarreria_1: 1200,
+        nombre_chatarreria_2: 'CHATARRERIA A TOLIMA',
         chatarreria_2: 1100,
+        nombre_chatarreria_3: 'CHATARRERIA SOACHA',
         chatarreria_3: 1300,
+        nombre_chatarreria_4: 'CHATARRERIA SBS BOGOTA',
         chatarreria_4: 1250,
         factor_subasta: 0.85,
       }
@@ -97,20 +107,36 @@ export class ActualizacionChatarraComponent {
 
     return {
       placa,
+      nombreChatarreria1: String(row.nombre_chatarreria_1 || 'CHATARRERIA 1').trim(),
       chatarreria1: toNumber(row.chatarreria_1),
+      nombreChatarreria2: String(row.nombre_chatarreria_2 || 'CHATARRERIA 2').trim(),
       chatarreria2: toNumber(row.chatarreria_2),
+      nombreChatarreria3: String(row.nombre_chatarreria_3 || 'CHATARRERIA 3').trim(),
       chatarreria3: toNumber(row.chatarreria_3),
+      nombreChatarreria4: String(row.nombre_chatarreria_4 || 'CHATARRERIA 4').trim(),
       chatarreria4: toNumber(row.chatarreria_4),
       factorSubasta: toNumber(row.factor_subasta),
     };
   }
 
   private resolveRows(inputs: RowInput[]): void {
-    this.ingresoService.getAll().subscribe({
-      next: (ingresos: Ingreso[]) => {
-        const byPlaca = new Map(
-          ingresos.map((ing) => [ing.datosGenerales?.placa?.toUpperCase(), ing])
-        );
+    const placas = Array.from(new Set(inputs.map((x) => x.placa)));
+
+    const requests = placas.map((placa) =>
+      this.ingresoService.getAvaluos(1, placa).pipe(
+        map((res) => {
+          const match = (res?.data || []).find((ing: Ingreso) =>
+            (ing?.datosGenerales?.placa || '').toUpperCase() === placa
+          );
+          return [placa, match || null] as const;
+        }),
+        catchError(() => of([placa, null] as const))
+      )
+    );
+
+    forkJoin(requests).subscribe({
+      next: (pairs) => {
+        const byPlaca = new Map<string, Ingreso | null>(pairs);
 
         this.rows = inputs.map((row) => {
           const ingreso = byPlaca.get(row.placa);

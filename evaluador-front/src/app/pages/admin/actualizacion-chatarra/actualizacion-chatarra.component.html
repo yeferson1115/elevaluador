@@ -1,5 +1,5 @@
 <h4>Actualización Chatarra</h4>
-<p class="text-muted">Sube un Excel con columnas: <b>placa, chatarreria_1, chatarreria_2, chatarreria_3, chatarreria_4, factor_subasta</b>.</p>
+<p class="text-muted">Sube un Excel con columnas: <b>placa, nombre_chatarreria_1, chatarreria_1, nombre_chatarreria_2, chatarreria_2, nombre_chatarreria_3, chatarreria_3, nombre_chatarreria_4, chatarreria_4, factor_subasta</b>.</p>
 
 <div class="d-flex gap-2 mb-3">
   <button class="btn btn-outline-primary" (click)="descargarFormatoExcel()">Descargar formato Excel</button>
@@ -15,13 +15,13 @@
     <thead>
       <tr>
         <th>Placa</th><th>Marca</th><th>Clase</th><th>Línea</th><th>Modelo</th><th>Cilindraje</th>
-        <th>C1</th><th>C2</th><th>C3</th><th>C4</th><th>Promedio</th><th>Factor</th><th>Total</th>
+        <th>Nombre C1</th><th>C1</th><th>Nombre C2</th><th>C2</th><th>Nombre C3</th><th>C3</th><th>Nombre C4</th><th>C4</th><th>Promedio</th><th>Factor</th><th>Total</th>
       </tr>
     </thead>
     <tbody>
       <tr *ngFor="let r of rows">
         <td>{{ r.placa }}</td><td>{{ r.marca }}</td><td>{{ r.clase }}</td><td>{{ r.linea }}</td><td>{{ r.modelo }}</td><td>{{ r.cilindraje }}</td>
-        <td>{{ r.chatarreria1 | number:'1.0-0' }}</td><td>{{ r.chatarreria2 | number:'1.0-0' }}</td><td>{{ r.chatarreria3 | number:'1.0-0' }}</td><td>{{ r.chatarreria4 | number:'1.0-0' }}</td>
+        <td>{{ r.nombreChatarreria1 }}</td><td>{{ r.chatarreria1 | number:'1.0-0' }}</td><td>{{ r.nombreChatarreria2 }}</td><td>{{ r.chatarreria2 | number:'1.0-0' }}</td><td>{{ r.nombreChatarreria3 }}</td><td>{{ r.chatarreria3 | number:'1.0-0' }}</td><td>{{ r.nombreChatarreria4 }}</td><td>{{ r.chatarreria4 | number:'1.0-0' }}</td>
         <td>{{ r.promedio | number:'1.0-2' }}</td><td>{{ r.factorSubasta | number:'1.0-3' }}</td><td>{{ r.total | number:'1.0-2' }}</td>
       </tr>
     </tbody>
@@ -38,7 +38,7 @@
       <tr><th>VIN</th><td colspan="5">{{ r.vin }}</td></tr>
     </table>
     <table>
-      <tr><th>Chatarrería 1</th><th>Chatarrería 2</th><th>Chatarrería 3</th><th>Chatarrería 4</th><th>Promedio</th></tr>
+      <tr><th>{{ r.nombreChatarreria1 }}</th><th>{{ r.nombreChatarreria2 }}</th><th>{{ r.nombreChatarreria3 }}</th><th>{{ r.nombreChatarreria4 }}</th><th>Promedio</th></tr>
       <tr><td>{{ r.chatarreria1 }}</td><td>{{ r.chatarreria2 }}</td><td>{{ r.chatarreria3 }}</td><td>{{ r.chatarreria4 }}</td><td>{{ r.promedio | number:'1.0-2' }}</td></tr>
       <tr><th colspan="4">Factor subasta</th><td>{{ r.factorSubasta }}</td></tr>
       <tr><th colspan="4">Total</th><td>{{ r.total | number:'1.0-2' }}</td></tr>
