@@ -95,6 +95,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('/ingresos/export-sec-bog', [IngresoController::class, 'exportSecBog']);
     Route::get('/ingresos/export-certificados-zip', [IngresoController::class, 'exportCertificadosZipMejorado']);
     Route::post('/ingresos/export-certificados-zip-background', [IngresoController::class, 'exportCertificadosZipBackground']);
+    Route::post('/ingresos/export-actualizacion-chatarra-zip', [IngresoController::class, 'exportActualizacionChatarraZip']);
 });
 
 // Rutas públicas
