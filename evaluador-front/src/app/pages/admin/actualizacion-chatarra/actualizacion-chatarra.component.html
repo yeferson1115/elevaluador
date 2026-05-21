@@ -3,8 +3,8 @@
 
 <div class="d-flex gap-2 mb-3">
   <button class="btn btn-outline-primary" (click)="descargarFormatoExcel()">Descargar formato Excel</button>
-  <input type="file" class="form-control" accept=".xlsx,.xls" (change)="onFileSelected($event)">
-  <button class="btn btn-success" [disabled]="!rows.length" (click)="generarPDF()">Generar/Descargar PDF</button>
+  <input type="file" class="form-control" accept=".xlsx,.xls" (change)="onFileSelected($event)" />
+  <!--<button class="btn btn-success" [disabled]="!rows.length" (click)="generarPDF()">Generar/Descargar PDF</button>-->
   <button class="btn btn-primary" [disabled]="!rows.length || downloadingZip" (click)="generarZipPDFs()">{{ downloadingZip ? 'Generando ZIP...' : 'Descargar ZIP PDFs' }}</button>
 </div>
 

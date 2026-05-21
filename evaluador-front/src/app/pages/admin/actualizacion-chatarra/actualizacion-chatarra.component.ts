@@ -164,6 +164,7 @@ export class ActualizacionChatarraComponent {
             total,
             evaluador: (ingreso as any)?.avaluo?.evaluador || 'N/A',
             pesoChatarraKg: (ingreso as any)?.avaluo?.peso_chatarra_kg ?? '-',
+            avaluo:(ingreso as any)?.avaluo
           };
         });
 
@@ -200,94 +201,9 @@ export class ActualizacionChatarraComponent {
       this.downloadingZip = false;
     }
   }
+ 
 
-  private async createZipFromFiles(files: Array<{ name: string; content: string }>): Promise<Blob> {
-    const encoder = new TextEncoder();
-    const localParts: Uint8Array[] = [];
-    const centralParts: Uint8Array[] = [];
-    let offset = 0;
 
-    for (const file of files) {
-      const nameBytes = encoder.encode(file.name);
-      const data = encoder.encode(file.content);
-      const crc = this.crc32(data);
-
-      const localHeader = new Uint8Array(30 + nameBytes.length);
-      const localView = new DataView(localHeader.buffer);
-      localView.setUint32(0, 0x04034b50, true);
-      localView.setUint16(4, 20, true);
-      localView.setUint16(6, 0, true);
-      localView.setUint16(8, 0, true);
-      localView.setUint16(10, 0, true);
-      localView.setUint16(12, 0, true);
-      localView.setUint32(14, crc, true);
-      localView.setUint32(18, data.length, true);
-      localView.setUint32(22, data.length, true);
-      localView.setUint16(26, nameBytes.length, true);
-      localView.setUint16(28, 0, true);
-      localHeader.set(nameBytes, 30);
-
-      localParts.push(localHeader, data);
-
-      const centralHeader = new Uint8Array(46 + nameBytes.length);
-      const centralView = new DataView(centralHeader.buffer);
-      centralView.setUint32(0, 0x02014b50, true);
-      centralView.setUint16(4, 20, true);
-      centralView.setUint16(6, 20, true);
-      centralView.setUint16(8, 0, true);
-      centralView.setUint16(10, 0, true);
-      centralView.setUint16(12, 0, true);
-      centralView.setUint16(14, 0, true);
-      centralView.setUint32(16, crc, true);
-      centralView.setUint32(20, data.length, true);
-      centralView.setUint32(24, data.length, true);
-      centralView.setUint16(28, nameBytes.length, true);
-      centralView.setUint16(30, 0, true);
-      centralView.setUint16(32, 0, true);
-      centralView.setUint16(34, 0, true);
-      centralView.setUint16(36, 0, true);
-      centralView.setUint32(38, 0, true);
-      centralView.setUint32(42, offset, true);
-      centralHeader.set(nameBytes, 46);
-      centralParts.push(centralHeader);
-
-      offset += localHeader.length + data.length;
-    }
-
-    const centralSize = centralParts.reduce((sum, part) => sum + part.length, 0);
-    const end = new Uint8Array(22);
-    const endView = new DataView(end.buffer);
-    endView.setUint32(0, 0x06054b50, true);
-    endView.setUint16(4, 0, true);
-    endView.setUint16(6, 0, true);
-    endView.setUint16(8, files.length, true);
-    endView.setUint16(10, files.length, true);
-    endView.setUint32(12, centralSize, true);
-    endView.setUint32(16, offset, true);
-    endView.setUint16(20, 0, true);
-
-    return new Blob([...localParts, ...centralParts, end], { type: 'application/zip' });
-  }
-
-  private crc32(data: Uint8Array): number {
-    let crc = 0 ^ -1;
-    for (let i = 0; i < data.length; i++) {
-      crc = (crc >>> 8) ^ this.crcTable[(crc ^ data[i]) & 0xff];
-    }
-    return (crc ^ -1) >>> 0;
-  }
-
-  private readonly crcTable: Uint32Array = (() => {
-    const table = new Uint32Array(256);
-    for (let n = 0; n < 256; n++) {
-      let c = n;
-      for (let k = 0; k < 8; k++) {
-        c = (c & 1) ? (0xedb88320 ^ (c >>> 1)) : (c >>> 1);
-      }
-      table[n] = c >>> 0;
-    }
-    return table;
-  })();
 
   private downloadBlob(blob: Blob, filename: string): void {
     const url = URL.createObjectURL(blob);
