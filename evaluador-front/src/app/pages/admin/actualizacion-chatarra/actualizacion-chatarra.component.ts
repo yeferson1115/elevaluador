@@ -206,7 +206,7 @@ export class ActualizacionChatarraComponent {
     return `<!doctype html><html><head><meta charset="utf-8"><title>Actualización Chatarra ${r.placa}</title>
     <style>body{font-family:Arial,sans-serif;padding:20px;color:#222} table{width:100%;border-collapse:collapse;margin-top:8px;} td,th{border:1px solid #777;padding:4px;font-size:12px;} h3{margin:0 0 8px}.sub{color:#1f6f8b;font-size:30px}.section{color:#1f6f8b;font-weight:700;margin:14px 0 6px}</style>
     </head><body><div class="page">
-      <div style="text-align:center"><img src="/logos/AlcadiaSDM_Bogota_Verde.png" style="max-width:330px;height:auto"/></div>
+      <div style="text-align:center"><img src="/assets/images/AlcadiaSDM_Bogota_Verde.png" style="max-width:330px;height:auto"/></div>
       <h3 style="text-align:center;letter-spacing:.5px">AJUSTE VALOR BASE KILOGRAMO DE CHATARRA</h3>
       <p style="font-size:12px">Por medio de este documento, se busca actualizar el valor base de subasta del kilogramo (kg.) de chatarra, para el lote de automotores de la subasta 28 que fueron declarados por Chatarra.</p>
       <p style="font-size:12px">El perito <b>${r.evaluador}</b> con Registro Avaluador AVÁL-________ emite concepto mediante el cual recomienda que el vehículo que se relaciona a continuación debe ser comercializado en calidad de <b>CHATARRA</b> con un peso estimado de <b>${r.pesoChatarraKg}</b> Kg.</p>
