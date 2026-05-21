@@ -127,7 +127,7 @@ export class ActualizacionChatarraComponent {
     const placas = Array.from(new Set(inputs.map((x) => x.placa)));
 
     const requests = placas.map((placa) =>
-      this.ingresoService.getAvaluos(1, placa).pipe(
+      this.ingresoService.getAvaluos(1, placa, 'Sec Bogota').pipe(
         map((res) => {
           const match = (res?.data || []).find((ing: Ingreso) =>
             (ing?.datosGenerales?.placa || '').toUpperCase() === placa
