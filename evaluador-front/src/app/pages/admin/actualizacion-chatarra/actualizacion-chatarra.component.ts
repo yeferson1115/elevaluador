@@ -6,6 +6,7 @@ import { IngresoService } from '../../../core/services/Ingreso.service';
 import { Ingreso } from '../../../core/interfaces/ingresos.interface';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { saveAs } from 'file-saver';
 
 interface RowInput {
   placa: string;
@@ -42,6 +43,7 @@ interface RowResult extends RowInput {
 })
 export class ActualizacionChatarraComponent {
   loading = false;
+  downloadingZip = false;
   error = '';
   rows: RowResult[] = [];
 
@@ -166,6 +168,47 @@ export class ActualizacionChatarraComponent {
         this.error = 'No fue posible consultar los datos de las placas.';
         this.loading = false;
       }
+    });
+  }
+
+  generarZipPDFs(): void {
+    if (!this.rows.length || this.downloadingZip) return;
+
+    this.downloadingZip = true;
+    this.error = '';
+
+    const payload = {
+      registros: this.rows.map((r) => ({
+        placa: r.placa,
+        nombres_chatarrerias: [r.nombreChatarreria1, r.nombreChatarreria2, r.nombreChatarreria3, r.nombreChatarreria4],
+        valores_chatarrerias: [r.chatarreria1, r.chatarreria2, r.chatarreria3, r.chatarreria4],
+        factor_subasta: r.factorSubasta,
+        promedio: r.promedio,
+        total: r.total,
+        vehiculo: {
+          marca: r.marca,
+          clase: r.clase,
+          linea: r.linea,
+          modelo: r.modelo,
+          cilindraje: r.cilindraje,
+          carroceria: r.carroceria,
+          serie: r.serie,
+          chasis: r.chasis,
+          vin: r.vin,
+        },
+      })),
+    };
+
+    this.ingresoService.exportActualizacionChatarraZip(payload).subscribe({
+      next: (zipBlob) => {
+        const nombre = `actualizacion-chatarra-${new Date().toISOString().slice(0, 10)}.zip`;
+        saveAs(zipBlob, nombre);
+        this.downloadingZip = false;
+      },
+      error: () => {
+        this.error = 'No fue posible generar el ZIP en el servidor. Verifica que el endpoint esté habilitado.';
+        this.downloadingZip = false;
+      },
     });
   }
 

@@ -5,7 +5,10 @@
   <button class="btn btn-outline-primary" (click)="descargarFormatoExcel()">Descargar formato Excel</button>
   <input type="file" class="form-control" accept=".xlsx,.xls" (change)="onFileSelected($event)">
   <button class="btn btn-success" [disabled]="!rows.length" (click)="generarPDF()">Generar/Descargar PDF</button>
+  <button class="btn btn-primary" [disabled]="!rows.length || downloadingZip" (click)="generarZipPDFs()">{{ downloadingZip ? 'Generando ZIP...' : 'Descargar ZIP PDFs' }}</button>
 </div>
+
+<p class="text-muted" *ngIf="rows.length">Para lotes grandes (ej. 1000 registros), usa <b>Descargar ZIP PDFs</b> para que el servidor genere todos los archivos.</p>
 
 <div *ngIf="loading" class="alert alert-info">Procesando archivo...</div>
 <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
