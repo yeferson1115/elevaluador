@@ -12,6 +12,9 @@
 
 <div *ngIf="loading" class="alert alert-info">Procesando archivo...</div>
 <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+<div *ngIf="!loading && skippedRowsCount > 0" class="alert alert-warning">
+  Se omitieron {{ skippedRowsCount }} registro(s) porque el ingreso no existe en el sistema.
+</div>
 
 <div class="table-responsive" *ngIf="rows.length">
   <table class="table table-sm table-bordered">

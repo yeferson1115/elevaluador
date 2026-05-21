@@ -22,6 +22,7 @@ interface RowInput {
 
 interface RowResult extends RowInput {
   ingresoId?: number;
+  avaluo?: any;
   marca: string;
   clase: string;
   linea: string;
@@ -47,6 +48,7 @@ export class ActualizacionChatarraComponent {
   loading = false;
   downloadingZip = false;
   error = '';
+  skippedRowsCount = 0;
   rows: RowResult[] = [];
 
   constructor(private readonly ingresoService: IngresoService) {}
@@ -79,6 +81,7 @@ export class ActualizacionChatarraComponent {
 
     this.loading = true;
     this.error = '';
+    this.skippedRowsCount = 0;
     this.rows = [];
 
     const reader = new FileReader();
@@ -142,8 +145,11 @@ export class ActualizacionChatarraComponent {
       next: (pairs) => {
         const byPlaca = new Map<string, Ingreso | null>(pairs);
 
-        this.rows = inputs.map((row) => {
+        const resolvedRows: RowResult[] = inputs
+          .map((row) => {
           const ingreso = byPlaca.get(row.placa);
+          if (!ingreso) return null;
+
           const promedio =
             (row.chatarreria1 + row.chatarreria2 + row.chatarreria3 + row.chatarreria4) / 4;
           const total = promedio * row.factorSubasta;
@@ -166,7 +172,11 @@ export class ActualizacionChatarraComponent {
             pesoChatarraKg: (ingreso as any)?.avaluo?.peso_chatarra_kg ?? '-',
             avaluo:(ingreso as any)?.avaluo
           };
-        });
+        })
+          .filter((row) => !!row) as RowResult[];
+
+        this.rows = resolvedRows;
+        this.skippedRowsCount = inputs.length - resolvedRows.length;
 
         this.loading = false;
       },
