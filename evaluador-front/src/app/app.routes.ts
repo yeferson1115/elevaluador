@@ -170,6 +170,15 @@ export const routes: Routes = [
         data: { permission: Permissions.EDIT_INGRESO },
       },
 
+
+      {
+        path: 'actualizacion-chatarra',
+        loadComponent: () =>
+          import('./pages/admin/actualizacion-chatarra/actualizacion-chatarra.component').then(m => m.ActualizacionChatarraComponent),
+        canActivate: [PermissionGuard],
+        data: { permission: Permissions.VIEW_INGRESO },
+      },
+
       // Rutas para Fasecolda (Memorias)
       {
         path: 'memorias',
