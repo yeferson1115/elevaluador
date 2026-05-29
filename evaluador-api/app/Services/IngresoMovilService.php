@@ -29,8 +29,7 @@ class IngresoMovilService
             'tipo_servicio' => 'nullable|string|max:50',
             'tipoServicio' => 'nullable|string|max:50',
             'categoria' => 'nullable|string|max:100',
-            'imagenes' => 'nullable|array',
-            'imagenes.*' => 'file|image|mimes:jpeg,jpg,png,gif,webp|max:10240',
+            'imagenes' => 'nullable',
         ]);
 
         $tipoServicio = $this->normalizarTipoServicio(
@@ -74,9 +73,9 @@ class IngresoMovilService
                 $inspeccion = $this->crearOActualizarInspeccion($ingreso, $observaciones, $kilometraje, $userId);
             }
 
-            $imagenes = $this->guardarImagenes(
+            $resultadoImagenes = $this->guardarImagenes(
                 $ingreso,
-                $request->file('imagenes', []),
+                $request,
                 $request->input('categoria', 'app_movil')
             );
 
@@ -85,7 +84,8 @@ class IngresoMovilService
                 'ingreso' => $ingreso->fresh(['avaluo', 'inspeccion', 'images']),
                 'avaluo' => $avaluo?->fresh(),
                 'inspeccion' => $inspeccion?->fresh(),
-                'imagenes' => $imagenes,
+                'imagenes' => $resultadoImagenes['imagenes'],
+                'imagenes_advertencias' => $resultadoImagenes['advertencias'],
             ];
         });
     }
@@ -190,16 +190,14 @@ class IngresoMovilService
     }
 
     /**
-     * @param array<int, UploadedFile>|UploadedFile|null $archivos
+     * @return array{imagenes: array<int, array<string, mixed>>, advertencias: array<int, string>}
      */
-    private function guardarImagenes(Ingreso $ingreso, array|UploadedFile|null $archivos, string $categoria): array
+    private function guardarImagenes(Ingreso $ingreso, Request $request, string $categoria): array
     {
-        if ($archivos instanceof UploadedFile) {
-            $archivos = [$archivos];
-        }
-
-        $archivos = $archivos ?: [];
+        $archivos = $this->extraerArchivosImagen($request->allFiles()['imagenes'] ?? []);
+        $entradas = $request->input('imagenes', []);
         $imagenes = [];
+        $advertencias = [];
         $directory = "avaluos/{$ingreso->id}";
         $fullPath = public_path($directory);
 
@@ -208,34 +206,216 @@ class IngresoMovilService
         }
 
         foreach ($archivos as $archivo) {
-            if (!$archivo instanceof UploadedFile) {
+            if (!$archivo->isValid()) {
+                $advertencias[] = 'Una imagen no se pudo guardar porque el archivo subido no es válido.';
                 continue;
             }
 
             $extension = strtolower($archivo->getClientOriginalExtension() ?: $archivo->extension() ?: 'jpg');
-            $filename = uniqid('movil_', true) . '.' . $extension;
-            $archivo->move($fullPath, $filename);
-            $relativePath = "{$directory}/{$filename}";
 
-            $imagen = IngresoImage::create([
-                'avaluo_id' => $ingreso->id,
-                'categoria' => $categoria,
-                'path' => $relativePath,
-                'orden' => ((int) IngresoImage::where('avaluo_id', $ingreso->id)
-                    ->where('categoria', $categoria)
-                    ->max('orden')) + 1,
-                'rotacion' => 0,
-            ]);
+            if (!$this->extensionImagenPermitida($extension)) {
+                $advertencias[] = "La imagen {$archivo->getClientOriginalName()} fue omitida porque su tipo no está permitido.";
+                continue;
+            }
 
-            $imagenes[] = [
-                'id' => $imagen->id,
-                'categoria' => $imagen->categoria,
-                'orden' => $imagen->orden,
-                'rotacion' => $imagen->rotacion,
-                'url' => asset($relativePath),
-            ];
+            $imagenes[] = $this->crearRegistroImagen(
+                $ingreso,
+                $categoria,
+                $directory,
+                $fullPath,
+                $extension,
+                fn (string $rutaCompleta) => $archivo->move(dirname($rutaCompleta), basename($rutaCompleta))
+            );
+        }
+
+        foreach ($this->extraerImagenesBase64($entradas) as $imagenBase64) {
+            $imagenes[] = $this->crearRegistroImagen(
+                $ingreso,
+                $categoria,
+                $directory,
+                $fullPath,
+                $imagenBase64['extension'],
+                fn (string $rutaCompleta) => file_put_contents($rutaCompleta, $imagenBase64['contenido'])
+            );
+        }
+
+        $entradasInvalidas = $this->contarEntradasImagenInvalidas($entradas);
+
+        if ($entradasInvalidas > 0 && count($archivos) === 0) {
+            $advertencias[] = 'Las imágenes llegaron como texto/objeto serializado y no como archivo multipart ni base64; no se pudieron guardar. En la app móvil envíe cada foto como archivo en imagenes[] con uri, type y name.';
+        }
+
+        return [
+            'imagenes' => $imagenes,
+            'advertencias' => $advertencias,
+        ];
+    }
+
+    /**
+     * @return array<int, UploadedFile>
+     */
+    private function extraerArchivosImagen(mixed $entrada): array
+    {
+        if ($entrada instanceof UploadedFile) {
+            return [$entrada];
+        }
+
+        if (!is_array($entrada)) {
+            return [];
+        }
+
+        $archivos = [];
+
+        foreach ($entrada as $item) {
+            $archivos = array_merge($archivos, $this->extraerArchivosImagen($item));
+        }
+
+        return $archivos;
+    }
+
+    /**
+     * @return array<int, array{contenido: string, extension: string}>
+     */
+    private function extraerImagenesBase64(mixed $entrada): array
+    {
+        if (is_string($entrada)) {
+            $imagen = $this->decodificarImagenBase64($entrada);
+
+            return $imagen ? [$imagen] : [];
+        }
+
+        if (!is_array($entrada)) {
+            return [];
+        }
+
+        $imagenes = [];
+
+        if (isset($entrada['base64']) || isset($entrada['data'])) {
+            $contenido = $entrada['base64'] ?? $entrada['data'];
+            $imagen = is_string($contenido) ? $this->decodificarImagenBase64($contenido, $entrada['type'] ?? null) : null;
+
+            return $imagen ? [$imagen] : [];
+        }
+
+        foreach ($entrada as $item) {
+            $imagenes = array_merge($imagenes, $this->extraerImagenesBase64($item));
         }
 
         return $imagenes;
+    }
+
+    /**
+     * @return array{contenido: string, extension: string}|null
+     */
+    private function decodificarImagenBase64(string $valor, ?string $mimeSugerido = null): ?array
+    {
+        $valor = trim($valor);
+        $mime = $mimeSugerido;
+
+        if (preg_match('/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/', $valor, $matches)) {
+            $mime = $matches[1];
+            $valor = $matches[2];
+        }
+
+        if ($valor === '' || $valor === '[object Object]' || !preg_match('/^[A-Za-z0-9+\/\r\n=]+$/', $valor)) {
+            return null;
+        }
+
+        $contenido = base64_decode($valor, true);
+
+        if ($contenido === false || strlen($contenido) > 10 * 1024 * 1024) {
+            return null;
+        }
+
+        $extension = $this->extensionDesdeMime($mime) ?? $this->extensionDesdeContenido($contenido);
+
+        if (!$extension || !$this->extensionImagenPermitida($extension)) {
+            return null;
+        }
+
+        return [
+            'contenido' => $contenido,
+            'extension' => $extension,
+        ];
+    }
+
+    private function crearRegistroImagen(
+        Ingreso $ingreso,
+        string $categoria,
+        string $directory,
+        string $fullPath,
+        string $extension,
+        callable $guardarArchivo
+    ): array {
+        $filename = uniqid('movil_', true) . '.' . strtolower($extension);
+        $rutaCompleta = "{$fullPath}/{$filename}";
+        $guardarArchivo($rutaCompleta);
+        $relativePath = "{$directory}/{$filename}";
+
+        $imagen = IngresoImage::create([
+            'avaluo_id' => $ingreso->id,
+            'categoria' => $categoria,
+            'path' => $relativePath,
+            'orden' => ((int) IngresoImage::where('avaluo_id', $ingreso->id)
+                ->where('categoria', $categoria)
+                ->max('orden')) + 1,
+            'rotacion' => 0,
+        ]);
+
+        return [
+            'id' => $imagen->id,
+            'categoria' => $imagen->categoria,
+            'orden' => $imagen->orden,
+            'rotacion' => $imagen->rotacion,
+            'url' => asset($relativePath),
+        ];
+    }
+
+    private function contarEntradasImagenInvalidas(mixed $entrada): int
+    {
+        if ($entrada instanceof UploadedFile) {
+            return 0;
+        }
+
+        if (is_string($entrada)) {
+            return $this->decodificarImagenBase64($entrada) ? 0 : 1;
+        }
+
+        if (!is_array($entrada)) {
+            return $entrada === null ? 0 : 1;
+        }
+
+        if (isset($entrada['base64']) || isset($entrada['data'])) {
+            return $this->extraerImagenesBase64($entrada) ? 0 : 1;
+        }
+
+        return array_sum(array_map(fn ($item) => $this->contarEntradasImagenInvalidas($item), $entrada));
+    }
+
+    private function extensionImagenPermitida(string $extension): bool
+    {
+        return in_array(strtolower($extension), ['jpeg', 'jpg', 'png', 'gif', 'webp'], true);
+    }
+
+    private function extensionDesdeMime(?string $mime): ?string
+    {
+        return match ($mime) {
+            'image/jpeg', 'image/jpg' => 'jpg',
+            'image/png' => 'png',
+            'image/gif' => 'gif',
+            'image/webp' => 'webp',
+            default => null,
+        };
+    }
+
+    private function extensionDesdeContenido(string $contenido): ?string
+    {
+        $info = @getimagesizefromstring($contenido);
+
+        if (!$info || !isset($info['mime'])) {
+            return null;
+        }
+
+        return $this->extensionDesdeMime($info['mime']);
     }
 }
