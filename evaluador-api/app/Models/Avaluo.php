@@ -93,7 +93,12 @@ class Avaluo extends Model
         'evaluador',
         'consecutivo',
         'inicial',
-        'cerrado'
+        'cerrado',
+        'trabajado_movil'
+    ];
+
+    protected $casts = [
+        'trabajado_movil' => 'boolean',
     ];
 
 
