@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\ValidationException;
 
 class IngresoMovilService
@@ -194,8 +195,8 @@ class IngresoMovilService
      */
     private function guardarImagenes(Ingreso $ingreso, Request $request, string $categoria): array
     {
-        $archivos = $this->extraerArchivosImagen($request->allFiles()['imagenes'] ?? []);
-        $entradas = $request->input('imagenes', []);
+        $archivos = $this->extraerArchivosImagen($request->allFiles());
+        $entradas = $this->extraerEntradasImagen($request->all());
         $imagenes = [];
         $advertencias = [];
         $directory = "avaluos/{$ingreso->id}";
@@ -242,13 +243,36 @@ class IngresoMovilService
         $entradasInvalidas = $this->contarEntradasImagenInvalidas($entradas);
 
         if ($entradasInvalidas > 0 && count($archivos) === 0) {
-            $advertencias[] = 'Las imágenes llegaron como texto/objeto serializado y no como archivo multipart ni base64; no se pudieron guardar. En la app móvil envíe cada foto como archivo en imagenes[] con uri, type y name.';
+            $advertencias[] = 'Las imágenes llegaron como [object Object] o texto sin binario. El backend solo puede guardar archivos multipart reales, base64/data URL o URLs http(s) descargables.';
         }
 
         return [
             'imagenes' => $imagenes,
             'advertencias' => $advertencias,
         ];
+    }
+
+    private function extraerEntradasImagen(array $datos): mixed
+    {
+        $entradas = [];
+
+        foreach ($datos as $clave => $valor) {
+            if ($this->esClaveImagen((string) $clave)) {
+                $entradas[] = $valor;
+            }
+        }
+
+        return $entradas;
+    }
+
+    private function esClaveImagen(string $clave): bool
+    {
+        $clave = mb_strtolower($clave);
+
+        return str_contains($clave, 'imagen')
+            || str_contains($clave, 'image')
+            || str_contains($clave, 'foto')
+            || str_contains($clave, 'photo');
     }
 
     /**
@@ -279,7 +303,15 @@ class IngresoMovilService
     private function extraerImagenesBase64(mixed $entrada): array
     {
         if (is_string($entrada)) {
-            $imagen = $this->decodificarImagenBase64($entrada);
+            $entrada = trim($entrada);
+            $json = json_decode($entrada, true);
+
+            if (json_last_error() === JSON_ERROR_NONE) {
+                return $this->extraerImagenesBase64($json);
+            }
+
+            $imagen = $this->decodificarImagenBase64($entrada)
+                ?? $this->descargarImagenDesdeUrl($entrada);
 
             return $imagen ? [$imagen] : [];
         }
@@ -290,11 +322,17 @@ class IngresoMovilService
 
         $imagenes = [];
 
-        if (isset($entrada['base64']) || isset($entrada['data'])) {
-            $contenido = $entrada['base64'] ?? $entrada['data'];
-            $imagen = is_string($contenido) ? $this->decodificarImagenBase64($contenido, $entrada['type'] ?? null) : null;
+        if (isset($entrada['base64']) || isset($entrada['data']) || isset($entrada['uri']) || isset($entrada['url'])) {
+            $contenido = $entrada['base64'] ?? $entrada['data'] ?? $entrada['uri'] ?? $entrada['url'];
 
-            return $imagen ? [$imagen] : [];
+            if (is_string($contenido)) {
+                $imagen = $this->decodificarImagenBase64($contenido, $entrada['type'] ?? null)
+                    ?? $this->descargarImagenDesdeUrl($contenido);
+
+                if ($imagen) {
+                    return [$imagen];
+                }
+            }
         }
 
         foreach ($entrada as $item) {
@@ -328,6 +366,44 @@ class IngresoMovilService
         }
 
         $extension = $this->extensionDesdeMime($mime) ?? $this->extensionDesdeContenido($contenido);
+
+        if (!$extension || !$this->extensionImagenPermitida($extension)) {
+            return null;
+        }
+
+        return [
+            'contenido' => $contenido,
+            'extension' => $extension,
+        ];
+    }
+
+    /**
+     * @return array{contenido: string, extension: string}|null
+     */
+    private function descargarImagenDesdeUrl(string $url): ?array
+    {
+        if (!preg_match('/^https?:\/\//i', $url)) {
+            return null;
+        }
+
+        try {
+            $response = Http::timeout(10)->get($url);
+        } catch (\Throwable) {
+            return null;
+        }
+
+        if (!$response->successful()) {
+            return null;
+        }
+
+        $contenido = $response->body();
+
+        if ($contenido === '' || strlen($contenido) > 10 * 1024 * 1024) {
+            return null;
+        }
+
+        $extension = $this->extensionDesdeMime($response->header('Content-Type'))
+            ?? $this->extensionDesdeContenido($contenido);
 
         if (!$extension || !$this->extensionImagenPermitida($extension)) {
             return null;
@@ -378,7 +454,7 @@ class IngresoMovilService
         }
 
         if (is_string($entrada)) {
-            return $this->decodificarImagenBase64($entrada) ? 0 : 1;
+            return $this->extraerImagenesBase64($entrada) ? 0 : 1;
         }
 
         if (!is_array($entrada)) {
