@@ -6,6 +6,7 @@ use App\Http\Controllers\API\RoleController;
 use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\API\IngresoController;
 use App\Http\Controllers\API\IngresoImageController;
+use App\Http\Controllers\API\IngresoMovilController;
 use App\Http\Controllers\API\AvaluoController;
 use App\Http\Controllers\API\InspeccionController;
 use App\Http\Controllers\API\ValoresRepuestoController;
@@ -42,6 +43,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('/getroles', [RoleController::class, 'getroles']);
     
     // Rutas principales
+    Route::post('ingreso/movil/guardar', [IngresoMovilController::class, 'guardar']);
     Route::apiResource('ingreso', IngresoController::class);
     Route::get('/avaluos/movil', [AvaluoController::class, 'avaluosMovil']);
     Route::apiResource('avaluo', AvaluoController::class);
