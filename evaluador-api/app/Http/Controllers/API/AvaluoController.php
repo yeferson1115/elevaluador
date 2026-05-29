@@ -104,6 +104,37 @@ class AvaluoController extends Controller
         return response()->json($query->paginate(10));
     }
 
+    public function avaluosMovil(Request $request)
+    {
+        $query = Avaluo::query()
+            ->with('ingreso')
+            ->where('trabajado_movil', true)
+            ->where('user_id', auth()->id());
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->whereHas('ingreso', function ($q) use ($search) {
+                $q->where('placa', 'like', "%{$search}%")
+                    ->orWhere('solicitante', 'like', "%{$search}%")
+                    ->orWhere('documento_solicitante', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('tipo')) {
+            $tipo = $request->input('tipo');
+            $query->whereHas('ingreso', function ($q) use ($tipo) {
+                $q->where('tiposervicio', $tipo);
+            });
+        }
+
+        $perPage = min((int) $request->input('per_page', 10), 100);
+
+        return response()->json(
+            $query->orderByDesc('updated_at')->paginate($perPage)
+        );
+    }
+
+
 
 
 
@@ -340,12 +371,15 @@ class AvaluoController extends Controller
             'avaluo.evaluador'=>'nullable',
             'avaluo.code_movilidad' => 'nullable|numeric',
             'avaluo.cerrado' => 'nullable|boolean',
+            'avaluo.trabajado_movil' => 'nullable|boolean',
             
 
         ]);
 
         // Extraer únicamente el bloque de avaluo
         $data = $validated['avaluo'];
+        $data['user_id'] = $data['user_id'] ?? auth()->id();
+        $this->marcarAvaluoTrabajadoMovil($request, $data);
         if (!array_key_exists('dias_inmovilizacion', $data) || $data['dias_inmovilizacion'] === null) {
             $data['dias_inmovilizacion'] = $this->calcularDiasInmovilizacion(
                 $data['fecha_inmovilizacion'] ?? null,
@@ -503,9 +537,11 @@ class AvaluoController extends Controller
             'avaluo.ubicacion'=>'nullable',
             'avaluo.evaluador'=>'nullable',
             'avaluo.cerrado' => 'nullable|boolean',
+            'avaluo.trabajado_movil' => 'nullable|boolean',
         ]);
 
         $data = $validated['avaluo'];
+        $this->marcarAvaluoTrabajadoMovil($request, $data);
         $fechaInspeccionReferencia = $request->input('fecha_inspeccion')
             ?? optional($avaluo->ingreso)->fecha_inspeccion;
         if (!array_key_exists('dias_inmovilizacion', $data) || $data['dias_inmovilizacion'] === null) {
@@ -699,6 +735,27 @@ class AvaluoController extends Controller
     // =======================
     // Funciones privadas
     // =======================
+
+
+    private function marcarAvaluoTrabajadoMovil(Request $request, array &$data): void
+    {
+        if ($this->requestProvieneDeMovil($request)) {
+            $data['trabajado_movil'] = true;
+            return;
+        }
+
+        if (array_key_exists('trabajado_movil', $data)) {
+            $data['trabajado_movil'] = filter_var($data['trabajado_movil'], FILTER_VALIDATE_BOOLEAN);
+        }
+    }
+
+    private function requestProvieneDeMovil(Request $request): bool
+    {
+        return in_array(strtolower((string) $request->header('X-Client-Type')), ['mobile', 'movil'], true)
+            || in_array(strtolower((string) $request->header('X-App-Source')), ['mobile', 'movil'], true)
+            || filter_var($request->header('X-Mobile-App'), FILTER_VALIDATE_BOOLEAN);
+    }
+
 
     private function asignarConsecutivoEInicialSiAplica(Avaluo $avaluo): void
     {
