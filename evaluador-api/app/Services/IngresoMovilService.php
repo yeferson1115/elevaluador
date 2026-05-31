@@ -77,7 +77,7 @@ class IngresoMovilService
             $resultadoImagenes = $this->guardarImagenes(
                 $ingreso,
                 $request,
-                $request->input('categoria', 'app_movil')
+                $request->input('categoria', 'extra')
             );
 
             return [
@@ -195,6 +195,7 @@ class IngresoMovilService
      */
     private function guardarImagenes(Ingreso $ingreso, Request $request, string $categoria): array
     {
+        
         $archivos = $this->extraerArchivosImagen($request->allFiles());
         $entradas = $this->extraerEntradasImagen($request->all());
         $imagenes = [];
