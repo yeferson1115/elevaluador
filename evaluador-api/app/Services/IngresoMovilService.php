@@ -149,7 +149,7 @@ class IngresoMovilService
         $data = [
             'tipo' => $tipoServicio,
             'formato' => $tipoServicio === 'Sec Bogota' ? 'Sec Bogota' : 'El Avaluador',
-            'observaciones' => $observaciones,
+            //'observaciones' => $observaciones,
             'fecha_inspeccion' => $fechaInspeccion,
             'user_id' => $userId,
             'trabajado_movil' => true,
@@ -161,6 +161,25 @@ class IngresoMovilService
 
         $avaluo->fill(array_filter($data, fn ($value) => $value !== null));
         $avaluo->save();
+
+            if (!empty($observaciones)) {
+
+                $observacion = trim($observaciones);
+
+                $existe = $avaluo->limitaciones()
+                    ->where('texto', $observacion)
+                    ->exists();
+
+                if (!$existe) {
+                    $avaluo->limitaciones()->create([
+                        'texto' => $observacion
+                    ]);
+                }
+            }
+
+
+
+
 
         return $avaluo;
     }
