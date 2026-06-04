@@ -553,7 +553,10 @@ exportarCertificadosZip(): void {
 
     this.fasecoldaService.getValores(codigoNormalizado).subscribe({
       next: (response) => {
-        this.bulkChanges.peso_chatarra_kg = response?.peso_vacio ?? null;
+        const pesoVacio = Number(response?.peso_vacio);
+        this.bulkChanges.peso_chatarra_kg = Number.isFinite(pesoVacio) && pesoVacio > 0
+          ? pesoVacio * 0.75
+          : null;
       },
       error: () => {
         this.bulkChanges.peso_chatarra_kg = null;

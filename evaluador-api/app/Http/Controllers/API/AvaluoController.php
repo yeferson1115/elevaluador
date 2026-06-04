@@ -63,6 +63,32 @@ class AvaluoController extends Controller
         'es_repuesto_especial',
     ];
 
+    private const VALORES_AVALUO_POR_DEFECTO = [
+        'latoneria_valor' => 0,
+        'valor_pintura' => 0,
+        'motor_valor' => 0,
+        'chasis_valor' => 0,
+        'tapiceria_valor' => 0,
+        'refrigeracion_valor' => 0,
+        'electrico_valor' => 0,
+        'valor_llantas' => 0,
+        'transmision_valor' => 0,
+        'vidrios_valor' => 0,
+        'tanque_valor' => 0,
+        'bateria_valor' => 0,
+        'frenos_valor' => 0,
+        'llave_valor' => 0,
+        'valor_RTM' => 0,
+        'valor_SOAT' => 0,
+        'valor_faltantes' => 0,
+        'valor_chatarra_kg' => 0,
+        'peso_chatarra_kg' => 0,
+        'chatarra' => '',
+        'codigo_fasecolda' => '',
+        'observaciones' => '',
+        'x' => '',
+    ];
+
     private const LIMITACIONES_POR_DEFECTO = [
         'Las condiciones climatológicas, ambientales, de iluminación y de almacenamiento del vehículo al momento de la inspección pueden influir en la apreciación del estado físico y estético de los componentes, constituyéndose en una limitación inherente al proceso de inspección técnica.',
         'La inspección técnica se limita a una evaluación visual y funcional de los sistemas, subconjuntos y componentes del vehículo que se encuentran accesibles y ensamblados, sin realizar desarmes parciales o totales, los cuales se encuentran fuera del alcance del presente avalúo.',
@@ -567,6 +593,11 @@ class AvaluoController extends Controller
             ], Response::HTTP_LOCKED);
         }
 
+        $ingresoBaseCalculos = $avaluo->ingreso ?: Ingreso::find($data['ingreso_id']);
+        if ($ingresoBaseCalculos) {
+            $data = $this->aplicarCalculosEdicionAvaluo($data, $ingresoBaseCalculos, $request, $avaluo);
+        }
+
         
         //return response()->json(['message' => $validated]);
 
@@ -756,6 +787,193 @@ class AvaluoController extends Controller
             || filter_var($request->header('X-Mobile-App'), FILTER_VALIDATE_BOOLEAN);
     }
 
+
+    /**
+     * Replica en API los cálculos automáticos que el formulario individual ejecuta
+     * antes de guardar. Esto permite que la edición masiva persista los mismos
+     * campos derivados aunque no exista una sesión de formulario en el front.
+     */
+    private function aplicarCalculosEdicionAvaluo(array $data, Ingreso $ingreso, Request $request, Avaluo $avaluo): array
+    {
+        $base = array_merge($avaluo->toArray(), $data);
+
+        $number = fn (string $campo, float $default = 0.0): float => $this->toFloatForAvaluo($base[$campo] ?? null, $default);
+
+        if ($this->hasPositiveValue($base['vida_util_probable'] ?? null)) {
+            $data['vida_util'] = $base['vida_util_probable'];
+            $base['vida_util'] = $data['vida_util'];
+        }
+
+        $vidaUtil = $number('vida_util');
+        $x = $number('x');
+        $antiguedad = $number('antiguedad');
+        $estadoConservacion = $number('estado_conservacion');
+        if ($vidaUtil > 0 && $x > 0 && $antiguedad > 0 && $estadoConservacion >= 0) {
+            $ratio = $antiguedad / $vidaUtil;
+            $potencia = pow($ratio, 1 / $x);
+            $data['k'] = round($potencia + ((1 - $potencia) * $estadoConservacion), 5);
+            $base['k'] = $data['k'];
+        }
+
+        $valorReposicion = $number('valor_reposicion');
+        $porcReposicion = $number('porc_reposicion');
+        if ($valorReposicion > 0 && $porcReposicion > 0) {
+            $data['valor_residual'] = round($valorReposicion * ($porcReposicion / 100), 2);
+            $base['valor_residual'] = $data['valor_residual'];
+        }
+
+        $valorResidual = $number('valor_residual');
+        $kValue = $number('k');
+        if ($valorReposicion > 0 && $valorResidual > 0 && $kValue > 0) {
+            $razonable = $valorReposicion - (($valorReposicion - $valorResidual) * $kValue);
+            $razonableRedondeado = round($razonable / 100) * 100;
+            $data['valor_resonable'] = $razonableRedondeado;
+            $data['valor_razonable'] = $razonableRedondeado;
+            $base['valor_resonable'] = $razonableRedondeado;
+            $base['valor_razonable'] = $razonableRedondeado;
+        }
+
+        $fechaMatricula = $request->input('fecha_matricula', $ingreso->fecha_matricula);
+        $fechaInspeccion = $request->input('fecha_inspeccion', $base['fecha_inspeccion'] ?? $ingreso->fecha_inspeccion);
+        $vidaUsada = $this->calcularVidaUsada($fechaMatricula, $fechaInspeccion);
+        if ($vidaUsada !== null) {
+            $data['vida_usada_dias'] = $vidaUsada['dias360'];
+            $data['vida_usada_meses'] = $vidaUsada['meses'];
+            $data['vida_usada_anos'] = $vidaUsada['anos'];
+            $data['antiguedad'] = $vidaUsada['meses'];
+            $base['vida_usada_meses'] = $vidaUsada['meses'];
+        }
+
+        $vidaUtilProbable = $number('vida_util_probable');
+        $vidaUsadaMeses = $this->toFloatForAvaluo($base['vida_usada_meses'] ?? null);
+        if ($vidaUtilProbable > 0 || $vidaUsadaMeses > 0) {
+            $data['vida_util_remate'] = round($vidaUtilProbable - $vidaUsadaMeses, 2);
+        }
+
+        if (($base['tipo'] ?? null) === 'comercial') {
+            $estimado = $this->calcularValorEstimadoComercial(
+                $avaluo,
+                (int) ($request->input('modelo', $ingreso->modelo) ?: 0),
+                $request->input('avaluo.corregidos')
+            );
+            if ($estimado !== null) {
+                $data['valor_razonable'] = $estimado;
+                $data['valor_resonable'] = $estimado;
+                $base['valor_razonable'] = $estimado;
+                $base['valor_resonable'] = $estimado;
+            }
+        }
+
+        $valorRazonable = $this->toFloatForAvaluo($base['valor_razonable'] ?? ($data['valor_razonable'] ?? null));
+        $valorCarroceria = $number('valor_carroceria');
+        $valorAccesorios = $number('valor_accesorios');
+        $valorReparaciones = $number('valor_reparaciones');
+        $valorLlantas = $number('valor_llantas');
+        $valorPintura = $number('valor_pintura');
+        $valorOverhaul = $number('valor_overhaul_motor');
+        $factorDemeritoTotal = $number('factor_demerito');
+
+        $data['avaluo_total'] = round(
+            ($valorRazonable + $valorCarroceria + $valorAccesorios)
+            - ($valorReparaciones + $valorLlantas + $valorPintura + $valorOverhaul + $factorDemeritoTotal),
+            2
+        );
+
+        $divisorResponsabilidad = $valorRazonable + $valorCarroceria + $valorAccesorios;
+        $data['indice_responsabilidad_minimo'] = $divisorResponsabilidad > 0
+            ? round(($valorReparaciones + $valorLlantas + $valorPintura + $valorOverhaul + $factorDemeritoTotal) / $divisorResponsabilidad, 5)
+            : 0;
+
+        return $data;
+    }
+
+    private function calcularValorEstimadoComercial(Avaluo $avaluo, int $modelo, ?array $corregidosRequest = null): ?float
+    {
+        if ($modelo <= 0) {
+            return null;
+        }
+
+        if ($corregidosRequest !== null) {
+            $corregidos = collect($corregidosRequest)
+                ->map(fn ($c) => ['x' => (int) ($c['modelo'] ?? 0), 'y' => (float) ($c['valor'] ?? 0)])
+                ->filter(fn ($p) => $p['x'] > 0 && $p['y'] > 0)
+                ->values()
+                ->toArray();
+        } else {
+            $avaluo->loadMissing('corregidos');
+            $corregidos = $avaluo->corregidos
+                ->map(fn ($c) => ['x' => (int) $c->modelo, 'y' => (float) $c->valor])
+                ->filter(fn ($p) => $p['x'] > 0 && $p['y'] > 0)
+                ->values()
+                ->toArray();
+        }
+
+        if (empty($corregidos)) {
+            return null;
+        }
+
+        $resultado = $this->calcularExponencial($corregidos, $modelo);
+
+        return $resultado['valor_estimado'] ?? null;
+    }
+
+    private function calcularVidaUsada($fechaMatricula, $fechaInspeccion): ?array
+    {
+        if (empty($fechaMatricula) || empty($fechaInspeccion)) {
+            return null;
+        }
+
+        try {
+            $inicio = Carbon::parse($fechaMatricula)->startOfDay();
+            $fin = Carbon::parse($fechaInspeccion)->startOfDay();
+        } catch (\Throwable $e) {
+            return null;
+        }
+
+        if ($fin->lt($inicio)) {
+            return null;
+        }
+
+        $diffDays = $inicio->diffInDays($fin);
+        $yearLength = $inicio->isLeapYear() ? 366 : 365;
+        $anos = $yearLength > 0 ? $diffDays / $yearLength : 0;
+
+        return [
+            'dias360' => $this->dias360($inicio, $fin),
+            'meses' => round($anos * 12, 2),
+            'anos' => round($anos, 2),
+        ];
+    }
+
+    private function dias360(Carbon $inicio, Carbon $fin): int
+    {
+        $d1 = min((int) $inicio->day, 30);
+        $d2 = min((int) $fin->day, 30);
+
+        return (((int) $fin->year - (int) $inicio->year) * 360)
+            + (((int) $fin->month - (int) $inicio->month) * 30)
+            + ($d2 - $d1);
+    }
+
+    private function hasPositiveValue($value): bool
+    {
+        return $this->toFloatForAvaluo($value) > 0;
+    }
+
+    private function toFloatForAvaluo($value, float $default = 0.0): float
+    {
+        if ($value === null || $value === '') {
+            return $default;
+        }
+
+        if (is_numeric($value)) {
+            return (float) $value;
+        }
+
+        $normalized = str_replace(',', '.', preg_replace('/[^0-9,.-]/', '', (string) $value));
+
+        return is_numeric($normalized) ? (float) $normalized : $default;
+    }
 
     private function asignarConsecutivoEInicialSiAplica(Avaluo $avaluo): void
     {
@@ -1651,17 +1869,24 @@ public function reprocesarIndividual($id)
 
                 $changesToApply = $changes;
 
+                $pesoBrutoOperacion = $ingreso->peso_bruto;
+                $pesoMermadoOperacion = $ingreso->peso_mermado;
+
                 if (!empty($changesToApply['codigo_fasecolda'])) {
                     $this->sincronizarMemoriasFasecolda($avaluo, $changesToApply['codigo_fasecolda']);
+                    $avaluo->unsetRelation('clasificados');
+                    $avaluo->unsetRelation('corregidos');
 
                     $fasecoldaPesoVacio = FasecoldaValor::where('codigo_fasecolda', $changesToApply['codigo_fasecolda'])
                         ->value('peso_vacio');
 
                     if (!empty($fasecoldaPesoVacio)) {
-                        $changesToApply['peso_chatarra_kg'] = $fasecoldaPesoVacio;
-                        if (empty($ingreso->peso_bruto)) {
-                            $ingreso->update(['peso_bruto' => $fasecoldaPesoVacio]);
-                        }
+                        $pesoBrutoOperacion = round((float) $fasecoldaPesoVacio);
+                        $pesoMermadoOperacion = $pesoBrutoOperacion * 0.75;
+                        $ingreso->forceFill([
+                            'peso_bruto' => $pesoBrutoOperacion,
+                            'peso_mermado' => $pesoMermadoOperacion,
+                        ])->save();
                     }
 
                     $fasecoldaRow = FasecoldaValor::where('codigo_fasecolda', $changesToApply['codigo_fasecolda'])
@@ -1671,12 +1896,13 @@ public function reprocesarIndividual($id)
                         ->first();
 
                     if ($fasecoldaRow) {
+                        $changesToApply['valor_reposicion'] = $fasecoldaRow->valor;
                         $changesToApply['valor_razonable'] = $fasecoldaRow->valor;
                         $changesToApply['valor_resonable'] = $fasecoldaRow->valor;
                     }
                 }
 
-                $changesToApply = $this->aplicarEstadosPorDefecto($changesToApply, $avaluo->toArray());
+                $changesToApply = $this->aplicarValoresAvaluoPorDefecto($changesToApply, $avaluo->toArray());
 
                 $cilindrajeOperacion = array_key_exists('cilindraje', $changesToApply)
                     ? (int) $changesToApply['cilindraje']
@@ -1684,6 +1910,9 @@ public function reprocesarIndividual($id)
                 $cajaCambiosOperacion = $changesToApply['caja_cambios'] ?? $ingreso->caja_cambios;
                 $fechaInspeccionOperacion = $changesToApply['fecha_inspeccion'] ?? $ingreso->fecha_inspeccion;
                 $tipoVehiculoOperacion = $changesToApply['tipo_vehiculo'] ?? $ingreso->clase;
+                $repuestoFueCambioManual = array_key_exists('tipo_vehiculo', $changesToApply)
+                    || array_key_exists('cilindraje', $changesToApply)
+                    || array_key_exists('es_repuesto_especial', $changesToApply);
                 $esRepuestoEspecialOperacion = array_key_exists('es_repuesto_especial', $changesToApply)
                     ? filter_var($changesToApply['es_repuesto_especial'], FILTER_VALIDATE_BOOLEAN)
                     : false;
@@ -1693,35 +1922,33 @@ public function reprocesarIndividual($id)
                 
 
                 if (!empty($tipoVehiculoOperacion) && !empty($cilindrajeOperacion)) {
-                   $repuesto = ValoresRepuesto::whereRaw('TRIM(tipo) = ?', [
-                            trim($this->normalizarTipoVehiculoMasivo($tipoVehiculoOperacion))
-                        ])
-                        ->whereNotNull('cilindraje_from')
-                        ->whereNotNull('cilindraje_to')
-                        ->whereRaw('CAST(cilindraje_to AS UNSIGNED) <= ?', [(int)$cilindrajeOperacion])
-                        ->whereRaw('CAST(cilindraje_from AS UNSIGNED) >= ?', [(int)$cilindrajeOperacion])
-                        ->where('especial', (bool)$esRepuestoEspecialOperacion)
-                        ->first();
-                       
+                    $repuesto = $this->buscarRepuestoParaEdicionMasiva(
+                        $tipoVehiculoOperacion,
+                        (int) $cilindrajeOperacion,
+                        (bool) $esRepuestoEspecialOperacion
+                    );
 
                     if ($repuesto) {
-                        $changesToApply = array_merge($changesToApply, [
-                            'latoneria_valor' => $repuesto->latoneria,
-                            'valor_RTM' => $repuesto->rtm,
-                            'valor_SOAT' => $repuesto->soat,
-                            'valor_llantas' => $repuesto->llantas,
-                            'motor_valor' => $repuesto->motor_mantenimiento,
-                            'chasis_valor' => $repuesto->chasis,
-                            'frenos_valor' => $repuesto->frenos,
-                            'tanque_valor' => $repuesto->tanque_combustible,
-                            'bateria_valor' => $repuesto->bateria,
-                            'llave_valor' => $repuesto->llave,
-                            'electrico_valor' => $repuesto->sis_electrico,
-                            'valor_pintura' => $repuesto->pintura,
-                            'tapiceria_valor' => $repuesto->tapiceria,
-                            'transmision_valor' => $repuesto->kit_arrastre,
-                        ]);
+                        $changesToApply = $this->aplicarValoresRepuestoMasivo(
+                            $changesToApply,
+                            $avaluo->toArray(),
+                            $repuesto,
+                            $repuestoFueCambioManual
+                        );
                     }
+                }
+
+                $chatarraOperacion = $changesToApply['chatarra'] ?? $avaluo->chatarra;
+                if (
+                    $chatarraOperacion === 'Si'
+                    && !empty($pesoMermadoOperacion)
+                    && (
+                        !array_key_exists('peso_chatarra_kg', $changes)
+                        || $this->campoEstaVacioParaMasivo($changes['peso_chatarra_kg'])
+                        || !empty($changesToApply['codigo_fasecolda'])
+                    )
+                ) {
+                    $changesToApply['peso_chatarra_kg'] = $pesoMermadoOperacion;
                 }
 
                 $requestSimulado = Request::create('/api/avaluo/' . $avaluo->id, 'PUT', [
@@ -1743,8 +1970,8 @@ public function reprocesarIndividual($id)
                     'numeroVin' => $ingreso->numeroVin,
                     'tipo_servicio_vehiculo' => $ingreso->tipo_servicio_vehiculo,
                     'cantidad_ejes' => $ingreso->cantidad_ejes,
-                    'peso_bruto' => $ingreso->peso_bruto,
-                    'peso_mermado' => $ingreso->peso_mermado,
+                    'peso_bruto' => $pesoBrutoOperacion,
+                    'peso_mermado' => $pesoMermadoOperacion,
                     'numero_pasajeros' => $ingreso->numero_pasajeros,
                     'estado_registro_runt' => $ingreso->estado_registro_runt,
                     'capacidad_ton' => $ingreso->capacidad_ton,
@@ -2333,6 +2560,85 @@ public function reprocesarIndividual($id)
         }
 
         return $changes;
+    }
+
+    private function aplicarValoresAvaluoPorDefecto(array $changes, array $base = []): array
+    {
+        $changes = $this->aplicarEstadosPorDefecto($changes, $base);
+
+        foreach (self::VALORES_AVALUO_POR_DEFECTO as $campo => $valorPorDefecto) {
+            if (
+                (!array_key_exists($campo, $changes) || $changes[$campo] === null)
+                && ($this->campoEstaVacioParaMasivo($base[$campo] ?? null))
+            ) {
+                $changes[$campo] = $valorPorDefecto;
+            }
+        }
+
+        return $changes;
+    }
+
+    private function aplicarValoresRepuestoMasivo(array $changes, array $base, ValoresRepuesto $repuesto, bool $reemplazarTodo): array
+    {
+        $mapeo = [
+            'latoneria' => 'latoneria_valor',
+            'rtm' => 'valor_RTM',
+            'soat' => 'valor_SOAT',
+            'llantas' => 'valor_llantas',
+            'motor_mantenimiento' => 'motor_valor',
+            'chasis' => 'chasis_valor',
+            'frenos' => 'frenos_valor',
+            'tanque_combustible' => 'tanque_valor',
+            'bateria' => 'bateria_valor',
+            'llave' => 'llave_valor',
+            'sis_electrico' => 'electrico_valor',
+            'pintura' => 'valor_pintura',
+            'tapiceria' => 'tapiceria_valor',
+            'kit_arrastre' => 'transmision_valor',
+        ];
+
+        foreach ($mapeo as $campoRepuesto => $campoAvaluo) {
+            $valor = $repuesto->{$campoRepuesto};
+            if ($valor === null) {
+                continue;
+            }
+
+            if ($reemplazarTodo || $this->campoEstaVacioParaMasivo($base[$campoAvaluo] ?? null)) {
+                $changes[$campoAvaluo] = $valor;
+            }
+        }
+
+        return $changes;
+    }
+
+    private function buscarRepuestoParaEdicionMasiva(?string $tipoVehiculo, int $cilindraje, bool $especial): ?ValoresRepuesto
+    {
+        if (empty($tipoVehiculo) || $cilindraje <= 0) {
+            return null;
+        }
+
+        $tipoNormalizado = $this->normalizarTipoVehiculoMasivo($tipoVehiculo);
+
+        return ValoresRepuesto::whereRaw('TRIM(UPPER(tipo)) = ?', [$tipoNormalizado])
+            ->where('especial', $especial ? 1 : 0)
+            ->where(function ($query) use ($cilindraje) {
+                $query->where(function ($q) use ($cilindraje) {
+                    $q->whereNotNull('cilindraje_from')
+                        ->whereNotNull('cilindraje_to')
+                        ->whereRaw('CAST(cilindraje_to AS UNSIGNED) <= ?', [$cilindraje])
+                        ->whereRaw('CAST(cilindraje_from AS UNSIGNED) >= ?', [$cilindraje]);
+                })->orWhere(function ($q) use ($cilindraje) {
+                    $q->whereNull('cilindraje_from')
+                        ->whereNotNull('cilindraje_to')
+                        ->whereRaw('CAST(cilindraje_to AS UNSIGNED) <= ?', [$cilindraje]);
+                });
+            })
+            ->first();
+    }
+
+    private function campoEstaVacioParaMasivo($valor): bool
+    {
+        return $valor === null || $valor === '' || $valor === 0 || $valor === '0';
     }
 
     private function sincronizarMemoriasFasecolda(Avaluo $avaluo, string $codigoFasecolda): void
