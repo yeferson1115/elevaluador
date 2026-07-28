@@ -1724,7 +1724,7 @@ public function reprocesarIndividual($id)
         $ingreso = $avaluo->ingreso;
         $user = User::find($avaluo->user_id);
         
-        
+        $this->eliminarImagenesDuplicadasAntesDePdf($ingreso);
         // Verificar el tipo de avalúo para determinar qué vista usar
         if ($avaluo->tipo == 'comercial') {
             $graficaPath = $this->generarGraficaDispercion($avaluo);
