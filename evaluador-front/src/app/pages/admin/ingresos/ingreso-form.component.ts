@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule,FormArray } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, Validators, ReactiveFormsModule,FormArray } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { IngresoService } from '../../../core/services/Ingreso.service';
 import { Ingreso } from '../../../core/interfaces/ingresos.interface';
@@ -43,7 +43,7 @@ export class IngresoFormComponent implements OnInit {
         objetoAvaluo: ['', Validators.required],
         codigoInternoMovil: ['', Validators.required],
         estado:[{ value: 'Ingresado'}, Validators.required],
-      }),
+      }, { validators: this.fechaSolicitudMenorAInspeccionValidator }),
       informacionBien: this.fb.group({
         tipoPropiedad: ['', Validators.required],
         fechaMatricula: ['', Validators.required],
@@ -87,11 +87,11 @@ export class IngresoFormComponent implements OnInit {
         estado_rtm:['', Validators.required],
       }),
       estadoVehiculoRunt: this.fb.group({
-        fecha_inicial_matricula:['', Validators.required],
-        estado_matricula: ['', Validators.required],
-        traslados_matricula: ['', Validators.required],
-        tipo_servicio_vehiculo: ['', Validators.required],
-        cambios_tipo_servicio: ['', Validators.required],
+        fecha_inicial_matricula:[''],
+        estado_matricula: [''],
+        traslados_matricula: [''],
+        tipo_servicio_vehiculo: [''],
+        cambios_tipo_servicio: [''],
         fecha_ult_cambio_servicio: [''],
         cambio_color_historica: [''],
         fecha_ult_cambio_color: [''],
@@ -118,6 +118,8 @@ export class IngresoFormComponent implements OnInit {
       historicoPropietarios: this.fb.array([])
     });
 
+    this.configurarCamposSincronizados();
+
     this.id = Number(this.route.snapshot.paramMap.get('id'));
     if (this.id) {
       this.editMode = true;
@@ -125,6 +127,7 @@ export class IngresoFormComponent implements OnInit {
         next: (ingreso: Ingreso) => {
           const { historicoPropietarios, ...resto } = ingreso;
           this.form.patchValue(resto);
+          this.sincronizarCamposDerivados();
 
           this.historicoPropietarios.clear();
           historicoPropietarios.forEach((prop) => {
@@ -145,10 +148,16 @@ export class IngresoFormComponent implements OnInit {
 
   guardar() {
     this.loading = true;
+    this.sincronizarCamposDerivados();
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       this.loading = false;
-      this.alert.warning('Por favor completa todos los campos obligatorios.', 'Formulario incompleto');
+      const datosGenerales = this.form.get('datosGenerales');
+      if (datosGenerales?.hasError('fechaSolicitudNoMenor')) {
+        this.alert.warning('La fecha de solicitud debe ser menor a la fecha de inspección.', 'Fechas inválidas');
+      } else {
+        this.alert.warning('Por favor completa todos los campos obligatorios.', 'Formulario incompleto');
+      }
       return;
     }
 
@@ -188,6 +197,50 @@ export class IngresoFormComponent implements OnInit {
 
   cancelar() {
     this.router.navigate(['/admin/ingresos']);
+  }
+
+  private configurarCamposSincronizados(): void {
+    this.form.get('datosGenerales.codigoInternoMovil')?.valueChanges.subscribe(() => {
+      this.sincronizarMovilConCodigoInterno();
+    });
+
+    this.form.get('informacionBien.fechaMatricula')?.valueChanges.subscribe(() => {
+      this.sincronizarFechaExpedicionConFechaMatricula();
+    });
+  }
+
+  private sincronizarCamposDerivados(): void {
+    this.sincronizarMovilConCodigoInterno();
+    this.sincronizarFechaExpedicionConFechaMatricula();
+  }
+
+  private sincronizarMovilConCodigoInterno(): void {
+    const codigoInternoMovil = this.form.get('datosGenerales.codigoInternoMovil')?.value ?? '';
+    const movil = this.form.get('informacionBien.movil');
+
+    if (movil?.value !== codigoInternoMovil) {
+      movil?.setValue(codigoInternoMovil, { emitEvent: false });
+    }
+  }
+
+  private sincronizarFechaExpedicionConFechaMatricula(): void {
+    const fechaMatricula = this.form.get('informacionBien.fechaMatricula')?.value ?? '';
+    const fechaExpedicionLicencia = this.form.get('informacionBien.fecha_expedicion_licencia');
+
+    if (fechaExpedicionLicencia?.value !== fechaMatricula) {
+      fechaExpedicionLicencia?.setValue(fechaMatricula, { emitEvent: false });
+    }
+  }
+
+  private fechaSolicitudMenorAInspeccionValidator(control: AbstractControl): ValidationErrors | null {
+    const fechaSolicitud = control.get('fechaSolicitud')?.value;
+    const fechaInspeccion = control.get('fechaInspeccion')?.value;
+
+    if (!fechaSolicitud || !fechaInspeccion) {
+      return null;
+    }
+
+    return fechaSolicitud < fechaInspeccion ? null : { fechaSolicitudNoMenor: true };
   }
 
   get historicoPropietarios(): FormArray {
