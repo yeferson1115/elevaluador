@@ -52,7 +52,7 @@ export class UserFormComponent implements OnChanges {
       this.phone = this.user.phone || '';
       this.tarjeta_profecional = this.user.tarjeta_profecional || '';
       this.r_aa = this.user.r_aa || '';
-      this.profesion= this.profesion || '';
+      this.profesion= this.user.profesion || '';
       this.selectedRoleId = this.user.roles?.[0]?.id || null;
       this.password = '';
       this.passwordConfirm = '';
