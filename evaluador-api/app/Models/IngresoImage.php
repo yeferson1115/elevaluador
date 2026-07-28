@@ -9,6 +9,8 @@ class IngresoImage extends Model
 {
     use HasFactory;
     protected $table = 'ingreso_images';
+
+    // En esta tabla, avaluo_id almacena el ID del ingreso relacionado.
     protected $fillable = [
         'avaluo_id',
         'categoria',
