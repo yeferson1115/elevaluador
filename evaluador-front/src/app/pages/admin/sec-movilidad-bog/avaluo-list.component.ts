@@ -358,7 +358,7 @@ exportarCertificadosZip(): void {
         : ids.length > 0
           ? `${ids.length} certificado(s) seleccionado(s)`
           : 'todos los certificados filtrados';
-      this.alert.success(`La generación del ZIP quedó en segundo plano ✅ (${scopeMessage}). Se enviará un correo a ${response?.email ?? 'tu cuenta'} con la ruta de descarga.`);
+      this.alert.success(`La generación del ZIP quedó en segundo plano ✅ (${scopeMessage}). Se enviará un correo a ${response?.email ?? 'tu cuenta'} con la ruta de descarga. En local verifica que esté corriendo: php artisan queue:work database --queue=default --timeout=7200 --tries=1; si MAIL_MAILER=log, el correo queda en storage/logs/laravel.log.`);
     },
     error: (error) => {
       console.error('Error al exportar certificados:', error);
