@@ -613,21 +613,80 @@
                     ($avaluo->valor_SOAT ?? 0) +
                     ($total_componentes ?? 0)
                 );
-             if (!function_exists('numeroALetras')) {
-                        function numeroALetras($numero) {
-                            $numero = (int) round($numero);
+            if (!function_exists('numeroALetras')) {
+                function numeroALetras($numero) {
+                    $numero = (int) round($numero);
 
-                            if (class_exists('\NumberFormatter')) {
-                                $formatter = new \NumberFormatter('es', \NumberFormatter::SPELLOUT);
-                                $texto = $formatter->format($numero);
+                    if ($numero === 0) {
+                        return 'CERO PESOS';
+                    }
 
-                                if ($texto !== false) {
-                                    return strtoupper($texto) . ' PESOS';
-                                }
-                            }
+                    $unidades = ['', 'UNO', 'DOS', 'TRES', 'CUATRO', 'CINCO', 'SEIS', 'SIETE', 'OCHO', 'NUEVE'];
+                    $especiales = [
+                        10 => 'DIEZ', 11 => 'ONCE', 12 => 'DOCE', 13 => 'TRECE', 14 => 'CATORCE', 15 => 'QUINCE',
+                        16 => 'DIECISÉIS', 17 => 'DIECISIETE', 18 => 'DIECIOCHO', 19 => 'DIECINUEVE',
+                        20 => 'VEINTE', 21 => 'VEINTIUNO', 22 => 'VEINTIDÓS', 23 => 'VEINTITRÉS', 24 => 'VEINTICUATRO',
+                        25 => 'VEINTICINCO', 26 => 'VEINTISÉIS', 27 => 'VEINTISIETE', 28 => 'VEINTIOCHO', 29 => 'VEINTINUEVE',
+                    ];
+                    $decenas = ['', '', 'VEINTE', 'TREINTA', 'CUARENTA', 'CINCUENTA', 'SESENTA', 'SETENTA', 'OCHENTA', 'NOVENTA'];
+                    $centenas = ['', 'CIENTO', 'DOSCIENTOS', 'TRESCIENTOS', 'CUATROCIENTOS', 'QUINIENTOS', 'SEISCIENTOS', 'SETECIENTOS', 'OCHOCIENTOS', 'NOVECIENTOS'];
 
-                            return '$' . number_format($numero, 0, ',', '.') . ' PESOS';
+                    $convertirCentenas = function ($valor) use (&$convertirCentenas, $unidades, $especiales, $decenas, $centenas) {
+                        $valor = (int) $valor;
+
+                        if ($valor === 0) {
+                            return '';
                         }
+
+                        if ($valor === 100) {
+                            return 'CIEN';
+                        }
+
+                        if ($valor < 10) {
+                            return $unidades[$valor];
+                        }
+
+                        if ($valor < 30) {
+                            return $especiales[$valor];
+                        }
+
+                        if ($valor < 100) {
+                            $decena = intdiv($valor, 10);
+                            $unidad = $valor % 10;
+
+                            return $decenas[$decena] . ($unidad ? ' Y ' . $unidades[$unidad] : '');
+                        }
+
+                        $centena = intdiv($valor, 100);
+                        $resto = $valor % 100;
+
+                        return $centenas[$centena] . ($resto ? ' ' . $convertirCentenas($resto) : '');
+                    };
+
+                    $convertirNumero = function ($valor) use (&$convertirNumero, $convertirCentenas) {
+                        $valor = (int) $valor;
+
+                        if ($valor < 1000) {
+                            return $convertirCentenas($valor);
+                        }
+
+                        if ($valor < 1000000) {
+                            $miles = intdiv($valor, 1000);
+                            $resto = $valor % 1000;
+                            $textoMiles = $miles === 1 ? 'MIL' : $convertirCentenas($miles) . ' MIL';
+
+                            return trim($textoMiles . ($resto ? ' ' . $convertirCentenas($resto) : ''));
+                        }
+
+                        $millones = intdiv($valor, 1000000);
+                        $resto = $valor % 1000000;
+                        $textoMillones = $millones === 1 ? 'UN MILLÓN' : $convertirNumero($millones) . ' MILLONES';
+
+                        return trim($textoMillones . ($resto ? ' ' . $convertirNumero($resto) : ''));
+                    };
+
+                    return $convertirNumero($numero) . ' PESOS';
+                }
             }
             
             if($avaluo->peso_chatarra_kg > 0 && $avaluo->valor_chatarra_kg > 0){
