@@ -615,8 +615,18 @@
                 );
              if (!function_exists('numeroALetras')) {
                         function numeroALetras($numero) {
-                            $formatter = new NumberFormatter('es', NumberFormatter::SPELLOUT);
-                            return strtoupper($formatter->format($numero)) . ' PESOS';
+                            $numero = (int) round($numero);
+
+                            if (class_exists('\NumberFormatter')) {
+                                $formatter = new \NumberFormatter('es', \NumberFormatter::SPELLOUT);
+                                $texto = $formatter->format($numero);
+
+                                if ($texto !== false) {
+                                    return strtoupper($texto) . ' PESOS';
+                                }
+                            }
+
+                            return '$' . number_format($numero, 0, ',', '.') . ' PESOS';
                         }
             }
             

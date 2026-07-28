@@ -49,18 +49,11 @@ class GenerateCertificadosZipJob implements ShouldQueue
         ini_set('max_execution_time', '7200');
         ini_set('memory_limit', '4096M');
 
-        $query = Ingreso::with([
-            'avaluo' => function ($query) {
-                $query->whereNotNull('file')
-                    ->where('file', '!=', '');
-            },
-            'images',
-        ]);
-
+        $query = Ingreso::query();
         $this->aplicarFiltroExportacion($query, 'Sec Bogota', $filtro, $this->ids);
-        $ingresos = $query->get();
+        $totalRegistros = (clone $query)->count();
 
-        if ($ingresos->isEmpty()) {
+        if ($totalRegistros === 0) {
             Mail::to($user->email)->send(new CertificadosZipListoMail(
                 userName: $user->name,
                 totalRegistros: 0,
@@ -93,43 +86,67 @@ class GenerateCertificadosZipJob implements ShouldQueue
         $archivosAgregados = 0;
         $errores = [];
 
-        foreach ($ingresos as $ingreso) {
-            try {
-                if (! $ingreso->avaluo || ! $this->validarDatosAvaluo($ingreso)) {
-                    $errores[] = 'Se omitió la placa ' . ($ingreso->placa ?? 'sin placa') . ' por información incompleta.';
-                    continue;
+        $temporaryPdfPaths = [];
+
+        (clone $query)
+            ->with([
+                'avaluo.clasificados',
+                'avaluo.corregidos',
+                'avaluo.limitaciones',
+                'images',
+            ])
+            ->orderBy('ingresos.id')
+            ->chunkById(25, function ($ingresos) use ($zip, &$archivosAgregados, &$errores, &$temporaryPdfPaths, $absolutePath) {
+                foreach ($ingresos as $ingreso) {
+                    try {
+                        if (! $ingreso->avaluo || ! $this->validarDatosAvaluo($ingreso)) {
+                            $errores[] = 'Se omitió la placa ' . ($ingreso->placa ?? 'sin placa') . ' por información incompleta.';
+                            continue;
+                        }
+
+                        $pdf = $this->generarPdfParaZip($ingreso);
+
+                        if (! $pdf) {
+                            $errores[] = 'No fue posible generar el PDF para la placa ' . ($ingreso->placa ?? 'sin placa') . '.';
+                            continue;
+                        }
+
+                        $pdfContent = $pdf->output();
+                        if (! $pdfContent) {
+                            $errores[] = 'El PDF de la placa ' . ($ingreso->placa ?? 'sin placa') . ' quedó vacío.';
+                            continue;
+                        }
+
+                        $tempPdfPath = dirname($absolutePath) . '/pdf-' . $ingreso->id . '-' . Str::lower(Str::random(8)) . '.pdf';
+                        file_put_contents($tempPdfPath, $pdfContent);
+                        $temporaryPdfPaths[] = $tempPdfPath;
+
+                        if ($zip->addFile($tempPdfPath, $this->generarNombreArchivoZip($ingreso))) {
+                            $archivosAgregados++;
+                        }
+
+                        unset($pdf, $pdfContent);
+                    } catch (\Throwable $e) {
+                        Log::error('Error generando ZIP de certificados en segundo plano.', [
+                            'ingreso_id' => $ingreso->id,
+                            'placa' => $ingreso->placa,
+                            'error' => $e->getMessage(),
+                        ]);
+
+                        $errores[] = 'Error al procesar la placa ' . ($ingreso->placa ?? 'sin placa') . ': ' . $e->getMessage();
+                    }
                 }
 
-                $pdf = $this->generarPdfParaZip($ingreso);
-
-                if (! $pdf) {
-                    $errores[] = 'No fue posible generar el PDF para la placa ' . ($ingreso->placa ?? 'sin placa') . '.';
-                    continue;
-                }
-                $pdfContent = $pdf->output();
-                if (! $pdfContent) {
-                    $errores[] = 'El PDF de la placa ' . ($ingreso->placa ?? 'sin placa') . ' quedó vacío.';
-                    continue;
-                }
-
-                if ($zip->addFromString($this->generarNombreArchivoZip($ingreso), $pdfContent)) {
-                    $archivosAgregados++;
-                }
-
-                unset($pdf, $pdfContent);
                 gc_collect_cycles();
-            } catch (\Throwable $e) {
-                Log::error('Error generando ZIP de certificados en segundo plano.', [
-                    'ingreso_id' => $ingreso->id,
-                    'placa' => $ingreso->placa,
-                    'error' => $e->getMessage(),
-                ]);
-
-                $errores[] = 'Error al procesar la placa ' . ($ingreso->placa ?? 'sin placa') . ': ' . $e->getMessage();
-            }
-        }
+            });
 
         $zip->close();
+
+        foreach ($temporaryPdfPaths as $temporaryPdfPath) {
+            if (file_exists($temporaryPdfPath)) {
+                @unlink($temporaryPdfPath);
+            }
+        }
 
         if ($archivosAgregados === 0) {
             if (file_exists($absolutePath)) {
@@ -138,7 +155,7 @@ class GenerateCertificadosZipJob implements ShouldQueue
 
             Mail::to($user->email)->send(new CertificadosZipListoMail(
                 userName: $user->name,
-                totalRegistros: $ingresos->count(),
+                totalRegistros: $totalRegistros,
                 downloadUrl: null,
                 zipFileName: null,
                 exportaTodosFiltrados: $this->exportaTodosFiltrados,
@@ -271,14 +288,27 @@ class GenerateCertificadosZipJob implements ShouldQueue
         }
 
         if ($avaluo->formato == 'Sec. Movilidad Bogotá' || $ingreso->tiposervicio === 'Sec Bogota') {
-            return Pdf::loadView('pdf.avaluosecbogota', compact('ingreso', 'avaluo', 'graficaPath', 'resultado', 'user'));
+            return $this->pdfOptimizado('pdf.avaluosecbogota', compact('ingreso', 'avaluo', 'graficaPath', 'resultado', 'user'));
         }
 
         if (in_array($avaluo->tipo, ['comercial', 'jans'], true)) {
-            return Pdf::loadView('pdf.avaluojans', compact('ingreso', 'avaluo', 'graficaPath', 'resultado', 'user'));
+            return $this->pdfOptimizado('pdf.avaluojans', compact('ingreso', 'avaluo', 'graficaPath', 'resultado', 'user'));
         }
 
-        return Pdf::loadView('pdf.avaluo', compact('ingreso', 'avaluo', 'graficaPath', 'resultado', 'user'));
+        return $this->pdfOptimizado('pdf.avaluo', compact('ingreso', 'avaluo', 'graficaPath', 'resultado', 'user'));
+    }
+
+
+    private function pdfOptimizado(string $view, array $data)
+    {
+        return Pdf::loadView($view, $data)
+            ->setOptions([
+                'isHtml5ParserEnabled' => true,
+                'isRemoteEnabled' => true,
+                'isFontSubsettingEnabled' => true,
+                'dpi' => 96,
+                'defaultMediaType' => 'print',
+            ]);
     }
 
     private function generarGraficaDispercionOptimizada($avaluo): ?string
