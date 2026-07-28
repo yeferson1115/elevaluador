@@ -8,6 +8,7 @@ use App\Models\Avaluo;
 use App\Models\Ingreso;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use App\Services\IngresoImageDeduplicationService;
 
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -15,6 +16,15 @@ class IngresoImageController extends Controller
 {
     public function index($avaluoId)
     {
+        // En ingreso_images, avaluo_id almacena el ID del ingreso relacionado.
+        // Antes de devolver las imágenes, eliminamos duplicadas tanto del servidor
+        // como de la base de datos para que la vista reciba solo registros vigentes.
+        $ingreso = Ingreso::find($avaluoId);
+
+        if ($ingreso) {
+            app(IngresoImageDeduplicationService::class)->eliminarDuplicadas($ingreso);
+        }
+
         $imagenes = IngresoImage::where('avaluo_id', $avaluoId)
             ->orderBy('categoria')
             ->orderBy('orden')
@@ -28,7 +38,6 @@ class IngresoImageController extends Controller
                 // Construimos la URL accesible desde public/
                 'url' => asset($img->path),
             ]);
-            $ingreso=Ingreso::find($avaluoId);
 
         return response()->json(['imagenes'=>$imagenes,'ingreso'=>$ingreso]);
     }
