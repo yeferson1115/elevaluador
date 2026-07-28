@@ -8,6 +8,7 @@ use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -48,6 +49,7 @@ class GenerateCertificadosZipJob implements ShouldQueue
 
         ini_set('max_execution_time', '7200');
         ini_set('memory_limit', '4096M');
+        $this->limpiarVistasCompiladas();
 
         $query = Ingreso::query();
         $this->aplicarFiltroExportacion($query, 'Sec Bogota', $filtro, $this->ids);
@@ -104,6 +106,7 @@ class GenerateCertificadosZipJob implements ShouldQueue
                             continue;
                         }
 
+                        $fileNameInZip = $this->generarNombreArchivoZip($ingreso);
                         $pdf = $this->generarPdfParaZip($ingreso);
 
                         if (! $pdf) {
@@ -121,7 +124,7 @@ class GenerateCertificadosZipJob implements ShouldQueue
                         file_put_contents($tempPdfPath, $pdfContent);
                         $temporaryPdfPaths[] = $tempPdfPath;
 
-                        if ($zip->addFile($tempPdfPath, $this->generarNombreArchivoZip($ingreso))) {
+                        if ($zip->addFile($tempPdfPath, $fileNameInZip)) {
                             $archivosAgregados++;
                         }
 
@@ -187,6 +190,11 @@ class GenerateCertificadosZipJob implements ShouldQueue
             'exporta_todos_filtrados' => $this->exportaTodosFiltrados,
             'error' => $exception->getMessage(),
         ]);
+    }
+
+    private function limpiarVistasCompiladas(): void
+    {
+        Artisan::call('view:clear');
     }
 
     private function aplicarFiltroExportacion($query, string $tiposervicio, ?string $filtro = '', array $ids = [])
