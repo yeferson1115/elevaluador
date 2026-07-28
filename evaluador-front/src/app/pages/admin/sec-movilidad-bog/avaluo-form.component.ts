@@ -337,7 +337,7 @@ private aplicarSoloCamposVacios(avaluoForm: FormGroup, valores: any): void {
 calcularPesoMermado(pesoVacio: number | null): void {
   if (pesoVacio !== null && pesoVacio !== undefined && pesoVacio > 0) {
     // Calcular Peso Mermado = Peso Vacío * 0.75
-    const pesoMermado = pesoVacio * 0.75;
+    const pesoMermado = pesoVacio;
     
     // Actualizar el campo peso_mermado
     this.form.get('peso_mermado')?.setValue(pesoMermado, { emitEvent: false });

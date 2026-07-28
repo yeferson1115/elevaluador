@@ -33,7 +33,7 @@ class IngresoImageController extends Controller
         return response()->json(['imagenes'=>$imagenes,'ingreso'=>$ingreso]);
     }
 
-  public function store(Request $request, $avaluoId)
+public function store(Request $request, $avaluoId)
 {
     $request->validate([
         'categoria' => 'required|string',

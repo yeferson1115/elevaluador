@@ -274,7 +274,7 @@
                 <td><strong>N° Motor:</strong></td>
                 <td>{{ $ingreso->numero_motor ?? '' }}</td>
                 <td><strong>Número Ejes:</strong></td>
-                <td>{{ $ingreso->cantidad_ejes ?? '' }}</td>
+                <td>{{ $ingreso->cantidad_ejes ?? '2' }}</td>
             </tr>
             <tr>
                 <td><strong>Marca:</strong></td>
@@ -304,7 +304,7 @@
                 <td><strong>Color:</strong></td>
                 <td>{{ strtoupper($ingreso->color ?? '') }}</td>
                 <td><strong>Capacidad Psj:</strong></td>
-                <td>{{ $ingreso->numero_pasajeros ?? '' }}</td>
+                <td>{{ $ingreso->numero_pasajeros ?? '2' }}</td>
                 <td><strong>Estado Runt:</strong></td>
                 <td>{{ strtoupper($ingreso->estado_registro_runt ?? '') }}</td>                
             </tr>
@@ -312,7 +312,7 @@
                 <td><strong>Servicio:</strong></td>
                 <td>{{ strtoupper($ingreso->tipo_servicio_vehiculo ?? '') }}</td>
                 <td><strong>Capacidad ton.:</strong></td>
-                <td>{{ $ingreso->capacidad_ton ?? '' }}</td> 
+                <td>{{ $ingreso->capacidad_ton ?? '0' }}</td> 
                 <td><strong>Diagnóstico:</strong></td>
                 <td>{{ $avaluo->observaciones ?? '' }}</td>
             </tr>           
@@ -435,12 +435,78 @@
         <table class="tabla-estimacion">
             <tr>
                 <td style="width: 50%; vertical-align: top;">
-                    @if($graficaPath && file_exists(public_path('graficas/' . $graficaPath)))
-                    <div class="grafica-wrapper">
-                        <div class="grafica-container">
-                            <img src="{{ public_path('graficas/' . $graficaPath) }}" alt="Gráfica">
+                    @if($avaluo->tipo=='comercial')
+                        @if($graficaPath && file_exists(public_path('graficas/' . $graficaPath)))
+                        <div class="grafica-wrapper">
+                            <div class="grafica-container">
+                                <img src="{{ public_path('graficas/' . $graficaPath) }}" alt="Gráfica">
+                            </div>
                         </div>
-                    </div>
+                        @endif
+                    @else
+                   
+            <!-- TABLA PRINCIPAL -->
+            <table style="width:100%; border-collapse: collapse; font-size: 11px;">
+                <tr>
+                    <td style="  width: 50%;" class="gris1">Fecha Matricula</td>
+                    <td style=" " class="gris2">{{$ingreso->fecha_expedicion_licencia}}</td>
+                </tr>
+                <tr>
+                    <td style=" " class="gris1">Fecha Inspección</td>
+                    <td style=" " class="gris2">{{$avaluo->fecha_inspeccion}}</td>
+                </tr>
+                <tr>
+                    <td style=" " class="gris1">Vida Útil Probable (meses)</td>
+                    <td style=" " class="gris2">{{$avaluo->vida_util_probable}}</td>
+                </tr>
+                <tr>
+                    <td style=" " class="gris1">Vida Usada (años)</td>
+                    <td style=" " class="gris2">{{$avaluo->vida_usada_anos}}</td>
+                </tr>
+                <tr>
+                    <td style=" " class="gris1">Vida Usada (meses)</td>
+                    <td style=" " class="gris2">{{$avaluo->vida_usada_meses}}</td>
+                </tr>
+                <tr>
+                    <td style=" " class="gris1">Vida Útil Remanente (meses)</td>
+                    <td style=" " class="gris2">{{$avaluo->vida_util_remate}}</td>
+                </tr>
+                <tr>
+                    <td style=" " class="gris1">Vida Útil (años)</td>
+                    <td style=" " class="gris2">{{$avaluo->vida_util_anos}}</td>
+                </tr>
+                <tr>
+                    <td style=" " class="gris1">Antigüedad</td>
+                    <td style=" " class="gris2">{{$avaluo->antiguedad}}</td>
+                </tr>
+                <tr>
+                    <td style=" " class="gris1">Vida Útil</td>
+                    <td style=" " class="gris2">{{$avaluo->vida_util}}</td>
+                </tr>
+                <tr>
+                    <td style=" " class="gris1">Valor de Reposición</td>
+                    <td style=" " class="gris2">${{number_format($avaluo->valor_reposicion, 0, 0, '.')}}</td>
+                </tr>
+                <tr>
+                    <td style=" " class="gris1">Valor Residual</td>
+                    <td style=" " class="gris2">${{number_format($avaluo->valor_residual, 0, 0, '.')}}</td>
+                </tr>
+                <tr>
+                    <td style=" " class="gris1">Estado de Conservación</td>
+                    <td style=" " class="gris2">{{$avaluo->estado_conservacion}}</td>
+                </tr>
+                <tr>
+                    <td style=" " class="gris1">x</td>
+                    <td style=" " class="gris2">{{$avaluo->x}}</td>
+                </tr>
+                <tr>
+                    <td style=" " class="gris1">K</td>
+                    <td style=" " class="gris2">{{$avaluo->k}}</td>
+                </tr>
+                <tr>
+                    <td style=" ">Valor Razonable</td>
+                    <td style="background: #8b8b8b; color: #fff; font-weight: bold; text-align: center;  ">${{number_format($avaluo->valor_resonable, 0, 0, '.')}}</td>
+                </tr>
                     @endif
                 </td>
                 <td style="width: 50%; vertical-align: top; padding-left: 10px;">
@@ -591,7 +657,7 @@ Sectoriales GTS E03 y GTS G02.</p>
             'profesion' => 'Ingeniero Mecánico',
             'raa'       => 'AVAL-80542954',
             'email'     => 'gmgarcia@movilidadbogota.gov.co',
-            'contrato'  => 'Contrato 2025-3366',
+            'contrato'  => 'Contrato 2025-1460',
             'firma'     => 'mauricio.jpeg'  // Nombre del archivo de firma
         ],
         'Jhonny Rodríguez' => [

@@ -555,7 +555,7 @@ exportarCertificadosZip(): void {
       next: (response) => {
         const pesoVacio = Number(response?.peso_vacio);
         this.bulkChanges.peso_chatarra_kg = Number.isFinite(pesoVacio) && pesoVacio > 0
-          ? pesoVacio * 0.75
+          ? pesoVacio
           : null;
       },
       error: () => {

@@ -26,7 +26,7 @@
         .title {
             text-align: center;
             font-weight: 700;
-            font-size: 23px;
+            font-size: 20px;
             letter-spacing: .4px;
             margin: 0 0 10px;
         }
@@ -59,7 +59,7 @@
 
         .section {
             color: #2a6f92;
-            font-size: 24px;
+            font-size:18;
             font-weight: 700;
             margin: 14px 0 6px;
         }
@@ -108,7 +108,7 @@
             'profesion' => 'Ingeniero Mecánico',
             'raa'       => 'AVAL-80542954',
             'email'     => 'gmgarcia@movilidadbogota.gov.co',
-            'contrato'  => 'Contrato 2025-3366',
+            'contrato'  => 'Contrato 2025-1460',
             'firma'     => 'mauricio.jpeg'
         ],
 
