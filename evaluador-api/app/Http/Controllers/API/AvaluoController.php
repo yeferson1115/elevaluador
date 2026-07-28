@@ -9,6 +9,7 @@ use App\Models\FasecoldaValor;
 use App\Models\ValoresRepuesto;
 use App\Models\User;
 use App\Models\IngresoImage;
+use App\Services\IngresoImageDeduplicationService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Client\Pool;
@@ -431,6 +432,7 @@ class AvaluoController extends Controller
 
         $graficaPath = $this->generarGraficaDispercion($avaluo);
         $ingreso = Ingreso::with('avaluo','images')->find($avaluo->ingreso_id);
+        $this->eliminarImagenesDuplicadasAntesDePdf($ingreso);
         $user = auth()->user();
 
         if($avaluo->tipo=='jans'){
@@ -675,6 +677,7 @@ class AvaluoController extends Controller
         
 
         $ingreso = Ingreso::with('avaluo','images')->find($request->id);
+        $this->eliminarImagenesDuplicadasAntesDePdf($ingreso);
         $user = User::find($avaluo->user_id);
         if($avaluo->tipo=='comercial'){
             $graficaPath = $this->generarGraficaDispercion($avaluo);
@@ -767,6 +770,16 @@ class AvaluoController extends Controller
     // Funciones privadas
     // =======================
 
+
+
+    private function eliminarImagenesDuplicadasAntesDePdf(?Ingreso $ingreso): void
+    {
+        if (!$ingreso) {
+            return;
+        }
+
+        app(IngresoImageDeduplicationService::class)->eliminarDuplicadas($ingreso);
+    }
 
     private function marcarAvaluoTrabajadoMovil(Request $request, array &$data): void
     {

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Avaluo;
 use App\Models\Ingreso;
 use App\Models\User;
+use App\Services\IngresoImageDeduplicationService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -175,6 +176,9 @@ class ReprocesarSimpleController extends Controller
             throw new \Exception("No tiene ingreso asociado");
         }
         
+        $ingreso->loadMissing('images');
+        app(IngresoImageDeduplicationService::class)->eliminarDuplicadas($ingreso);
+
         // Obtener usuario (el primero disponible)
         $user = User::first();
         if (!$user) {
