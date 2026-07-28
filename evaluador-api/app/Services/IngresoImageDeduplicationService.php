@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\Ingreso;
+use App\Models\IngresoImage;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
 class IngresoImageDeduplicationService
@@ -13,16 +15,25 @@ class IngresoImageDeduplicationService
      */
     public function eliminarDuplicadas(Ingreso $ingreso): int
     {
-        $ingreso->loadMissing('images');
+        $imagenes = IngresoImage::where('avaluo_id', $ingreso->id)
+            ->orderBy('categoria')
+            ->orderBy('orden')
+            ->orderBy('id')
+            ->get();
 
         $hashesVistos = [];
         $duplicadasEliminadas = 0;
         $registrosDuplicadosEliminados = 0;
 
-        foreach ($ingreso->images as $imagen) {
-            $rutaAbsoluta = public_path($imagen->path);
+        foreach ($imagenes as $imagen) {
+            $rutaAbsoluta = $this->rutaAbsoluta($imagen->path);
 
             if (!is_file($rutaAbsoluta) || !is_readable($rutaAbsoluta)) {
+                Log::warning('No se pudo validar la imagen del ingreso porque el archivo no existe o no es legible.', [
+                    'ingreso_id' => $ingreso->id,
+                    'image_id' => $imagen->id,
+                    'path' => $imagen->path,
+                ]);
                 continue;
             }
 
@@ -31,24 +42,13 @@ class IngresoImageDeduplicationService
             if (!isset($hashesVistos[$hash])) {
                 $hashesVistos[$hash] = [
                     'id' => $imagen->id,
-                    'path' => realpath($rutaAbsoluta) ?: $rutaAbsoluta,
+                    'path' => $this->rutaCanonica($rutaAbsoluta),
                 ];
                 continue;
             }
 
-            $rutaReal = realpath($rutaAbsoluta) ?: $rutaAbsoluta;
-            $rutaPrincipal = $hashesVistos[$hash]['path'];
-
-            if ($rutaReal !== $rutaPrincipal) {
-                if (@unlink($rutaAbsoluta)) {
-                    $duplicadasEliminadas++;
-                } else {
-                    Log::warning('No se pudo eliminar la imagen duplicada del servidor.', [
-                        'ingreso_id' => $ingreso->id,
-                        'image_id' => $imagen->id,
-                        'path' => $imagen->path,
-                    ]);
-                }
+            if ($this->eliminarArchivoDuplicado($rutaAbsoluta, $hashesVistos[$hash]['path'], $ingreso->id, $imagen->id, $imagen->path)) {
+                $duplicadasEliminadas++;
             }
 
             $imagen->delete();
@@ -61,5 +61,34 @@ class IngresoImageDeduplicationService
         }
 
         return $duplicadasEliminadas;
+    }
+
+    private function eliminarArchivoDuplicado(string $rutaAbsoluta, string $rutaPrincipal, int $ingresoId, int $imagenId, string $path): bool
+    {
+        if ($this->rutaCanonica($rutaAbsoluta) === $rutaPrincipal) {
+            return false;
+        }
+
+        if (File::delete($rutaAbsoluta)) {
+            return true;
+        }
+
+        Log::warning('No se pudo eliminar la imagen duplicada del servidor.', [
+            'ingreso_id' => $ingresoId,
+            'image_id' => $imagenId,
+            'path' => $path,
+        ]);
+
+        return false;
+    }
+
+    private function rutaAbsoluta(string $path): string
+    {
+        return public_path(ltrim($path, '/'));
+    }
+
+    private function rutaCanonica(string $path): string
+    {
+        return realpath($path) ?: $path;
     }
 }
