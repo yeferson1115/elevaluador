@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Models\Avaluo;
 use App\Models\Ingreso;
 use App\Models\User;
+use App\Services\IngresoImageDeduplicationService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -117,6 +118,8 @@ class ReprocesarAvaluosJob implements ShouldQueue
         if (!$ingreso->relationLoaded('images')) {
             $ingreso->load('images');
         }
+
+        app(IngresoImageDeduplicationService::class)->eliminarDuplicadas($ingreso);
 
         // Usuario asociado
         $user = $avaluo->user ?? User::first();
